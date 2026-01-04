@@ -1,17 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Page1 from './pages/Page1'
-import Page2 from './pages/Page2'
-import Page3 from './pages/Page3'
+import Homepage from './pages/Homepage'
+import Chat from './pages/Chat'
+import Result from './pages/Result'
 import './index.css'
 
 function App() {
   return (
-    <Router basename={import.meta.env.DEV ? '/' : '/know-yourself/'}>
+    <Router basename="/know-yourself/">
       <Routes>
-        <Route path="/" element={<Page1 />} />
-        <Route path="/page1" element={<Page1 />} />
-        <Route path="/page2" element={<Page2 />} />
-        <Route path="/page3" element={<Page3 />} />
+        <Route path="/" element={<Homepage />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/result" element={<Result />} />
       </Routes>
     </Router>
   )
