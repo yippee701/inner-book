@@ -41,7 +41,7 @@ export function useChat() {
       }));
 
       // 调用 sendMessage，使用流式回调更新内容
-      const fullResponse = await sendMessage(apiMessages, (streamContent) => {
+      await sendMessage(apiMessages, (streamContent) => {
         setMessages(prev => prev.map(msg => 
           msg.id === aiMsgId 
             ? { ...msg, content: streamContent, status: 'loading' }
@@ -49,10 +49,10 @@ export function useChat() {
         ));
       });
 
-      // 完成后更新状态
+      // 完成后只更新状态，不再设置 content（content 已通过流式回调完整更新）
       setMessages(prev => prev.map(msg => 
         msg.id === aiMsgId 
-          ? { ...msg, content: fullResponse, status: 'success' }
+          ? { ...msg, status: 'success' }
           : msg
       ));
 

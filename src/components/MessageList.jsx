@@ -47,7 +47,7 @@ export default function MessageList({ messages }) {
             placement={isUser ? 'end' : 'start'}
             loading={isLoading && !msg.content}
             content={msg.content}
-            typing={!isUser && isLoading && msg.content ? { step: 2, interval: 100, keepPrefix: true } : undefined}
+            typing={isUser ? undefined : { step: 1, interval: 100 }}
             styles={isUser ? userBubbleStyles : aiBubbleStyles}
           />
         );

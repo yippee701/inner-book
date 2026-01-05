@@ -57,9 +57,9 @@ export default function Chat() {
 
         {/* 底部链接 */}
         <div className="relative z-10 text-center py-2 shrink-0">
-          <Link to="/result" className="text-purple-300/60 hover:text-purple-300 transition-colors text-sm">
-            查看结果
-          </Link>
+          <span className="text-gray-400 hover:text-gray-300 transition-colors text-sm">
+            推荐使用输入法自带语音输入功能
+          </span>
         </div>
 
         {/* 输入区域 */}
