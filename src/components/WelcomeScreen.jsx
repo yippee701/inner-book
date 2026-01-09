@@ -7,14 +7,14 @@ export default function WelcomeScreen({ onStart, isLoading }) {
   return (
     <div className="text-center">
       {/* 欢迎消息 */}
-      <div className="text-left mb-10">
+      <div className="text-left mb-6">
         <p 
-          className="text-lg leading-relaxed whitespace-pre-wrap"
+          className="text-sm leading-relaxed whitespace-pre-wrap"
           style={{ 
             fontFamily: '"Noto Serif SC", serif',
             color: '#3A3A3A',
-            letterSpacing: '0.02em',
-            lineHeight: '1.8',
+            letterSpacing: '0.01em',
+            lineHeight: '1.6',
           }}
         >
           {WELCOME_MESSAGE}
@@ -22,21 +22,21 @@ export default function WelcomeScreen({ onStart, isLoading }) {
       </div>
       
       {/* 开始按钮 */}
-      <div className="mt-12">
+      <div className="mt-6">
         <button
           onClick={onStart}
           disabled={isLoading}
-          className="relative px-10 py-4 rounded-full text-white text-lg font-medium transition-all duration-300 active:scale-[0.98] disabled:opacity-60"
+          className="relative px-8 py-3 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.98] disabled:opacity-60"
           style={{
             backgroundColor: '#8FA89B',
-            boxShadow: '0 10px 25px rgba(143, 168, 155, 0.3)',
+            boxShadow: '0 6px 16px rgba(143, 168, 155, 0.25)',
           }}
         >
           {/* 高光效果 */}
           <div 
             className="absolute inset-0 rounded-full"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%)',
             }}
           />
           <span className="relative z-10">

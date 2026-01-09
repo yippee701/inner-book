@@ -11,11 +11,11 @@ import { useChat } from '../hooks/useChat';
 // 粒子图标组件
 function ParticleIcon() {
   return (
-    <div className="relative w-8 h-8 flex items-center justify-center">
-      <div className="absolute w-8 h-8 rounded-full border border-[#8FA89B]/20 animate-breathe" />
-      <div className="absolute w-[22px] h-[22px] rounded-full border border-[#8FA89B]/50 animate-breathe-reverse" />
-      <div className="absolute w-3 h-3 rounded-full border border-[#8FA89B]/80 bg-[#8FA89B]/10" />
-      <div className="w-1 h-1 rounded-full bg-[#8FA89B]" style={{ boxShadow: '0 0 8px rgba(143, 168, 155, 0.8)' }} />
+    <div className="relative w-6 h-6 flex items-center justify-center">
+      <div className="absolute w-6 h-6 rounded-full border border-[#8FA89B]/20 animate-breathe" />
+      <div className="absolute w-4 h-4 rounded-full border border-[#8FA89B]/50 animate-breathe-reverse" />
+      <div className="absolute w-2 h-2 rounded-full border border-[#8FA89B]/80 bg-[#8FA89B]/10" />
+      <div className="w-1 h-1 rounded-full bg-[#8FA89B]" style={{ boxShadow: '0 0 6px rgba(143, 168, 155, 0.8)' }} />
     </div>
   );
 }
@@ -24,9 +24,9 @@ function ParticleIcon() {
 function AmbientLight() {
   return (
     <div 
-      className="absolute -top-24 -right-24 w-96 h-96 pointer-events-none"
+      className="absolute -top-16 -right-16 w-64 h-64 pointer-events-none"
       style={{
-        background: 'radial-gradient(circle, rgba(143, 168, 155, 0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(143, 168, 155, 0.12) 0%, transparent 70%)',
       }}
     />
   );
@@ -68,7 +68,7 @@ export default function Chat() {
 
       {/* 顶部状态栏 */}
       <header 
-        className="absolute top-0 left-0 right-0 h-[60px] px-6 flex justify-between items-center z-50"
+        className="absolute top-0 left-0 right-0 h-11 px-4 flex justify-between items-center z-50"
         style={{
           background: 'rgba(245, 241, 237, 0.7)',
           backdropFilter: 'blur(12px)',
@@ -77,19 +77,19 @@ export default function Chat() {
       >
         <ParticleIcon />
         <span 
-          className="text-sm tracking-wide"
+          className="text-xs tracking-wide"
           style={{ 
             fontFamily: 'monospace',
             color: '#8C8C8C',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
-          Progress: {String(progress).padStart(2, '0')}/10
+          {String(progress).padStart(2, '0')}/10
         </span>
       </header>
 
       {/* 聊天内容区 */}
-      <div className="relative z-10 flex-1 overflow-y-auto pt-[90px] pb-[140px] px-6">
+      <div className="relative z-10 flex-1 overflow-y-auto pt-14 pb-28 px-4">
         <div className="max-w-lg mx-auto">
           {!hasStarted ? (
             <WelcomeScreen onStart={handleStart} isLoading={isLoading} />
@@ -105,12 +105,12 @@ export default function Chat() {
         style={{
           background: 'rgba(245, 241, 237, 0.9)',
           backdropFilter: 'blur(20px)',
-          borderTopLeftRadius: '24px',
-          borderTopRightRadius: '24px',
-          boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.03)',
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.02)',
         }}
       >
-        <div className="px-6 pt-6 pb-2">
+        <div className="px-4 pt-3 pb-1">
           <ChatInput 
             onSend={sendUserMessage} 
             isLoading={isLoading}
@@ -118,10 +118,10 @@ export default function Chat() {
           />
         </div>
         <p 
-          className="text-center text-[10px] tracking-wide opacity-80 pb-7"
+          className="text-center text-[9px] tracking-wide opacity-70 pb-4"
           style={{ color: '#A0A0A0' }}
         >
-          点击输入框激活输入区 · 点击发送按钮发送消息
+          推荐使用输入法自带语音输入功能
         </p>
       </div>
     </div>

@@ -24,15 +24,17 @@ export default function ChatInput({ onSend, isLoading, disabled }) {
       placeholder="输入消息..."
       style={{
         background: '#FFFFFF',
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: '1px solid rgba(0, 0, 0, 0.03)',
-        boxShadow: '0 4px 12px rgba(143, 168, 155, 0.1)',
+        boxShadow: '0 2px 8px rgba(143, 168, 155, 0.08)',
       }}
       styles={{
         input: {
           fontFamily: '"Noto Sans SC", sans-serif',
           color: '#3A3A3A',
-          fontSize: '16px',
+          fontSize: '14px',
+          padding: '4px 10px',
+          minHeight: '36px',
         },
         suffix: {
           color: '#8FA89B',
