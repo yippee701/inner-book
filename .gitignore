@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .env
 Archive.zip
+
+# Design files
+design/

@@ -1,33 +1,44 @@
 import { useState } from 'react';
-import { Sender } from "@ant-design/x";
+import { Sender } from '@ant-design/x';
 
 /**
- * 聊天输入组件 - 使用 @ant-design/x 的 Sender 组件
+ * 聊天输入组件 - 使用 @ant-design/x Sender 实现
+ * @see https://x.ant.design/components/sender
  */
-export default function ChatInput({ onSend, isLoading }) {
+export default function ChatInput({ onSend, isLoading, disabled }) {
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (message) => {
-    if (!message || !message.trim()) return;
+    if (!message?.trim() || isLoading || disabled) return;
+    onSend(message.trim());
     setInputValue('');
-    onSend(message);
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Sender
-        value={inputValue}
-        onChange={setInputValue}
-        placeholder="输入你的回答..."
-        onSubmit={handleSubmit}
-        loading={isLoading}
-        style={{
-          background: 'rgba(26, 26, 58, 0.8)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
-          borderRadius: '24px',
-        }}
-      />
-    </div>
+    <Sender
+      value={inputValue}
+      onChange={setInputValue}
+      onSubmit={handleSubmit}
+      loading={isLoading}
+      disabled={disabled}
+      placeholder="输入消息..."
+      style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid rgba(0, 0, 0, 0.03)',
+        boxShadow: '0 4px 12px rgba(143, 168, 155, 0.1)',
+      }}
+      styles={{
+        input: {
+          fontFamily: '"Noto Sans SC", sans-serif',
+          color: '#3A3A3A',
+          fontSize: '16px',
+        },
+        suffix: {
+          color: '#8FA89B',
+        },
+      }}
+    />
   );
 }
 

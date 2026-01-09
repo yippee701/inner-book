@@ -1,0 +1,379 @@
+import { Link } from 'react-router-dom';
+
+// Hook
+import { useProfile } from '../../../hooks/useProfile';
+
+// ========== 子组件 ==========
+
+/**
+ * 头像组件
+ */
+function Avatar({ avatar }) {
+  return (
+    <div 
+      className="w-14 h-14 rounded-full flex items-center justify-center mr-4"
+      style={{
+        background: 'linear-gradient(135deg, #e0e0e0, #ffffff)',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+        border: '2px solid #fff',
+      }}
+    >
+      {avatar ? (
+        <img src={avatar} alt="头像" className="w-full h-full rounded-full object-cover" />
+      ) : (
+        <svg className="w-7 h-7 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 用户头部信息组件
+ */
+function UserHeader({ user }) {
+  if (!user) return null;
+  
+  return (
+    <div className="flex items-center mb-5">
+      <Avatar avatar={user.avatar} />
+      <div className="flex-1">
+        <div className="flex items-center mb-1.5">
+          <span 
+            className="text-xl mr-2"
+            style={{ 
+              fontFamily: '"Noto Serif SC", serif',
+              fontWeight: 'bold',
+              color: '#3A3A3A',
+            }}
+          >
+            {user.nickname}
+          </span>
+          <span 
+            className="text-[11px] px-2 py-0.5 rounded-md text-white"
+            style={{ 
+              backgroundColor: '#A8C5B8',
+              fontFamily: '"Noto Sans SC", sans-serif',
+              fontWeight: 500,
+            }}
+          >
+            {user.level}
+          </span>
+        </div>
+        
+        {/* 资产卡片 */}
+        <div 
+          className="flex justify-between items-center px-3.5 py-2.5 rounded-xl cursor-pointer"
+          style={{
+            backgroundColor: '#FDFDFD',
+            border: '1px solid rgba(168, 197, 184, 0.3)',
+          }}
+        >
+          <span className="text-[13px]" style={{ color: '#3A3A3A' }}>
+            剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#A8C5B8' }}>{user.remainingChats}</strong> 次
+          </span>
+          <span className="text-xs flex items-center" style={{ color: '#A8C5B8' }}>
+            升级 
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 裂变进度条组件
+ */
+function FissionBar({ fission }) {
+  if (!fission) return null;
+  
+  const progress = (fission.currentInvites / fission.targetInvites) * 100;
+  const remaining = fission.targetInvites - fission.currentInvites;
+  
+  return (
+    <div className="py-3 my-1">
+      <p className="text-[13px] mb-2" style={{ color: '#555' }}>
+        再邀请 <span className="font-bold" style={{ color: '#A8C5B8' }}>{remaining} 位好友</span> 即可解锁 [{fission.rewardName}]
+      </p>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#E0E0E0' }}>
+        <div 
+          className="h-full rounded-full transition-all duration-500"
+          style={{ 
+            width: `${progress}%`,
+            backgroundColor: '#A8C5B8',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 对话卡片组件
+ */
+function ConversationCard({ conversation, onRestart }) {
+  const { status, storageType, storageInfo, title, createdAt } = conversation;
+  const isExpired = status === 'expired';
+  const isGenerating = status === 'generating';
+  
+  // 计算倒计时进度
+  const countdownProgress = storageType === 'countdown' && storageInfo
+    ? (storageInfo.remainingHours / storageInfo.totalHours) * 100
+    : 0;
+
+  return (
+    <div 
+      className={`rounded-2xl p-[18px] relative overflow-hidden transition-transform ${isExpired ? 'opacity-90' : ''}`}
+      style={{
+        backgroundColor: isExpired ? '#E8E8E8' : '#FFFFFF',
+        boxShadow: isExpired ? 'none' : '0 8px 20px rgba(168, 197, 184, 0.15)',
+      }}
+    >
+      {/* 已销毁水印 */}
+      {isExpired && (
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[15deg] text-5xl font-bold px-4 py-1 rounded-lg pointer-events-none z-10"
+          style={{
+            color: 'rgba(0,0,0,0.06)',
+            border: '3px solid rgba(0,0,0,0.06)',
+          }}
+        >
+          已销毁
+        </div>
+      )}
+
+      {/* 卡片头部 */}
+      <div className="flex justify-between items-start mb-2">
+        <h3 
+          className="flex-1 mr-2.5 text-[17px] leading-snug"
+          style={{ 
+            fontFamily: '"Noto Serif SC", serif',
+            fontWeight: 'bold',
+            color: isExpired ? '#999' : '#3A3A3A',
+          }}
+        >
+          {title}
+        </h3>
+        
+        {/* 状态标签 */}
+        {isGenerating && (
+          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: '#E3F2FD', color: '#4A90E2' }}>
+            生成中
+          </span>
+        )}
+        {storageType === 'permanent' && (
+          <span className="text-[11px] px-2 py-1 rounded-md text-white" style={{ backgroundColor: '#A8C5B8' }}>
+            永久存储
+          </span>
+        )}
+        {storageType === 'validUntil' && storageInfo && (
+          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: '#F0F0F0', color: '#666' }}>
+            有效期至 {storageInfo.validUntil}
+          </span>
+        )}
+        {isExpired && (
+          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: 'transparent', border: '1px solid #bbb', color: '#999' }}>
+            已过期
+          </span>
+        )}
+      </div>
+
+      {/* 时间 */}
+      <div className="flex items-center gap-1 text-xs mb-3" style={{ color: isExpired ? '#999' : '#999' }}>
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {createdAt}
+      </div>
+
+      {/* 生成中状态 */}
+      {isGenerating && (
+        <div className="flex items-center text-[13px] mt-2" style={{ color: '#666' }}>
+          <svg className="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span>等待 AI 生成结果<span className="animate-pulse">...</span></span>
+        </div>
+      )}
+
+      {/* 倒计时存储 */}
+      {storageType === 'countdown' && storageInfo && (
+        <>
+          <span className="inline-block text-[11px] px-2 py-1 rounded-md mb-2" style={{ backgroundColor: '#FFF3E0', color: '#FF9800' }}>
+            {storageInfo.totalHours}h 存储倒计时
+          </span>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EEEEEE' }}>
+            <div 
+              className="h-full rounded-full"
+              style={{ 
+                width: `${countdownProgress}%`,
+                background: 'linear-gradient(90deg, #A8C5B8, #FF9800)',
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-xs mt-1.5" style={{ color: '#FF9800' }}>
+            <span>剩余 {storageInfo.remainingHours} 小时</span>
+            <span>即将过期</span>
+          </div>
+        </>
+      )}
+
+      {/* 已过期重新开启按钮 */}
+      {isExpired && (
+        <button
+          onClick={() => onRestart(conversation.id)}
+          className="w-full mt-3 py-2 rounded-xl text-[13px] text-center transition-colors"
+          style={{
+            backgroundColor: 'transparent',
+            border: '1px solid #BBBBBB',
+            color: '#777',
+          }}
+        >
+          <svg className="w-4 h-4 inline-block mr-1 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          重新开启对话
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 底部导航组件
+ */
+function BottomNav() {
+  const navItems = [
+    { icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', label: '意见反馈' },
+    { icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', label: '隐私政策' },
+    { icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', label: '关于我们' },
+  ];
+
+  return (
+    <div 
+      className="mt-8 flex justify-between px-5 py-4"
+      style={{
+        backgroundColor: '#F5F1ED',
+        borderTop: '1px solid rgba(0,0,0,0.05)',
+      }}
+    >
+      {navItems.map((item) => (
+        <a 
+          key={item.label}
+          href="#"
+          className="flex flex-col items-center gap-1 text-xs"
+          style={{ color: '#888' }}
+        >
+          <svg className="w-5 h-5" style={{ color: '#666' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+          </svg>
+          <span>{item.label}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 加载骨架屏组件
+ */
+function LoadingSkeleton() {
+  return (
+    <div className="animate-pulse">
+      {/* 头部骨架 */}
+      <div className="flex items-center mb-5">
+        <div className="w-14 h-14 rounded-full bg-gray-200 mr-4" />
+        <div className="flex-1">
+          <div className="h-6 bg-gray-200 rounded w-32 mb-2" />
+          <div className="h-10 bg-gray-200 rounded" />
+        </div>
+      </div>
+      
+      {/* 卡片骨架 */}
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-white rounded-2xl p-5 mb-4">
+          <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ========== 主页面组件 ==========
+
+export default function ProfilePage() {
+  const { user, conversations, fission, isLoading, error, restartConversation } = useProfile();
+
+  // 处理重新开启对话
+  const handleRestart = async (conversationId) => {
+    try {
+      await restartConversation(conversationId);
+    } catch (err) {
+      console.error('重新开启对话失败:', err);
+    }
+  };
+
+  return (
+    <div 
+      className="min-h-screen relative"
+      style={{ backgroundColor: '#F5F1ED' }}
+    >
+      {/* 顶部返回首页按钮 */}
+      <div className="absolute top-6 right-5 z-10">
+        <Link to="/" className="text-2xl" style={{ color: '#333' }}>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </Link>
+      </div>
+
+      {/* 主内容区 */}
+      <div className="px-5 pt-6 pb-10">
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <div className="text-center py-10">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg text-white"
+              style={{ backgroundColor: '#A8C5B8' }}
+            >
+              重新加载
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* 用户头部 */}
+            <UserHeader user={user} />
+
+            {/* 对话卡片列表 */}
+            <div className="flex flex-col gap-4">
+              {conversations.map((conv, index) => (
+                <div key={conv.id}>
+                  <ConversationCard 
+                    conversation={conv} 
+                    onRestart={handleRestart}
+                  />
+                  
+                  {/* 在第二张卡片后显示裂变进度条 */}
+                  {index === 1 && <FissionBar fission={fission} />}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 底部导航 */}
+      <BottomNav />
+    </div>
+  );
+}
+

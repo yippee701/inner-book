@@ -1,31 +1,49 @@
 import { useEffect, useRef } from 'react';
-import { Bubble } from "@ant-design/x";
+import { Bubble } from '@ant-design/x';
 
-// 气泡样式配置
-const aiBubbleStyles = {
-  content: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: '16px',
-    padding: '12px 16px',
-    maxWidth: '85%',
+// AI 消息样式配置
+const aiBubbleProps = {
+  placement: 'start',
+  variant: 'borderless',
+  typing: { step: 1, interval: 50 },
+  styles: {
+    content: {
+      fontFamily: '"Noto Serif SC", serif',
+      fontSize: '18px',
+      color: '#3A3A3A',
+      letterSpacing: '0.02em',
+      lineHeight: '1.8',
+      maxWidth: '92%',
+      background: 'transparent',
+    },
   },
 };
 
-const userBubbleStyles = {
-  content: {
-    background: 'rgba(139, 92, 246, 0.3)',
-    border: '1px solid rgba(139, 92, 246, 0.3)',
-    color: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: '16px',
-    padding: '12px 16px',
-    maxWidth: '85%',
+// 用户消息样式配置
+const userBubbleProps = {
+  placement: 'end',
+  variant: 'filled',
+  shape: 'corner',
+  styles: {
+    content: {
+      fontFamily: '"Noto Sans SC", sans-serif',
+      fontSize: '16px',
+      color: '#4A5A55',
+      lineHeight: '1.6',
+      maxWidth: '80%',
+      backgroundColor: 'rgba(232, 244, 248, 0.6)',
+      backdropFilter: 'blur(4px)',
+      border: '1px solid rgba(255, 255, 255, 0.4)',
+      boxShadow: '0 2px 10px rgba(143, 168, 155, 0.05)',
+      borderRadius: '20px',
+      borderTopRightRadius: '4px',
+    },
   },
 };
 
 /**
- * 消息列表组件 - 展示聊天消息气泡
+ * 消息列表组件 - 使用 @ant-design/x Bubble 实现
+ * @see https://x.ant.design/components/bubble
  */
 export default function MessageList({ messages }) {
   const messagesEndRef = useRef(null);
@@ -36,19 +54,18 @@ export default function MessageList({ messages }) {
   }, [messages]);
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="pt-2 space-y-4">
       {messages.map((msg, index) => {
         const isUser = msg.role === 'user';
-        const isLoading = msg.status === 'loading';
-        
+        const isLoading = msg.status === 'loading' && !msg.content;
+        const bubbleProps = isUser ? userBubbleProps : aiBubbleProps;
+
         return (
           <Bubble
             key={msg.id || index}
-            placement={isUser ? 'end' : 'start'}
-            loading={isLoading && !msg.content}
             content={msg.content}
-            typing={isUser ? undefined : { step: 1, interval: 100 }}
-            styles={isUser ? userBubbleStyles : aiBubbleStyles}
+            loading={isLoading}
+            {...bubbleProps}
           />
         );
       })}
