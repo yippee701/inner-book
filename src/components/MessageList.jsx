@@ -87,8 +87,8 @@ export default function MessageList({ messages }) {
             content={msg.content}
             loading={isLoading}
             streaming={isStreaming}
-            typing={isStreaming ? { step: 2, interval: 100 } : false}
-            contentRender={!isStreaming ? renderMarkdown : undefined}
+            typing={{ effect: 'typing', step: 2, interval: 30 }}
+            // contentRender={isStreaming ? undefined : renderMarkdown}
             {...aiBubbleBaseProps}
           />
         );
