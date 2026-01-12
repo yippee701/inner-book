@@ -14,19 +14,11 @@ function throttle(fn, delay) {
   };
 }
 
-const renderMarkdown = (content) => (
-  <XMarkdown
-    style={{
-      fontFamily: '"Noto Serif SC", serif',
-      fontSize: '15px',
-      color: '#3A3A3A',
-      letterSpacing: '0.01em',
-      lineHeight: '1.5',
-    }}
-  >
-    {content}
-  </XMarkdown>
-);
+const renderMarkdown = content => {
+  return (
+    <XMarkdown content={content} />
+  );
+};
 
 // AI 消息样式配置（基础）
 const aiBubbleBaseProps = {
@@ -65,6 +57,9 @@ const userBubbleProps = {
 
 export default function MessageList({ messages }) {
   const messagesEndRef = useRef(null);
+  const lastMessage = messages[messages.length - 1];
+  const lastContent = lastMessage?.content;
+  const isStreaming = lastMessage?.status === 'loading';
 
   // 滚动到底部
   const scrollToBottom = useCallback((instant = false) => {
@@ -79,10 +74,16 @@ export default function MessageList({ messages }) {
     [scrollToBottom]
   );
 
-  // 消息数量变化时滚动
+  // 消息数量变化或内容更新时滚动
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length, scrollToBottom]);
+    if (isStreaming) {
+      // 流式输出时使用即时滚动
+      scrollToBottom(true);
+    } else {
+      // 非流式时使用平滑滚动
+      scrollToBottom();
+    }
+  }, [messages.length, lastContent, isStreaming, scrollToBottom]);
 
   return (
     <div className="pt-1 space-y-2">
@@ -109,6 +110,7 @@ export default function MessageList({ messages }) {
             streaming={isStreaming}
             typing={{ effect: 'typing', step: 2, interval: 30 }}
             onTyping={throttledScroll}
+            contentRender={renderMarkdown}
             {...aiBubbleBaseProps}
           />
         );

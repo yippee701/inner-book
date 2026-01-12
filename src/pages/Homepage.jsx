@@ -225,7 +225,7 @@ export default function Homepage() {
 
           {/* 发掘自己按钮 */}
           <Link
-            to="/chat"
+            to="/chat?mode=discover-self"
             className="group flex flex-col items-center gap-3"
           >
             <button 

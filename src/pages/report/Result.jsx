@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import XMarkdown from '@ant-design/x-markdown';
 import { useReport } from '../../contexts/ReportContext';
 
 // ========== 子组件 ==========
@@ -96,54 +97,13 @@ function ConversionZone({ nickname }) {
 
 /**
  * 报告内容渲染组件
- * 将 Markdown 格式的报告渲染为段落
+ * 使用 XMarkdown 渲染 Markdown 格式的报告
  */
 function ReportContent({ content }) {
-  // 按段落分割内容
-  const paragraphs = content.split('\n\n').filter(p => p.trim());
-
   return (
-    <div className="space-y-6">
-      {paragraphs.map((para, idx) => {
-        const trimmed = para.trim();
-        
-        // 检测标题（以 # 开头）
-        if (trimmed.startsWith('#')) {
-          const level = trimmed.match(/^#+/)[0].length;
-          const text = trimmed.replace(/^#+\s*/, '');
-          const fontSize = level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : 'text-lg';
-          
-          return (
-            <h2 
-              key={idx}
-              className={`${fontSize} font-medium mt-8 mb-4`}
-              style={{ 
-                fontFamily: '"Noto Serif SC", serif',
-                color: '#3A3A3A',
-              }}
-            >
-              {text}
-            </h2>
-          );
-        }
-
-        // 普通段落
-        return (
-          <p 
-            key={idx}
-            className="text-base leading-relaxed"
-            style={{ 
-              fontFamily: '"Noto Serif SC", serif',
-              color: '#5d5d5d',
-              lineHeight: '2',
-              textIndent: '2em',
-            }}
-          >
-            {trimmed}
-          </p>
-        );
-      })}
-    </div>
+    <XMarkdown 
+      content={content}
+    />
   );
 }
 
