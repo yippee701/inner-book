@@ -2,8 +2,11 @@ import { WELCOME_MESSAGE } from '../api/chat';
 
 /**
  * 欢迎界面组件 - 显示欢迎消息和开始按钮（Quiet Luxury 风格）
+ * @param {Function} onStart - 开始按钮点击回调
+ * @param {boolean} isLoading - 加载状态
+ * @param {string} welcomeMessage - 欢迎消息（可选，默认使用挖掘自己的消息）
  */
-export default function WelcomeScreen({ onStart, isLoading }) {
+export default function WelcomeScreen({ onStart, isLoading, welcomeMessage = WELCOME_MESSAGE }) {
   return (
     <div className="text-center">
       {/* 欢迎消息 */}
@@ -17,7 +20,7 @@ export default function WelcomeScreen({ onStart, isLoading }) {
             lineHeight: '1.6',
           }}
         >
-          {WELCOME_MESSAGE}
+          {welcomeMessage}
         </p>
       </div>
       

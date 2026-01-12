@@ -15,7 +15,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Homepage />} />
-            <Route path="/chat-to-know-yourself" element={<Chat />} />
+            <Route path="/chat" element={<Chat />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/report-loading" element={<ReportLoading />} />
             <Route path="/report-result" element={<ReportResult />} />

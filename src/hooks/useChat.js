@@ -1,15 +1,16 @@
 import { useState, useCallback, useRef } from 'react';
-import { sendMessage } from '../api/chat';
+import { sendMessage, CHAT_MODES } from '../api/chat';
 
 /**
  * 聊天逻辑 Hook - 管理消息状态和 API 调用
  * @param {Object} options - 配置选项
+ * @param {string} options.mode - 聊天模式：'discover-self' | 'understand-others'
  * @param {Function} options.onReportStart - 检测到 [Report] 开头时的回调
  * @param {Function} options.onReportUpdate - 报告内容更新时的回调
  * @param {Function} options.onReportComplete - 报告生成完成时的回调
  */
 export function useChat(options = {}) {
-  const { onReportStart, onReportUpdate, onReportComplete } = options;
+  const { mode = CHAT_MODES.DISCOVER_SELF, onReportStart, onReportUpdate, onReportComplete } = options;
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const reportStartedRef = useRef(false);
@@ -47,7 +48,7 @@ export function useChat(options = {}) {
         content: msg.content
       }));
 
-      // 调用 sendMessage，使用流式回调更新内容
+      // 调用 sendMessage，使用流式回调更新内容，传递聊天模式
       await sendMessage(apiMessages, (streamContent) => {
         // 检测是否是报告开始
         if (!reportStartedRef.current && streamContent.startsWith('[Report]')) {
@@ -65,7 +66,7 @@ export function useChat(options = {}) {
             ? { ...msg, content: streamContent, status: 'loading' }
             : msg
         ));
-      });
+      }, mode);
 
       // 完成后只更新状态
       setMessages(prev => prev.map(msg => 
@@ -85,7 +86,7 @@ export function useChat(options = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, isLoading, onReportStart, onReportUpdate, onReportComplete]);
+  }, [messages, isLoading, mode, onReportStart, onReportUpdate, onReportComplete]);
 
   // 清空消息
   const clearMessages = useCallback(() => {

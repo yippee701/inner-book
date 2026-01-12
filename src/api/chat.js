@@ -7,10 +7,35 @@
 // Mock 数据导入 - 删除 mock 功能时，删除此行和 mockData.js 文件
 import { mockSendMessage } from './mockData';
 // 共用提示词
-import { SYSTEM_PROMPT } from './prompts';
+import { 
+  DISCOVER_SELF_SYSTEM_PROMPT, 
+  UNDERSTAND_OTHERS_SYSTEM_PROMPT,
+  DISCOVER_SELF_WELCOME_MESSAGE,
+  UNDERSTAND_OTHERS_WELCOME_MESSAGE,
+} from './prompts';
 
-// 重新导出，保持向后兼容
-export { WELCOME_MESSAGE } from './prompts';
+// 聊天模式
+export const CHAT_MODES = {
+  DISCOVER_SELF: 'discover-self',
+  UNDERSTAND_OTHERS: 'understand-others',
+};
+
+// 根据模式获取系统提示词
+export function getSystemPrompt(mode) {
+  return mode === CHAT_MODES.UNDERSTAND_OTHERS 
+    ? UNDERSTAND_OTHERS_SYSTEM_PROMPT 
+    : DISCOVER_SELF_SYSTEM_PROMPT;
+}
+
+// 根据模式获取欢迎消息
+export function getWelcomeMessage(mode) {
+  return mode === CHAT_MODES.UNDERSTAND_OTHERS 
+    ? UNDERSTAND_OTHERS_WELCOME_MESSAGE 
+    : DISCOVER_SELF_WELCOME_MESSAGE;
+}
+
+// 兼容旧代码
+export { DISCOVER_SELF_WELCOME_MESSAGE as WELCOME_MESSAGE } from './prompts';
 
 // ========== 配置 ==========
 
@@ -95,15 +120,21 @@ async function sendMessageViaProxy(messages, onStream = null) {
 
 /**
  * 直接调用大模型 API
+ * @param {Array} messages - 对话历史
+ * @param {Function} onStream - 流式回调
+ * @param {string} mode - 聊天模式
  */
-async function sendMessageDirect(messages, onStream = null) {
+async function sendMessageDirect(messages, onStream = null, mode = CHAT_MODES.DISCOVER_SELF) {
   if (!DIRECT_CONFIG.apiKey) {
     throw new Error('直连模式需要配置 VITE_API_KEY 环境变量');
   }
 
+  // 根据模式获取系统提示词
+  const systemPrompt = getSystemPrompt(mode);
+
   // 构建请求消息（包含系统提示词）
   const fullMessages = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: systemPrompt },
     ...messages.map(msg => ({
       role: msg.role,
       content: msg.content
@@ -208,9 +239,10 @@ async function handleStreamResponse(response, onStream) {
  * 发送消息（自动选择模式）
  * @param {Array} messages - 对话历史 [{role: 'user'|'assistant', content: string}]
  * @param {Function} onStream - 流式输出回调（可选）
+ * @param {string} mode - 聊天模式：'discover-self' | 'understand-others'
  * @returns {Promise<string>} AI 回复内容
  */
-export async function sendMessage(messages, onStream = null) {
+export async function sendMessage(messages, onStream = null, mode = CHAT_MODES.DISCOVER_SELF) {
   // Mock 模式
   if (IS_MOCK_MODE) {
     console.log('[Mock Mode] 使用模拟数据，未调用真实 API');
@@ -220,10 +252,11 @@ export async function sendMessage(messages, onStream = null) {
   try {
     // 根据配置选择 API 模式
     if (API_MODE === 'direct') {
-      console.log('[Direct Mode] 直接调用大模型 API');
-      return await sendMessageDirect(messages, onStream);
+      console.log(`[Direct Mode] 直接调用大模型 API (${mode})`);
+      return await sendMessageDirect(messages, onStream, mode);
     } else {
-      console.log('[Proxy Mode] 通过后端代理调用');
+      console.log(`[Proxy Mode] 通过后端代理调用 (${mode})`);
+      // TODO: 代理模式也需要传递 mode 参数给后端
       return await sendMessageViaProxy(messages, onStream);
     }
   } catch (error) {

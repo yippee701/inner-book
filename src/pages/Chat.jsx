@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useCallback, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 // 组件
 import MessageList from '../components/MessageList';
@@ -9,6 +9,7 @@ import ChatInput from '../components/ChatInput';
 // Hook & Context
 import { useChat } from '../hooks/useChat';
 import { useReport } from '../contexts/ReportContext';
+import { CHAT_MODES, getWelcomeMessage } from '../api/chat';
 
 // 粒子图标组件
 function ParticleIcon() {
@@ -49,7 +50,19 @@ function TextureOverlay() {
 export default function Chat() {
   const [hasStarted, setHasStarted] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { startReport, updateReportContent, completeReport } = useReport();
+
+  // 根据 URL 参数确定聊天模式
+  const chatMode = useMemo(() => {
+    const modeParam = searchParams.get('mode');
+    return modeParam === 'understand-others' 
+      ? CHAT_MODES.UNDERSTAND_OTHERS 
+      : CHAT_MODES.DISCOVER_SELF;
+  }, [searchParams]);
+
+  // 获取对应模式的欢迎消息
+  const welcomeMessage = useMemo(() => getWelcomeMessage(chatMode), [chatMode]);
 
   // 报告检测回调
   const handleReportStart = useCallback(() => {
@@ -66,6 +79,7 @@ export default function Chat() {
   }, [completeReport]);
 
   const { messages, isLoading, sendUserMessage } = useChat({
+    mode: chatMode,
     onReportStart: handleReportStart,
     onReportUpdate: handleReportUpdate,
     onReportComplete: handleReportComplete,
@@ -126,7 +140,7 @@ export default function Chat() {
       <div className="relative z-10 flex-1 overflow-y-auto pt-12 pb-28 px-4">
         <div className="max-w-lg mx-auto">
           {!hasStarted ? (
-            <WelcomeScreen onStart={handleStart} isLoading={isLoading} />
+            <WelcomeScreen onStart={handleStart} isLoading={isLoading} welcomeMessage={welcomeMessage} />
           ) : (
             <MessageList messages={messages} />
           )}

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { useToast } from '../components/Toast';
 
 // 轮播文字
 const CAROUSEL_TEXTS = [
@@ -12,7 +11,6 @@ const CAROUSEL_TEXTS = [
 export default function Homepage() {
   const canvasRef = useRef(null);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const { message } = useToast();
 
   // 文字轮播效果
   useEffect(() => {
@@ -197,9 +195,11 @@ export default function Homepage() {
         {/* 底部按钮区域 */}
         <div className="flex gap-4 mt-8">
           {/* 了解他人按钮 */}
-          <div className="group flex flex-col items-center gap-3">
+          <Link
+            to="/chat?mode=understand-others"
+            className="group flex flex-col items-center gap-3"
+          >
             <button 
-              onClick={() => message.info('功能即将解锁')}
               className="relative w-44 h-14 rounded-full text-white text-lg font-medium overflow-hidden transition-transform active:scale-[0.98]"
               style={{
                 backgroundColor: '#9CAF88',
@@ -221,11 +221,11 @@ export default function Homepage() {
               </span>
             </button>
             <span className="text-xs text-gray-500 opacity-80">深度解析与洞察</span>
-          </div>
+          </Link>
 
           {/* 发掘自己按钮 */}
           <Link
-            to="/chat-to-know-yourself"
+            to="/chat"
             className="group flex flex-col items-center gap-3"
           >
             <button 
