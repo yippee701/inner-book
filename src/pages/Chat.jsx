@@ -105,7 +105,7 @@ export default function Chat() {
 
       {/* 顶部状态栏 */}
       <header 
-        className="absolute top-0 left-0 right-0 h-9 px-3 flex justify-between items-center z-50"
+        className="fixed top-0 left-0 right-0 h-9 px-3 flex justify-between items-center z-50"
         style={{
           background: 'rgba(245, 241, 237, 0.7)',
           backdropFilter: 'blur(12px)',
