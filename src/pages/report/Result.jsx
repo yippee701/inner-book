@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import XMarkdown from '@ant-design/x-markdown';
 import Bmob from 'hydrogen-js-sdk';
 import { useReport } from '../../contexts/ReportContext';
-import { getCurrentUsername } from '../../hooks/useUser';
+import { useUser, getCurrentUsername } from '../../hooks/useUser';
 import { getModeLabel, getDefaultMode } from '../../constants/modes';
 
 // ========== 子组件 ==========
@@ -110,6 +110,75 @@ function ReportContent({ content }) {
   );
 }
 
+/**
+ * 未登录蒙层组件
+ */
+function LoginOverlay({ onLogin, registerUrl }) {
+  return (
+    <div 
+      className="absolute inset-0 z-40 flex items-center justify-center"
+      style={{
+        background: 'linear-gradient(to bottom, transparent 0%, rgba(245, 241, 237, 0.7) 20%, rgba(245, 241, 237, 0.95) 40%, #F5F1ED 60%)',
+        backdropFilter: 'blur(2px)',
+      }}
+    >
+      <div 
+        className="flex flex-col items-center p-8 rounded-2xl mx-6"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.6)',
+        }}
+      >
+        {/* 锁图标 */}
+        <div 
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          style={{
+            background: 'linear-gradient(135deg, rgba(168, 197, 184, 0.2), rgba(168, 197, 184, 0.1))',
+          }}
+        >
+          <svg className="w-8 h-8" style={{ color: '#A8C5B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        
+        <h3 
+          className="text-lg mb-2"
+          style={{ 
+            fontFamily: '"Noto Serif SC", serif',
+            fontWeight: 'bold',
+            color: '#3A3A3A',
+          }}
+        >
+          登录查看完整报告
+        </h3>
+        <p className="text-sm text-center mb-6" style={{ color: '#888', maxWidth: '240px' }}>
+          登录后可以查看完整的分析报告，并保存到您的个人档案
+        </p>
+        
+        <button
+          onClick={onLogin}
+          className="w-full px-8 py-3 rounded-xl text-white text-base font-medium transition-all active:scale-[0.98]"
+          style={{
+            backgroundColor: '#A8C5B8',
+            boxShadow: '0 6px 16px rgba(168, 197, 184, 0.4)',
+          }}
+        >
+          立即登录
+        </button>
+        
+        <Link 
+          to={registerUrl || '/register'} 
+          className="mt-3 text-sm"
+          style={{ color: '#A8C5B8' }}
+        >
+          还没有账号？立即注册
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 // ========== 主组件 ==========
 
 /**
@@ -128,12 +197,22 @@ export default function Result() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { content, isComplete } = useReport();
+  const { isLoggedIn, isLoading: userLoading } = useUser();
   const username = getCurrentUsername() || '探索者';
   const mode = searchParams.get('mode') || getDefaultMode();
   const hasSavedRef = useRef(false); // 防止重复保存
 
+  // 跳转到登录页（带返回地址）
+  const handleGoToLogin = useCallback(() => {
+    const returnUrl = `/report-result?mode=${mode}`;
+    navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+  }, [navigate, mode]);
+
   // 保存报告
   const saveReport = useCallback(async (reportContent) => {
+    // 未登录时不保存
+    if (!isLoggedIn) return;
+    
     try {
       const title = generateReportTitle(mode);
       
@@ -151,15 +230,15 @@ export default function Result() {
       console.error('报告保存失败:', err);
       throw err;
     }
-  }, [username, mode]);
+  }, [username, mode, isLoggedIn]);
 
-  // 报告生成完成后保存到数据库
+  // 报告生成完成后保存到数据库（仅登录用户）
   useEffect(() => {
-    if (isComplete && content && !hasSavedRef.current) {
+    if (isComplete && content && !hasSavedRef.current && isLoggedIn) {
       hasSavedRef.current = true;
       saveReport(content);
     }
-  }, [isComplete, content, saveReport]);
+  }, [isComplete, content, saveReport, isLoggedIn]);
 
   // 如果没有报告内容，重定向到首页
   useEffect(() => {
@@ -217,6 +296,15 @@ export default function Result() {
         >
           {username}的 Inner Book
         </h1>
+        <Link 
+          to="/profile"
+          className="absolute right-4 flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors"
+          style={{ color: '#8C8C8C' }}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </Link>
       </header>
 
       {/* 内容区 */}
@@ -225,6 +313,14 @@ export default function Result() {
           <ReportContent content={content} />
         </div>
       </div>
+
+      {/* 未登录蒙层 */}
+      {!userLoading && !isLoggedIn && (
+        <LoginOverlay 
+          onLogin={handleGoToLogin} 
+          registerUrl={`/register?returnUrl=${encodeURIComponent(`/report-result?mode=${mode}`)}`}
+        />
+      )}
 
       {/* 底部转化区 */}
       <ConversionZone username={username} />

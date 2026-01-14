@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Bmob from 'hydrogen-js-sdk';
 
 const COUNTDOWN_SECONDS = 60;
@@ -119,9 +119,11 @@ function Agreement() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
   
   // 登录方式：'phone' | 'password'
-  const [loginMethod, setLoginMethod] = useState('phone');
+  const [loginMethod, setLoginMethod] = useState('password');
   
   // 表单状态
   const [phone, setPhone] = useState('');
@@ -160,7 +162,8 @@ export default function LoginPage() {
 
   // 处理登录成功
   const handleLoginSuccess = (res) => {
-    navigate('/');
+    // 如果有返回地址，则跳转到返回地址，否则跳转到首页
+    navigate(returnUrl || '/');
   };
 
   // 手机号登录
@@ -230,17 +233,6 @@ export default function LoginPage() {
           {/* 登录方式切换 */}
           <div className="flex mb-6 p-1 rounded-xl" style={{ backgroundColor: 'rgba(168, 197, 184, 0.1)' }}>
             <button
-              onClick={() => { setLoginMethod('phone'); setError(''); }}
-              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
-              style={{
-                backgroundColor: loginMethod === 'phone' ? '#FFFFFF' : 'transparent',
-                color: loginMethod === 'phone' ? '#3A3A3A' : '#888',
-                boxShadow: loginMethod === 'phone' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-              }}
-            >
-              短信登录
-            </button>
-            <button
               onClick={() => { setLoginMethod('password'); setError(''); }}
               className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
               style={{
@@ -251,11 +243,43 @@ export default function LoginPage() {
             >
               密码登录
             </button>
+            <button
+              onClick={() => { setLoginMethod('phone'); setError(''); }}
+              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                backgroundColor: loginMethod === 'phone' ? '#FFFFFF' : 'transparent',
+                color: loginMethod === 'phone' ? '#3A3A3A' : '#888',
+                boxShadow: loginMethod === 'phone' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              短信登录
+            </button>
           </div>
 
           <ErrorMessage message={error} />
 
-          {loginMethod === 'phone' ? (
+          {loginMethod === 'password' ? (
+            <>
+              <InputField
+                label="用户名"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="请输入用户名"
+                disabled={loading}
+              />
+              
+              <InputField
+                label="密码"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="请输入密码"
+                disabled={loading}
+              />
+              
+              <SubmitButton onClick={handlePasswordLogin} loading={loading} disabled={!canSubmitPassword} text="登录" />
+            </>
+          ) : (
             <>
               <InputField
                 label="手机号"
@@ -296,33 +320,18 @@ export default function LoginPage() {
               
               <SubmitButton onClick={handlePhoneLogin} loading={loading} disabled={!canSubmitPhone} text="登录" />
             </>
-          ) : (
-            <>
-              <InputField
-                label="用户名"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入用户名"
-                disabled={loading}
-              />
-              
-              <InputField
-                label="密码"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="请输入密码"
-                disabled={loading}
-              />
-              
-              <SubmitButton onClick={handlePasswordLogin} loading={loading} disabled={!canSubmitPassword} text="登录" />
-            </>
           )}
 
           {/* 注册链接 */}
           <p className="text-center text-sm mt-6" style={{ color: '#888' }}>
             还没有账号？
-            <Link to="/register" className="ml-1 font-medium" style={{ color: '#A8C5B8' }}>立即注册</Link>
+            <Link 
+              to={returnUrl ? `/register?returnUrl=${encodeURIComponent(returnUrl)}` : '/register'} 
+              className="ml-1 font-medium" 
+              style={{ color: '#A8C5B8' }}
+            >
+              立即注册
+            </Link>
           </p>
           
           <Agreement />

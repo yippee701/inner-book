@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Bmob from 'hydrogen-js-sdk';
 
 // ========== 通用组件 ==========
@@ -120,6 +120,8 @@ function Agreement() {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
   
   // 表单状态
   const [username, setUsername] = useState('');
@@ -167,11 +169,16 @@ export default function RegisterPage() {
       }
       
       console.log('注册成功:', res);
-      setSuccess('注册成功！正在跳转到登录页...');
+      setSuccess('注册成功！正在跳转...');
       
-      // 延迟跳转到登录页
+      // 延迟跳转
       setTimeout(() => {
-        navigate('/login');
+        // 如果有返回地址，跳转到登录页并带上返回地址
+        if (returnUrl) {
+          navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        } else {
+          navigate('/login');
+        }
       }, 1500);
       
     } catch (err) {
@@ -190,7 +197,11 @@ export default function RegisterPage() {
       
       {/* 顶部返回 */}
       <header className="relative z-10 h-14 flex items-center px-5">
-        <Link to="/login" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors" style={{ color: '#666' }}>
+        <Link 
+          to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
+          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors" 
+          style={{ color: '#666' }}
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
@@ -252,7 +263,13 @@ export default function RegisterPage() {
           {/* 登录链接 */}
           <p className="text-center text-sm mt-6" style={{ color: '#888' }}>
             已有账号？
-            <Link to="/login" className="ml-1 font-medium" style={{ color: '#A8C5B8' }}>立即登录</Link>
+            <Link 
+              to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
+              className="ml-1 font-medium" 
+              style={{ color: '#A8C5B8' }}
+            >
+              立即登录
+            </Link>
           </p>
           
           <Agreement />
