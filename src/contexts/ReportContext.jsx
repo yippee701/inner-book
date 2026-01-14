@@ -46,6 +46,15 @@ export function ReportProvider({ children }) {
     });
   }, []);
 
+  // 设置历史报告内容（用于查看历史记录）
+  const setHistoryReport = useCallback((content) => {
+    setReportState({
+      content: content || '',
+      isGenerating: false,
+      isComplete: true,
+    });
+  }, []);
+
   return (
     <ReportContext.Provider value={{
       ...reportState,
@@ -53,6 +62,7 @@ export function ReportProvider({ children }) {
       updateReportContent,
       completeReport,
       resetReport,
+      setHistoryReport,
     }}>
       {children}
     </ReportContext.Provider>

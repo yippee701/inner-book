@@ -160,15 +160,6 @@ export default function LoginPage() {
 
   // 处理登录成功
   const handleLoginSuccess = (res) => {
-    if (res.sessionToken) {
-      localStorage.setItem('sessionToken', res.sessionToken);
-      localStorage.setItem('userId', res.objectId);
-      localStorage.setItem('userInfo', JSON.stringify({
-        username: res.username,
-        phone: res.mobilePhoneNumber,
-        createdAt: res.createdAt,
-      }));
-    }
     navigate('/');
   };
 

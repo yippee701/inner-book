@@ -2,8 +2,11 @@
  * Profile API - 用户资料和对话历史相关接口
  */
 
+import Bmob from 'hydrogen-js-sdk';
+import { getCurrentUsername } from '../hooks/useUser';
+
 // 是否使用 Mock 数据
-const IS_MOCK_MODE = true; // import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_KEY;
+const IS_MOCK_MODE = true;
 
 // API 基础配置
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:80';
@@ -11,22 +14,11 @@ const API_BASE_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:80';
 // ========== Mock 数据 ==========
 
 /**
- * Mock 用户数据
- */
-const MOCK_USER_DATA = {
-  id: 'user_001',
-  nickname: 'Alex_Reader',
-  avatar: null, // null 表示使用默认头像
-  level: '正式会员',
-  remainingChats: 12,
-};
-
-/**
  * Mock 裂变进度数据
  */
 const MOCK_FISSION_DATA = {
-  currentInvites: 3,
-  targetInvites: 4,
+  currentInvites: 0,
+  targetInvites: 2,
   rewardName: '职业规划对话',
 };
 
@@ -84,14 +76,6 @@ const MOCK_CONVERSATIONS = [
 // ========== Mock API 实现 ==========
 
 /**
- * Mock: 获取用户信息
- */
-async function mockGetUserProfile() {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return { ...MOCK_USER_DATA };
-}
-
-/**
  * Mock: 获取对话历史列表
  */
 async function mockGetConversations() {
@@ -118,21 +102,39 @@ async function mockRestartConversation(conversationId) {
 // ========== 真实 API 实现 ==========
 
 /**
- * 真实 API: 获取用户信息
- */
-async function fetchUserProfile() {
-  const response = await fetch(`${API_BASE_URL}/api/profile`);
-  if (!response.ok) throw new Error('获取用户信息失败');
-  return response.json();
-}
-
-/**
- * 真实 API: 获取对话历史列表
+ * 真实 API: 获取对话历史列表（从 Bmob Report 表查询）
  */
 async function fetchConversations() {
-  const response = await fetch(`${API_BASE_URL}/api/conversations`);
-  if (!response.ok) throw new Error('获取对话历史失败');
-  return response.json();
+  const username = getCurrentUsername();
+  if (!username) {
+    return [];
+  }
+
+  try {
+    const query = Bmob.Query('Report');
+    query.equalTo('username', '==', username);
+    query.order('-createdAt'); // 按创建时间倒序
+    
+    const res = await query.find();
+    
+    if (res && res.length > 0) {
+      // 转换为对话列表格式
+      return res.map(report => ({
+        id: report.objectId,
+        title: report.title || '未命名报告',
+        createdAt: report.createdAt,
+        status: report.status || 'completed',
+        storageType: report.storageType || null,
+        storageInfo: report.storageInfo || null,
+        content: report.content,
+      }));
+    }
+    
+    return [];
+  } catch (err) {
+    console.error('获取对话历史失败:', err);
+    return [];
+  }
 }
 
 /**
@@ -157,23 +159,11 @@ async function fetchRestartConversation(conversationId) {
 
 // ========== 导出的 API 函数 ==========
 
-/**
- * 获取用户信息
- */
-export async function getUserProfile() {
-  if (IS_MOCK_MODE) {
-    return mockGetUserProfile();
-  }
-  return fetchUserProfile();
-}
 
 /**
  * 获取对话历史列表
  */
 export async function getConversations() {
-  if (IS_MOCK_MODE) {
-    return mockGetConversations();
-  }
   return fetchConversations();
 }
 
@@ -181,7 +171,7 @@ export async function getConversations() {
  * 获取裂变进度
  */
 export async function getFissionProgress() {
-  if (IS_MOCK_MODE) {
+  if (true) {
     return mockGetFissionProgress();
   }
   return fetchFissionProgress();
@@ -202,7 +192,6 @@ export async function restartConversation(conversationId) {
  */
 export async function getProfilePageData() {
   const [user, conversations, fission] = await Promise.all([
-    getUserProfile(),
     getConversations(),
     getFissionProgress(),
   ]);

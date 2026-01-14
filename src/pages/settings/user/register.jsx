@@ -178,16 +178,7 @@ export default function RegisterPage() {
       console.error('注册错误:', err);
       const errorCode = err.code || err.status;
       
-      // 处理常见错误
-      if (errorCode === 202) {
-        setError('用户名已被注册');
-      } else if (errorCode === 203) {
-        setError('邮箱已被注册');
-      } else if (errorCode === 214) {
-        setError('手机号已被注册');
-      } else {
-        setError(err.message || err.error || '注册失败，请稍后重试');
-      }
+      setError(err.message || err.error || '注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }

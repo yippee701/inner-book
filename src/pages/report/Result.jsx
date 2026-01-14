@@ -1,7 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useCallback } from 'react';
 import XMarkdown from '@ant-design/x-markdown';
+import Bmob from 'hydrogen-js-sdk';
 import { useReport } from '../../contexts/ReportContext';
+import { getCurrentUsername } from '../../hooks/useUser';
+import { getModeLabel, getDefaultMode } from '../../constants/modes';
 
 // ========== 子组件 ==========
 
@@ -36,7 +39,7 @@ function CoffeeWatermark() {
 /**
  * 底部转化区组件
  */
-function ConversionZone({ nickname }) {
+function ConversionZone({ username }) {
   return (
     <div 
       className="absolute bottom-0 left-0 right-0 h-60 flex flex-col items-center justify-end pb-8 z-50"
@@ -109,10 +112,54 @@ function ReportContent({ content }) {
 
 // ========== 主组件 ==========
 
+/**
+ * 生成报告标题
+ * @param {string} mode - 模式
+ * @returns {string} 标题
+ */
+function generateReportTitle(mode) {
+  const modeLabel = getModeLabel(mode);
+  const now = new Date();
+  const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return `${modeLabel}-${timeStr}`;
+}
+
 export default function Result() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { content, isComplete } = useReport();
-  const nickname = '探索者'; // TODO: 从用户信息中获取
+  const username = getCurrentUsername() || '探索者';
+  const mode = searchParams.get('mode') || getDefaultMode();
+  const hasSavedRef = useRef(false); // 防止重复保存
+
+  // 保存报告
+  const saveReport = useCallback(async (reportContent) => {
+    try {
+      const title = generateReportTitle(mode);
+      
+      const query = Bmob.Query('Report');
+      query.set('content', reportContent);
+      query.set('username', username);
+      query.set('title', title);
+      query.set('status', 'completed');
+      query.set('mode', mode);
+      
+      const res = await query.save();
+      console.log('报告保存成功:', res);
+      return res;
+    } catch (err) {
+      console.error('报告保存失败:', err);
+      throw err;
+    }
+  }, [username, mode]);
+
+  // 报告生成完成后保存到数据库
+  useEffect(() => {
+    if (isComplete && content && !hasSavedRef.current) {
+      hasSavedRef.current = true;
+      saveReport(content);
+    }
+  }, [isComplete, content, saveReport]);
 
   // 如果没有报告内容，重定向到首页
   useEffect(() => {
@@ -168,7 +215,7 @@ export default function Result() {
             letterSpacing: '0.5px',
           }}
         >
-          {nickname}的 Inner Book
+          {username}的 Inner Book
         </h1>
       </header>
 
@@ -180,7 +227,7 @@ export default function Result() {
       </div>
 
       {/* 底部转化区 */}
-      <ConversionZone nickname={nickname} />
+      <ConversionZone username={username} />
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Hook
 import { useProfile } from '../../../hooks/useProfile';
+import { useReport } from '../../../contexts/ReportContext';
 
 // ========== 子组件 ==========
 
@@ -48,7 +49,7 @@ function UserHeader({ user }) {
               color: '#3A3A3A',
             }}
           >
-            {user.nickname}
+            {user.username}
           </span>
           <span 
             className="text-[11px] px-2 py-0.5 rounded-md text-white"
@@ -115,26 +116,35 @@ function FissionBar({ fission }) {
 /**
  * 对话卡片组件
  */
-function ConversationCard({ conversation, onRestart }) {
-  const { status, storageType, storageInfo, title, createdAt } = conversation;
+function ConversationCard({ conversation, onRestart, onView }) {
+  const { status, storageType, storageInfo, title, createdAt, content } = conversation;
   const isExpired = status === 'expired';
   const isGenerating = status === 'generating';
+  const canView = status === 'completed' && content;
   
   // 计算倒计时进度
   const countdownProgress = storageType === 'countdown' && storageInfo
     ? (storageInfo.remainingHours / storageInfo.totalHours) * 100
     : 0;
 
+  // 处理点击
+  const handleClick = () => {
+    if (canView && onView) {
+      onView(conversation);
+    }
+  };
+
   return (
     <div 
-      className={`rounded-2xl p-[18px] relative overflow-hidden transition-transform ${isExpired ? 'opacity-90' : ''}`}
+      className={`rounded-2xl p-[18px] relative overflow-hidden transition-transform ${isExpired ? 'opacity-90' : ''} ${canView ? 'cursor-pointer active:scale-[0.98]' : ''}`}
       style={{
         backgroundColor: isExpired ? '#E8E8E8' : '#FFFFFF',
         boxShadow: isExpired ? 'none' : '0 8px 20px rgba(168, 197, 184, 0.15)',
       }}
+      onClick={handleClick}
     >
       {/* 已销毁水印 */}
-      {isExpired && (
+      {/* {isExpired && (
         <div 
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[15deg] text-5xl font-bold px-4 py-1 rounded-lg pointer-events-none z-10"
           style={{
@@ -144,7 +154,7 @@ function ConversationCard({ conversation, onRestart }) {
         >
           已销毁
         </div>
-      )}
+      )} */}
 
       {/* 卡片头部 */}
       <div className="flex justify-between items-start mb-2">
@@ -191,7 +201,7 @@ function ConversationCard({ conversation, onRestart }) {
       </div>
 
       {/* 生成中状态 */}
-      {isGenerating && (
+      {/* {isGenerating && (
         <div className="flex items-center text-[13px] mt-2" style={{ color: '#666' }}>
           <svg className="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -199,10 +209,10 @@ function ConversationCard({ conversation, onRestart }) {
           </svg>
           <span>等待 AI 生成结果<span className="animate-pulse">...</span></span>
         </div>
-      )}
+      )} */}
 
       {/* 倒计时存储 */}
-      {storageType === 'countdown' && storageInfo && (
+      {/* {storageType === 'countdown' && storageInfo && (
         <>
           <span className="inline-block text-[11px] px-2 py-1 rounded-md mb-2" style={{ backgroundColor: '#FFF3E0', color: '#FF9800' }}>
             {storageInfo.totalHours}h 存储倒计时
@@ -221,10 +231,10 @@ function ConversationCard({ conversation, onRestart }) {
             <span>即将过期</span>
           </div>
         </>
-      )}
+      )} */}
 
       {/* 已过期重新开启按钮 */}
-      {isExpired && (
+      {/* {isExpired && (
         <button
           onClick={() => onRestart(conversation.id)}
           className="w-full mt-3 py-2 rounded-xl text-[13px] text-center transition-colors"
@@ -239,7 +249,7 @@ function ConversationCard({ conversation, onRestart }) {
           </svg>
           重新开启对话
         </button>
-      )}
+      )} */}
     </div>
   );
 }
@@ -256,7 +266,7 @@ function BottomNav() {
 
   return (
     <div 
-      className="mt-8 flex justify-between px-5 py-4"
+      className="fixed bottom-0 left-0 right-0 flex justify-between px-5 py-4 z-50"
       style={{
         backgroundColor: '#F5F1ED',
         borderTop: '1px solid rgba(0,0,0,0.05)',
@@ -307,8 +317,67 @@ function LoadingSkeleton() {
 
 // ========== 主页面组件 ==========
 
+/**
+ * 未登录提示组件
+ */
+function NotLoggedIn({ onLogin }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20">
+      {/* 图标 */}
+      <div 
+        className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+        style={{
+          background: 'linear-gradient(135deg, #e8e4e0, #f5f1ed)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
+        }}
+      >
+        <svg className="w-10 h-10" style={{ color: '#A8C5B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      
+      {/* 提示文字 */}
+      <h3 
+        className="text-lg mb-2"
+        style={{ 
+          fontFamily: '"Noto Serif SC", serif',
+          fontWeight: 'bold',
+          color: '#3A3A3A',
+        }}
+      >
+        尚未登录
+      </h3>
+      <p className="text-sm mb-6" style={{ color: '#888' }}>
+        登录后查看你的个人档案和对话记录
+      </p>
+      
+      {/* 登录按钮 */}
+      <button
+        onClick={onLogin}
+        className="px-8 py-3 rounded-xl text-white text-[15px] transition-all hover:opacity-90"
+        style={{
+          backgroundColor: '#A8C5B8',
+          boxShadow: '0 4px 12px rgba(168, 197, 184, 0.4)',
+        }}
+      >
+        立即登录
+      </button>
+      
+      {/* 注册提示 */}
+      <p className="mt-4 text-xs" style={{ color: '#999' }}>
+        还没有账号？
+        <Link to="/register" className="ml-1" style={{ color: '#A8C5B8' }}>
+          注册新账号
+        </Link>
+      </p>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
-  const { user, conversations, fission, isLoading, error, restartConversation } = useProfile();
+  const navigate = useNavigate();
+  const { user, conversations, fission, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
+  const { setHistoryReport } = useReport();
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
@@ -316,6 +385,14 @@ export default function ProfilePage() {
       await restartConversation(conversationId);
     } catch (err) {
       console.error('重新开启对话失败:', err);
+    }
+  };
+
+  // 处理查看历史报告
+  const handleViewReport = (conversation) => {
+    if (conversation.content) {
+      setHistoryReport(conversation.content);
+      navigate('/report-result');
     }
   };
 
@@ -334,7 +411,7 @@ export default function ProfilePage() {
       </div>
 
       {/* 主内容区 */}
-      <div className="px-5 pt-6 pb-10">
+      <div className="px-5 pt-6 pb-20">
         {isLoading ? (
           <LoadingSkeleton />
         ) : error ? (
@@ -348,6 +425,8 @@ export default function ProfilePage() {
               重新加载
             </button>
           </div>
+        ) : !isLoggedIn ? (
+          <NotLoggedIn onLogin={goToLogin} />
         ) : (
           <>
             {/* 用户头部 */}
@@ -360,6 +439,7 @@ export default function ProfilePage() {
                   <ConversationCard 
                     conversation={conv} 
                     onRestart={handleRestart}
+                    onView={handleViewReport}
                   />
                   
                   {/* 在第二张卡片后显示裂变进度条 */}
