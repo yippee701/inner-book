@@ -20,7 +20,7 @@ export default function ChatInput({ onSend, isLoading, disabled }) {
       onChange={setInputValue}
       onSubmit={handleSubmit}
       loading={isLoading}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       placeholder="输入消息..."
       style={{
         background: '#FFFFFF',

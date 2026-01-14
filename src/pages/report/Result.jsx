@@ -196,7 +196,7 @@ function generateReportTitle(mode) {
 export default function Result() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { content, isComplete } = useReport();
+  const { content, isComplete, isFromHistory } = useReport();
   const { isLoggedIn, isLoading: userLoading } = useUser();
   const username = getCurrentUsername() || '探索者';
   
@@ -234,13 +234,13 @@ export default function Result() {
     }
   }, [username, mode, isLoggedIn]);
 
-  // 报告生成完成后保存到数据库（仅登录用户）
+  // 报告生成完成后保存到数据库（仅登录用户，且非历史报告）
   useEffect(() => {
-    if (isComplete && content && !hasSavedRef.current && isLoggedIn) {
+    if (isComplete && content && !hasSavedRef.current && isLoggedIn && !isFromHistory) {
       hasSavedRef.current = true;
       saveReport(content);
     }
-  }, [isComplete, content, saveReport, isLoggedIn]);
+  }, [isComplete, content, saveReport, isLoggedIn, isFromHistory]);
 
   // 如果没有报告内容，重定向到首页
   useEffect(() => {

@@ -7,6 +7,7 @@ export function ReportProvider({ children }) {
     content: '',        // 报告内容（去除 [Report] 前缀）
     isGenerating: false, // 正在生成中
     isComplete: false,   // 生成完成
+    isFromHistory: false, // 是否来自历史报告
   });
 
   // 开始生成报告
@@ -52,6 +53,7 @@ export function ReportProvider({ children }) {
       content: content || '',
       isGenerating: false,
       isComplete: true,
+      isFromHistory: true,
     });
   }, []);
 
