@@ -53,8 +53,8 @@ export function useChat(options = {}) {
         const currentContent = displayedRef.current;
         const currentAiMsgId = aiMsgIdRef.current;
 
-        // 检测报告开始
-        if (!reportStartedRef.current && currentContent.startsWith('[Report]')) {
+        // 检测报告开始（[Report] 可能出现在开头或中间）
+        if (!reportStartedRef.current && currentContent.includes('[Report]')) {
           reportStartedRef.current = true;
           onReportStart?.();
         }
@@ -128,8 +128,8 @@ export function useChat(options = {}) {
           startTypewriter();
         } else {
           // Mock 模式：直接更新（mock 已有打字机效果）
-          // 检测是否是报告开始
-          if (!reportStartedRef.current && streamContent.startsWith('[Report]')) {
+          // 检测是否是报告开始（[Report] 可能出现在开头或中间）
+          if (!reportStartedRef.current && streamContent.includes('[Report]')) {
             reportStartedRef.current = true;
             onReportStart?.();
           }
