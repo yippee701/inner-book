@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 
-// 轮播文字
+// 轮播文字配置
 const CAROUSEL_TEXTS = [
-  '发现你的天赋',
-  '了解更真实的他',
-  '解决你的社交难题',
+  { title: '发现你的天赋', subtitle: '探索内在潜力与独特优势 ✨' },
+  { title: '了解更真实的他', subtitle: '深度洞察人际关系本质 💫' },
+  { title: '解决你的社交难题', subtitle: '智能分析与精准建议 🎯' },
 ];
 
 export default function Homepage() {
@@ -61,7 +61,7 @@ export default function Homepage() {
         
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(156, 175, 136, ${p.opacity})`;
+        ctx.fillStyle = `rgba(167, 139, 250, ${p.opacity})`;
         ctx.fill();
       });
       
@@ -80,11 +80,7 @@ export default function Homepage() {
     <div 
       className="min-h-screen relative overflow-hidden"
       style={{
-        backgroundColor: '#F5F1ED',
-        backgroundImage: `
-          radial-gradient(circle at 10% 20%, rgba(156, 175, 136, 0.15) 0%, transparent 40%),
-          radial-gradient(circle at 90% 80%, rgba(155, 174, 200, 0.15) 0%, transparent 40%)
-        `,
+        background: 'linear-gradient(to bottom, rgba(243, 244, 246, 0.5), rgba(243, 232, 255, 0.4) 50%, rgba(249, 250, 251, 0.6))',
       }}
     >
       {/* 粒子背景 */}
@@ -94,162 +90,185 @@ export default function Homepage() {
       />
       
       {/* 顶部导航栏 */}
-      <nav 
-        className="absolute top-0 left-0 right-0 h-16 flex justify-between items-center px-6 z-20"
-        style={{
-          background: 'rgba(245, 241, 237, 0.7)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
-        }}
-      >
-        <span 
-          className="text-lg font-semibold tracking-wide"
-          style={{ 
-            color: '#2C2C2C',
-            fontFamily: '"Noto Serif SC", serif',
-          }}
+      <header className="relative z-20 flex items-center justify-between px-6 pt-14 pb-8 max-w-lg mx-auto">
+        <div className="w-10" />
+        <h1 
+          className="text-xl font-medium"
+          style={{ color: '#1F2937' }}
         >
-          天赋发现
-        </span>
-        <Link to="/profile" className="text-xl text-gray-700 hover:text-gray-900 transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          Inner Book
+        </h1>
+        <Link 
+          to="/profile" 
+          className="p-2 hover:bg-gray-200/50 rounded-full transition-colors"
+        >
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </Link>
-      </nav>
+      </header>
       
       {/* 主内容 */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6">
-        {/* 光圈效果 */}
-        <div className="relative w-72 h-72 mb-8 flex items-center justify-center">
-          {/* 外层光圈 */}
-          <div 
-            className="absolute w-72 h-72 rounded-full animate-breathe"
-            style={{
-              background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
-              border: '1px solid rgba(156, 175, 136, 0.3)',
-              boxShadow: '0 0 30px rgba(255,255,255,0.2)',
-            }}
-          />
-          {/* 中层光圈 */}
-          <div 
-            className="absolute w-60 h-60 rounded-full animate-breathe-reverse"
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(2px)',
-              border: '1px solid rgba(155, 174, 200, 0.3)',
-            }}
-          />
-          {/* 内层光圈（玻璃态） */}
-          <div 
-            className="absolute w-48 h-48 rounded-full"
-            style={{
-              background: 'rgba(255,255,255,0.35)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.6)',
-              boxShadow: '0 8px 32px rgba(31, 38, 135, 0.08)',
-            }}
-          />
-          
-          {/* 漂浮光点 */}
-          <div 
-            className="absolute top-[20%] left-[30%] w-1.5 h-1.5 bg-white rounded-full animate-float"
-            style={{ filter: 'blur(1px)', opacity: 0.7 }}
-          />
-          <div 
-            className="absolute bottom-[25%] right-[20%] w-2 h-2 bg-white rounded-full animate-float-delay"
-            style={{ filter: 'blur(1px)', opacity: 0.6 }}
-          />
-          <div 
-            className="absolute top-[15%] right-[35%] w-1 h-1 bg-white rounded-full animate-float"
-            style={{ filter: 'blur(1px)', opacity: 0.5 }}
-          />
-          <div 
-            className="absolute bottom-[15%] left-[40%] w-1.5 h-1.5 bg-white rounded-full animate-float-delay-2"
-            style={{ filter: 'blur(1px)', opacity: 0.6 }}
-          />
+      <div className="relative z-10 flex flex-col justify-center min-h-[80vh] max-w-lg mx-auto">
+        {/* 中央球体区域 */}
+        <div className="flex-1 flex items-center justify-center px-6 pb-12">
+          <div className="relative flex flex-col items-center justify-center w-full">
+            {/* 3D 玻璃球体 */}
+            <div className="relative w-56 h-56 mb-12 animate-breathe">
+              {/* 底部阴影 */}
+              <div 
+                className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-40 h-8 rounded-full blur-2xl animate-breathe-shadow"
+                style={{ background: 'rgba(167, 139, 250, 0.15)' }}
+              />
 
-          {/* 文字轮播 */}
-          <div className="relative z-10 w-44 h-16 flex items-center justify-center">
-            {CAROUSEL_TEXTS.map((text, index) => (
-              <span
-                key={text}
-                className={`absolute text-xl font-medium tracking-wide transition-all duration-700 ${
-                  index === currentTextIndex 
-                    ? 'opacity-100 translate-y-0 scale-100' 
-                    : 'opacity-0 translate-y-3 scale-95'
-                }`}
-                style={{ 
-                  color: '#2C2C2C',
-                  fontFamily: '"Noto Serif SC", serif',
-                  textShadow: '0 2px 4px rgba(255,255,255,0.8)',
-                }}
-              >
-                {text}
-              </span>
-            ))}
+              {/* 主球体容器 */}
+              <div className="relative w-full h-full rounded-full">
+                {/* 外层发光 - 扩散效果 */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-3xl animate-glow-pulse"
+                  style={{
+                    background: 'radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.6), rgba(139, 168, 255, 0.5) 50%, rgba(147, 197, 253, 0.4) 80%, transparent)',
+                  }}
+                />
+
+                {/* 二层发光 - 脉冲效果 */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-2xl animate-glow-pulse-delayed"
+                  style={{
+                    background: 'radial-gradient(circle at 50% 50%, rgba(196, 181, 253, 0.5), rgba(167, 139, 250, 0.4) 60%, transparent)',
+                  }}
+                />
+                
+                {/* 玻璃球体基底 */}
+                <div 
+                  className="absolute inset-2 rounded-full blur-sm"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.8) 0%, rgba(139, 168, 255, 0.85) 40%, rgba(167, 139, 250, 0.75) 100%)',
+                    boxShadow: '0 20px 50px rgba(139, 92, 246, 0.2), inset 0 0 50px rgba(255, 255, 255, 0.2)',
+                  }}
+                />
+
+                {/* 流动渐变层 1 */}
+                <div
+                  className="absolute inset-2 rounded-full blur-sm animate-rotate-slow"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent 0%, rgba(167, 139, 250, 0.6) 20%, rgba(139, 168, 255, 0.7) 40%, rgba(147, 197, 253, 0.6) 60%, transparent 80%)',
+                    opacity: 0.6,
+                  }}
+                />
+
+                {/* 流动渐变层 2 - 反向旋转 */}
+                <div
+                  className="absolute inset-2 rounded-full blur-sm animate-rotate-slow-reverse"
+                  style={{
+                    background: 'conic-gradient(from 90deg, transparent 0%, rgba(196, 181, 253, 0.5) 30%, rgba(167, 139, 250, 0.6) 50%, transparent 70%)',
+                    opacity: 0.5,
+                  }}
+                />
+
+                {/* 磨砂玻璃层 */}
+                <div 
+                  className="absolute inset-4 rounded-full backdrop-blur-sm"
+                  style={{
+                    background: 'radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.7), rgba(221, 214, 254, 0.45) 35%, rgba(196, 181, 253, 0.35) 70%, transparent 95%)',
+                  }}
+                />
+
+                {/* 顶部高光 */}
+                <div 
+                  className="absolute top-10 left-10 w-32 h-18 rounded-full blur-xl animate-highlight-pulse"
+                  style={{
+                    background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.95), transparent 65%)',
+                  }}
+                />
+
+                {/* 流光效果 */}
+                <div
+                  className="absolute inset-0 rounded-full opacity-50 animate-shimmer"
+                  style={{
+                    background: 'linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.15) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.15) 60%, transparent 100%)',
+                  }}
+                />
+
+                {/* 粒子光点 */}
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 bg-white/60 rounded-full blur-sm animate-particle"
+                    style={{
+                      top: `${20 + Math.sin(i * 1.047) * 30}%`,
+                      left: `${50 + Math.cos(i * 1.047) * 35}%`,
+                      animationDelay: `${i * 0.5}s`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 文字轮播区域 */}
+            <div className="relative h-24 flex flex-col items-center justify-start w-full max-w-sm">
+              {CAROUSEL_TEXTS.map((item, index) => (
+                <div
+                  key={item.title}
+                  className={`absolute inset-0 flex flex-col items-center justify-start gap-2 transition-all duration-700 ${
+                    index === currentTextIndex 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h2 
+                    className="text-2xl font-medium"
+                    style={{ color: '#1F2937' }}
+                  >
+                    {item.title}
+                  </h2>
+                  <p 
+                    className="text-base"
+                    style={{ color: 'rgba(107, 114, 128, 0.9)' }}
+                  >
+                    {item.subtitle}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* 底部按钮区域 */}
-        <div className="flex gap-4 mt-8">
-          {/* 了解他人按钮 */}
-          <Link
-            to="/chat?mode=understand-others"
-            className="group flex flex-col items-center gap-3"
-          >
-            <button 
-              className="relative w-44 h-14 rounded-full text-white text-lg font-medium overflow-hidden transition-transform active:scale-[0.98]"
-              style={{
-                backgroundColor: '#9CAF88',
-                boxShadow: '0 10px 25px rgba(156, 175, 136, 0.3)',
-              }}
+        <div className="fixed bottom-0 left-0 right-0 pb-12 pt-6 px-6 z-20">
+          <div className="flex gap-3 items-center justify-center w-full max-w-md mx-auto">
+            {/* 了解他人按钮 */}
+            <Link
+              to="/chat?mode=understand-others"
+              className="flex-1"
             >
-              <div 
-                className="absolute inset-0"
+              <button 
+                className="w-full h-14 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 100%)',
+                  backgroundColor: '#1F2937',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
                 }}
-              />
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 7a3 3 0 100 6 3 3 0 000-6z" />
-                </svg>
+              >
                 了解他人
-              </span>
-            </button>
-            <span className="text-xs text-gray-500 opacity-80">深度解析与洞察</span>
-          </Link>
+              </button>
+            </Link>
 
-          {/* 发掘自己按钮 */}
-          <Link
-            to="/chat?mode=discover-self"
-            className="group flex flex-col items-center gap-3"
-          >
-            <button 
-              className="relative w-44 h-14 rounded-full text-white text-lg font-medium overflow-hidden transition-transform active:scale-[0.98]"
-              style={{
-                backgroundColor: '#9BAEC8',
-                boxShadow: '0 10px 25px rgba(155, 174, 200, 0.3)',
-              }}
+            {/* 发掘自己按钮 */}
+            <Link
+              to="/chat?mode=discover-self"
+              className="flex-1"
             >
-              <div 
-                className="absolute inset-0"
+              <button 
+                className="w-full h-14 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 100%)',
+                  backgroundColor: '#1F2937',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
                 }}
-              />
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                </svg>
+              >
                 发掘自己
-              </span>
-            </button>
-            <span className="text-xs text-gray-500 opacity-80">内在潜能探索</span>
-          </Link>
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

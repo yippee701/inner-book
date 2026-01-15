@@ -20,19 +20,25 @@ const renderMarkdown = content => {
   );
 };
 
-// AI 消息样式配置（基础）
+// AI 消息样式配置
 const aiBubbleBaseProps = {
   placement: 'start',
   variant: 'borderless',
   styles: {
     content: {
-      maxWidth: '92%',
+      maxWidth: '90%',
       background: 'transparent',
+      fontFamily: '"Noto Sans SC", sans-serif',
+      fontSize: '15px',
+      color: '#000000',
+      lineHeight: '1.8',
+      letterSpacing: '0.02em',
+      padding: '0',
     },
   },
 };
 
-// 用户消息样式配置
+// 用户消息样式配置 - 玻璃态卡片设计
 const userBubbleProps = {
   placement: 'end',
   variant: 'filled',
@@ -40,17 +46,16 @@ const userBubbleProps = {
   styles: {
     content: {
       fontFamily: '"Noto Sans SC", sans-serif',
-      fontSize: '14px',
-      color: '#4A5A55',
-      lineHeight: '1.5',
-      maxWidth: '80%',
-      backgroundColor: 'rgba(232, 244, 248, 0.6)',
-      backdropFilter: 'blur(4px)',
-      border: '1px solid rgba(255, 255, 255, 0.4)',
-      boxShadow: '0 2px 8px rgba(143, 168, 155, 0.05)',
-      borderRadius: '16px',
-      borderTopRightRadius: '4px',
-      padding: '8px 12px',
+      fontSize: '15px',
+      color: '#000000',
+      lineHeight: '1.6',
+      maxWidth: '85%',
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      backdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255, 255, 255, 0.6)',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+      borderRadius: '20px',
+      padding: '12px 20px',
       wordBreak: 'normal',
       overflowWrap: 'break-word',
       whiteSpace: 'pre-wrap',
@@ -89,7 +94,7 @@ export default function MessageList({ messages }) {
   }, [messages.length, lastContent, isStreaming, scrollToBottom]);
 
   return (
-    <div className="pt-1 space-y-2">
+    <div className="pt-4 space-y-6">
       {messages.map((msg, index) => {
         const isUser = msg.role === 'user';
         const isStreaming = msg.status === 'loading';

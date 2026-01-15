@@ -7,6 +7,28 @@ import { useReport } from '../../../contexts/ReportContext';
 // ========== 子组件 ==========
 
 /**
+ * 背景装饰光晕
+ */
+function BackgroundGlow() {
+  return (
+    <>
+      <div 
+        className="absolute top-10 left-1/3 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(196, 181, 253, 0.2)' }}
+      />
+      <div 
+        className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(221, 214, 254, 0.15)' }}
+      />
+      <div 
+        className="absolute bottom-1/3 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(233, 213, 255, 0.2)' }}
+      />
+    </>
+  );
+}
+
+/**
  * 头像组件
  */
 function Avatar({ avatar }) {
@@ -14,15 +36,15 @@ function Avatar({ avatar }) {
     <div 
       className="w-14 h-14 rounded-full flex items-center justify-center mr-4"
       style={{
-        background: 'linear-gradient(135deg, #e0e0e0, #ffffff)',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-        border: '2px solid #fff',
+        background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.4), rgba(167, 139, 250, 0.3))',
+        boxShadow: '0 4px 10px rgba(139, 92, 246, 0.1)',
+        border: '2px solid rgba(255, 255, 255, 0.8)',
       }}
     >
       {avatar ? (
         <img src={avatar} alt="头像" className="w-full h-full rounded-full object-cover" />
       ) : (
-        <svg className="w-7 h-7 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7" style={{ color: '#8B5CF6' }} fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
         </svg>
       )}
@@ -46,15 +68,15 @@ function UserHeader({ user }) {
             style={{ 
               fontFamily: '"Noto Serif SC", serif',
               fontWeight: 'bold',
-              color: '#3A3A3A',
+              color: '#1F2937',
             }}
           >
             {user.username}
           </span>
           <span 
-            className="text-[11px] px-2 py-0.5 rounded-md text-white"
+            className="text-[11px] px-2 py-0.5 rounded-full text-white"
             style={{ 
-              backgroundColor: '#A8C5B8',
+              background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
               fontFamily: '"Noto Sans SC", sans-serif',
               fontWeight: 500,
             }}
@@ -67,14 +89,14 @@ function UserHeader({ user }) {
         <div 
           className="flex justify-between items-center px-3.5 py-2.5 rounded-xl cursor-pointer"
           style={{
-            backgroundColor: '#FDFDFD',
-            border: '1px solid rgba(168, 197, 184, 0.3)',
+            backgroundColor: 'rgba(249, 250, 251, 0.8)',
+            border: '1px solid rgba(167, 139, 250, 0.2)',
           }}
         >
-          <span className="text-[13px]" style={{ color: '#3A3A3A' }}>
-            剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#A8C5B8' }}>{user.remainingChats}</strong> 次
+          <span className="text-[13px]" style={{ color: '#374151' }}>
+            剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#8B5CF6' }}>{user.remainingChats}</strong> 次
           </span>
-          <span className="text-xs flex items-center" style={{ color: '#A8C5B8' }}>
+          <span className="text-xs flex items-center" style={{ color: '#8B5CF6' }}>
             升级 
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -97,15 +119,15 @@ function FissionBar({ fission }) {
   
   return (
     <div className="py-3 my-1">
-      <p className="text-[13px] mb-2" style={{ color: '#555' }}>
-        再邀请 <span className="font-bold" style={{ color: '#A8C5B8' }}>{remaining} 位好友</span> 即可解锁 [{fission.rewardName}]
+      <p className="text-[13px] mb-2" style={{ color: '#4B5563' }}>
+        再邀请 <span className="font-bold" style={{ color: '#8B5CF6' }}>{remaining} 位好友</span> 即可解锁 [{fission.rewardName}]
       </p>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#E0E0E0' }}>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(167, 139, 250, 0.15)' }}>
         <div 
           className="h-full rounded-full transition-all duration-500"
           style={{ 
             width: `${progress}%`,
-            backgroundColor: '#A8C5B8',
+            background: 'linear-gradient(90deg, #A78BFA, #8B5CF6)',
           }}
         />
       </div>
@@ -138,24 +160,12 @@ function ConversationCard({ conversation, onRestart, onView }) {
     <div 
       className={`rounded-2xl p-[18px] relative overflow-hidden transition-transform ${isExpired ? 'opacity-90' : ''} ${canView ? 'cursor-pointer active:scale-[0.98]' : ''}`}
       style={{
-        backgroundColor: isExpired ? '#E8E8E8' : '#FFFFFF',
-        boxShadow: isExpired ? 'none' : '0 8px 20px rgba(168, 197, 184, 0.15)',
+        backgroundColor: isExpired ? 'rgba(243, 244, 246, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+        boxShadow: isExpired ? 'none' : '0 8px 20px rgba(139, 92, 246, 0.08)',
+        border: '1px solid rgba(167, 139, 250, 0.15)',
       }}
       onClick={handleClick}
     >
-      {/* 已销毁水印 */}
-      {/* {isExpired && (
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[15deg] text-5xl font-bold px-4 py-1 rounded-lg pointer-events-none z-10"
-          style={{
-            color: 'rgba(0,0,0,0.06)',
-            border: '3px solid rgba(0,0,0,0.06)',
-          }}
-        >
-          已销毁
-        </div>
-      )} */}
-
       {/* 卡片头部 */}
       <div className="flex justify-between items-start mb-2">
         <h3 
@@ -163,7 +173,7 @@ function ConversationCard({ conversation, onRestart, onView }) {
           style={{ 
             fontFamily: '"Noto Serif SC", serif',
             fontWeight: 'bold',
-            color: isExpired ? '#999' : '#3A3A3A',
+            color: isExpired ? '#9CA3AF' : '#1F2937',
           }}
         >
           {title}
@@ -171,29 +181,29 @@ function ConversationCard({ conversation, onRestart, onView }) {
         
         {/* 状态标签 */}
         {isGenerating && (
-          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: '#E3F2FD', color: '#4A90E2' }}>
+          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(139, 168, 255, 0.15)', color: '#6366F1' }}>
             生成中
           </span>
         )}
         {storageType === 'permanent' && (
-          <span className="text-[11px] px-2 py-1 rounded-md text-white" style={{ backgroundColor: '#A8C5B8' }}>
+          <span className="text-[11px] px-2 py-1 rounded-full text-white" style={{ background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)' }}>
             永久存储
           </span>
         )}
         {storageType === 'validUntil' && storageInfo && (
-          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: '#F0F0F0', color: '#666' }}>
+          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#6B7280' }}>
             有效期至 {storageInfo.validUntil}
           </span>
         )}
         {isExpired && (
-          <span className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: 'transparent', border: '1px solid #bbb', color: '#999' }}>
+          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'transparent', border: '1px solid #D1D5DB', color: '#9CA3AF' }}>
             已过期
           </span>
         )}
       </div>
 
       {/* 时间 */}
-      <div className="flex items-center gap-1 text-xs mb-3" style={{ color: isExpired ? '#999' : '#999' }}>
+      <div className="flex items-center gap-1 text-xs mb-3" style={{ color: '#9CA3AF' }}>
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -266,10 +276,10 @@ function BottomNav() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 flex justify-between px-5 py-4 z-50"
+      className="fixed bottom-0 left-0 right-0 flex justify-between px-5 py-4 z-50 backdrop-blur-sm"
       style={{
-        backgroundColor: '#F5F1ED',
-        borderTop: '1px solid rgba(0,0,0,0.05)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderTop: '1px solid rgba(167, 139, 250, 0.1)',
       }}
     >
       {navItems.map((item) => (
@@ -277,9 +287,9 @@ function BottomNav() {
           key={item.label}
           href="#"
           className="flex flex-col items-center gap-1 text-xs"
-          style={{ color: '#888' }}
+          style={{ color: '#6B7280' }}
         >
-          <svg className="w-5 h-5" style={{ color: '#666' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" style={{ color: '#8B5CF6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
           </svg>
           <span>{item.label}</span>
@@ -327,11 +337,11 @@ function NotLoggedIn({ onLogin }) {
       <div 
         className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
         style={{
-          background: 'linear-gradient(135deg, #e8e4e0, #f5f1ed)',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
+          background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.4), rgba(167, 139, 250, 0.3))',
+          boxShadow: '0 4px 15px rgba(139, 92, 246, 0.15)',
         }}
       >
-        <svg className="w-10 h-10" style={{ color: '#A8C5B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-10 h-10" style={{ color: '#8B5CF6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       </div>
@@ -342,31 +352,31 @@ function NotLoggedIn({ onLogin }) {
         style={{ 
           fontFamily: '"Noto Serif SC", serif',
           fontWeight: 'bold',
-          color: '#3A3A3A',
+          color: '#1F2937',
         }}
       >
         尚未登录
       </h3>
-      <p className="text-sm mb-6" style={{ color: '#888' }}>
+      <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
         登录后查看你的个人档案和对话记录
       </p>
       
       {/* 登录按钮 */}
       <button
         onClick={onLogin}
-        className="px-8 py-3 rounded-xl text-white text-[15px] transition-all hover:opacity-90"
+        className="px-8 py-3 rounded-full text-white text-[15px] transition-all hover:opacity-90"
         style={{
-          backgroundColor: '#A8C5B8',
-          boxShadow: '0 4px 12px rgba(168, 197, 184, 0.4)',
+          backgroundColor: '#1F2937',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
         }}
       >
         立即登录
       </button>
       
       {/* 注册提示 */}
-      <p className="mt-4 text-xs" style={{ color: '#999' }}>
+      <p className="mt-4 text-xs" style={{ color: '#9CA3AF' }}>
         还没有账号？
-        <Link to="/register" className="ml-1" style={{ color: '#A8C5B8' }}>
+        <Link to="/register" className="ml-1" style={{ color: '#8B5CF6' }}>
           注册新账号
         </Link>
       </p>
@@ -397,21 +407,21 @@ export default function ProfilePage() {
   };
 
   return (
-    <div 
-      className="min-h-screen relative"
-      style={{ backgroundColor: '#F5F1ED' }}
-    >
+    <div className="min-h-screen w-full bg-white relative overflow-hidden">
+      {/* 背景装饰光晕 */}
+      <BackgroundGlow />
+
       {/* 顶部返回首页按钮 */}
       <div className="absolute top-6 right-5 z-10">
-        <Link to="/" className="text-2xl" style={{ color: '#333' }}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Link to="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
         </Link>
       </div>
 
       {/* 主内容区 */}
-      <div className="px-5 pt-6 pb-20">
+      <div className="relative z-10 px-5 pt-6 pb-20 max-w-md mx-auto">
         {isLoading ? (
           <LoadingSkeleton />
         ) : error ? (
@@ -419,8 +429,8 @@ export default function ProfilePage() {
             <p className="text-red-500 mb-4">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-lg text-white"
-              style={{ backgroundColor: '#A8C5B8' }}
+              className="px-4 py-2 rounded-full text-white"
+              style={{ backgroundColor: '#1F2937' }}
             >
               重新加载
             </button>

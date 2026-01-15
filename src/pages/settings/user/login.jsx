@@ -10,22 +10,20 @@ function BackgroundDecoration() {
   return (
     <>
       <div 
-        className="absolute top-0 right-0 w-80 h-80 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(168, 197, 184, 0.2) 0%, transparent 70%)',
-          transform: 'translate(30%, -30%)',
-        }}
+        className="absolute top-10 left-1/3 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(196, 181, 253, 0.25)' }}
       />
       <div 
-        className="absolute bottom-0 left-0 w-96 h-96 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(155, 174, 200, 0.15) 0%, transparent 70%)',
-          transform: 'translate(-40%, 40%)',
-        }}
+        className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(221, 214, 254, 0.2)' }}
       />
-      <div className="absolute top-[20%] left-[15%] w-2 h-2 rounded-full animate-float" style={{ backgroundColor: 'rgba(168, 197, 184, 0.4)' }} />
-      <div className="absolute top-[35%] right-[20%] w-1.5 h-1.5 rounded-full animate-float-delay" style={{ backgroundColor: 'rgba(155, 174, 200, 0.4)' }} />
-      <div className="absolute bottom-[30%] left-[25%] w-1 h-1 rounded-full animate-float-delay-2" style={{ backgroundColor: 'rgba(168, 197, 184, 0.3)' }} />
+      <div 
+        className="absolute bottom-1/3 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(233, 213, 255, 0.3)' }}
+      />
+      <div className="absolute top-[20%] left-[15%] w-2 h-2 rounded-full animate-float" style={{ backgroundColor: 'rgba(167, 139, 250, 0.4)' }} />
+      <div className="absolute top-[35%] right-[20%] w-1.5 h-1.5 rounded-full animate-float-delay" style={{ backgroundColor: 'rgba(139, 168, 255, 0.4)' }} />
+      <div className="absolute bottom-[30%] left-[25%] w-1 h-1 rounded-full animate-float-delay-2" style={{ backgroundColor: 'rgba(167, 139, 250, 0.3)' }} />
     </>
   );
 }
@@ -34,14 +32,26 @@ function Logo({ title = '天赋发现', subtitle = '发现你的内在潜能' })
   return (
     <div className="flex flex-col items-center mb-10">
       <div className="relative w-20 h-20 mb-3 flex items-center justify-center">
-        <div className="absolute w-20 h-20 rounded-full animate-breathe" style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(168, 197, 184, 0.4)' }} />
-        <div className="absolute w-14 h-14 rounded-full" style={{ background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255, 255, 255, 0.6)' }} />
-        <svg className="relative z-10 w-7 h-7" style={{ color: '#A8C5B8' }} fill="currentColor" viewBox="0 0 24 24">
+        <div 
+          className="absolute w-20 h-20 rounded-full animate-breathe" 
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 168, 255, 0.3))', 
+            border: '1px solid rgba(167, 139, 250, 0.4)' 
+          }} 
+        />
+        <div 
+          className="absolute w-14 h-14 rounded-full backdrop-blur-sm" 
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.6), rgba(167, 139, 250, 0.5))', 
+            border: '1px solid rgba(255, 255, 255, 0.6)' 
+          }} 
+        />
+        <svg className="relative z-10 w-7 h-7" style={{ color: '#FFFFFF' }} fill="currentColor" viewBox="0 0 24 24">
           <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
         </svg>
       </div>
-      <h1 className="text-xl font-bold tracking-wide" style={{ fontFamily: '"Noto Serif SC", serif', color: '#3A3A3A' }}>{title}</h1>
-      <p className="text-sm mt-1" style={{ color: '#888' }}>{subtitle}</p>
+      <h1 className="text-xl font-bold tracking-wide" style={{ fontFamily: '"Noto Serif SC", serif', color: '#1F2937' }}>{title}</h1>
+      <p className="text-sm mt-1" style={{ color: '#6B7280' }}>{subtitle}</p>
     </div>
   );
 }
@@ -49,10 +59,10 @@ function Logo({ title = '天赋发现', subtitle = '发现你的内在潜能' })
 function InputField({ label, type = 'text', value, onChange, placeholder, disabled, maxLength, prefix }) {
   return (
     <div className="mb-4">
-      <label className="block text-sm mb-2" style={{ color: '#666' }}>{label}</label>
+      <label className="block text-sm mb-2" style={{ color: '#4B5563' }}>{label}</label>
       <div 
         className="flex items-center px-4 py-3 rounded-xl transition-all"
-        style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(168, 197, 184, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' }}
+        style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' }}
       >
         {prefix && (
           <>
@@ -68,7 +78,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder, disabl
           disabled={disabled}
           maxLength={maxLength}
           className="flex-1 outline-none bg-transparent text-base"
-          style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#3A3A3A' }}
+          style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#1F2937' }}
         />
       </div>
     </div>
@@ -80,8 +90,8 @@ function SubmitButton({ onClick, loading, disabled, text = '确认' }) {
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className="w-full py-4 rounded-xl text-white text-lg font-medium transition-all active:scale-[0.98] disabled:opacity-60"
-      style={{ backgroundColor: '#A8C5B8', boxShadow: disabled ? 'none' : '0 8px 20px rgba(168, 197, 184, 0.3)' }}
+      className="w-full py-4 rounded-full text-white text-lg font-medium transition-all active:scale-[0.98] disabled:opacity-60"
+      style={{ backgroundColor: '#1F2937', boxShadow: disabled ? 'none' : '0 8px 20px rgba(0, 0, 0, 0.15)' }}
     >
       {loading ? (
         <span className="flex items-center justify-center gap-2">
@@ -107,10 +117,10 @@ function ErrorMessage({ message }) {
 
 function Agreement() {
   return (
-    <p className="text-center text-xs mt-6 leading-relaxed" style={{ color: '#999' }}>
+    <p className="text-center text-xs mt-6 leading-relaxed" style={{ color: '#9CA3AF' }}>
       登录即表示同意
-      <a href="#" className="mx-1" style={{ color: '#A8C5B8' }}>《用户协议》</a>和
-      <a href="#" className="mx-1" style={{ color: '#A8C5B8' }}>《隐私政策》</a>
+      <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《用户协议》</a>和
+      <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《隐私政策》</a>
     </p>
   );
 }
@@ -213,13 +223,13 @@ export default function LoginPage() {
   }, [canSubmitPassword, loading, username, password, navigate]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ backgroundColor: '#F5F1ED' }}>
+    <div className="min-h-screen w-full bg-white relative overflow-hidden flex flex-col">
       <BackgroundDecoration />
       
       {/* 顶部返回 */}
-      <header className="relative z-10 h-14 flex items-center px-5">
-        <Link to="/" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors" style={{ color: '#666' }}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <header className="relative z-10 h-14 flex items-center px-4">
+        <Link to="/" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors">
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
@@ -231,25 +241,25 @@ export default function LoginPage() {
         
         <div className="w-full max-w-sm mx-auto">
           {/* 登录方式切换 */}
-          <div className="flex mb-6 p-1 rounded-xl" style={{ backgroundColor: 'rgba(168, 197, 184, 0.1)' }}>
+          <div className="flex mb-6 p-1 rounded-full" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)' }}>
             <button
               onClick={() => { setLoginMethod('password'); setError(''); }}
-              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+              className="flex-1 py-2.5 rounded-full text-sm font-medium transition-all"
               style={{
                 backgroundColor: loginMethod === 'password' ? '#FFFFFF' : 'transparent',
-                color: loginMethod === 'password' ? '#3A3A3A' : '#888',
-                boxShadow: loginMethod === 'password' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                color: loginMethod === 'password' ? '#1F2937' : '#6B7280',
+                boxShadow: loginMethod === 'password' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               密码登录
             </button>
             <button
               onClick={() => { setLoginMethod('phone'); setError(''); }}
-              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+              className="flex-1 py-2.5 rounded-full text-sm font-medium transition-all"
               style={{
                 backgroundColor: loginMethod === 'phone' ? '#FFFFFF' : 'transparent',
-                color: loginMethod === 'phone' ? '#3A3A3A' : '#888',
-                boxShadow: loginMethod === 'phone' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                color: loginMethod === 'phone' ? '#1F2937' : '#6B7280',
+                boxShadow: loginMethod === 'phone' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               短信登录
@@ -292,8 +302,8 @@ export default function LoginPage() {
               />
               
               <div className="mb-6">
-                <label className="block text-sm mb-2" style={{ color: '#666' }}>验证码</label>
-                <div className="flex items-center px-4 py-3 rounded-xl" style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(168, 197, 184, 0.3)' }}>
+                <label className="block text-sm mb-2" style={{ color: '#4B5563' }}>验证码</label>
+                <div className="flex items-center px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                   <input
                     type="text"
                     value={code}
@@ -302,15 +312,15 @@ export default function LoginPage() {
                     disabled={loading}
                     maxLength={6}
                     className="flex-1 outline-none bg-transparent text-base tracking-widest"
-                    style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#3A3A3A' }}
+                    style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#1F2937' }}
                   />
                   <button
                     onClick={handleSendCode}
                     disabled={!canSendCode || countdown > 0}
                     className="text-sm px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
                     style={{
-                      backgroundColor: canSendCode && countdown === 0 ? 'rgba(168, 197, 184, 0.15)' : 'transparent',
-                      color: canSendCode && countdown === 0 ? '#A8C5B8' : '#999',
+                      backgroundColor: canSendCode && countdown === 0 ? 'rgba(167, 139, 250, 0.15)' : 'transparent',
+                      color: canSendCode && countdown === 0 ? '#8B5CF6' : '#9CA3AF',
                     }}
                   >
                     {countdown > 0 ? `${countdown}s` : '获取验证码'}
@@ -323,12 +333,12 @@ export default function LoginPage() {
           )}
 
           {/* 注册链接 */}
-          <p className="text-center text-sm mt-6" style={{ color: '#888' }}>
+          <p className="text-center text-sm mt-6" style={{ color: '#6B7280' }}>
             还没有账号？
             <Link 
               to={returnUrl ? `/register?returnUrl=${encodeURIComponent(returnUrl)}` : '/register'} 
               className="ml-1 font-medium" 
-              style={{ color: '#A8C5B8' }}
+              style={{ color: '#8B5CF6' }}
             >
               立即注册
             </Link>
@@ -338,7 +348,7 @@ export default function LoginPage() {
         </div>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(168, 197, 184, 0.3), transparent)' }} />
+      <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent)' }} />
     </div>
   );
 }

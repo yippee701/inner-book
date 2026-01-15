@@ -3,126 +3,101 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useReport } from '../../contexts/ReportContext';
 import { getModeFromSearchParams } from '../../constants/modes';
 
-// 环境光效果
-function AmbientLight() {
+// 背景装饰光晕 - 浅紫色弥散效果
+function BackgroundGlow() {
   return (
-    <div 
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        background: 'linear-gradient(180deg, rgba(42,42,42,0.05) 0%, rgba(245,241,237,0) 40%, rgba(245,241,237,1) 100%)',
-      }}
-    />
-  );
-}
-
-// 纹理背景
-function TextureBackground() {
-  return (
-    <div 
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        backgroundImage: 'radial-gradient(#D3CDC6 1px, transparent 0)',
-        backgroundSize: '20px 20px',
-      }}
-    />
-  );
-}
-
-// 粒子组件
-function Particle({ top, left, size, delay = 0 }) {
-  return (
-    <div 
-      className="absolute rounded-full"
-      style={{
-        top,
-        left,
-        width: size,
-        height: size,
-        background: '#9FB6C3',
-        opacity: 0.6,
-        filter: 'blur(1px)',
-        animation: `float 3s ease-in-out infinite ${delay}s`,
-      }}
-    />
-  );
-}
-
-// 粒子光圈组件
-function ParticleAperture() {
-  return (
-    <div className="relative w-72 h-72 flex justify-center items-center">
-      {/* 旋转粒子容器 */}
+    <>
       <div 
-        className="absolute w-full h-full"
-        style={{ animation: 'spin 20s linear infinite' }}
-      >
-        <Particle top="10%" left="50%" size="4px" />
-        <Particle top="80%" left="20%" size="3px" delay={0.5} />
-        <Particle top="30%" left="80%" size="5px" delay={1} />
-        <Particle top="70%" left="75%" size="2px" delay={1.5} />
-        <Particle top="20%" left="30%" size="3px" delay={2} />
-      </div>
-
-      {/* 三层光圈 */}
-      <div 
-        className="absolute w-72 h-72 rounded-full animate-breathe"
-        style={{
-          border: '1px solid rgba(159, 182, 195, 0.2)',
-          background: 'radial-gradient(circle, transparent 60%, rgba(148, 168, 154, 0.05) 100%)',
-          boxShadow: '0 0 20px rgba(148, 168, 154, 0.2)',
-        }}
+        className="absolute top-10 left-1/3 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(196, 181, 253, 0.25)' }}
       />
       <div 
-        className="absolute w-60 h-60 rounded-full animate-breathe"
-        style={{
-          border: '1px solid rgba(159, 182, 195, 0.4)',
-          boxShadow: '0 0 30px rgba(159, 182, 195, 0.15)',
-          animationDelay: '0.5s',
-        }}
+        className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(221, 214, 254, 0.2)' }}
       />
       <div 
-        className="absolute w-48 h-48 rounded-full animate-breathe"
-        style={{
-          border: '1.5px solid rgba(148, 168, 154, 0.6)',
-          background: 'radial-gradient(circle, rgba(245, 241, 237, 0.1) 0%, rgba(159, 182, 195, 0.1) 100%)',
-          boxShadow: 'inset 0 0 20px rgba(148, 168, 154, 0.1)',
-          animationDelay: '1s',
-        }}
+        className="absolute bottom-1/3 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(233, 213, 255, 0.3)' }}
       />
-    </div>
+    </>
   );
 }
 
-// 关键帧卡片
-function KeyframeCard({ color, title, content }) {
+// 玻璃态球体组件
+function GlassOrb() {
   return (
-    <div 
-      className="flex-1 flex flex-col gap-1.5 p-3 rounded-xl"
-      style={{
-        background: 'rgba(255, 255, 255, 0.65)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.8)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-      }}
-    >
-      <div className="flex items-center gap-1.5">
+    <div className="relative w-56 h-56 animate-breathe">
+      {/* 底部阴影 */}
+      <div 
+        className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-40 h-8 rounded-full blur-2xl animate-breathe-shadow"
+        style={{ background: 'rgba(167, 139, 250, 0.15)' }}
+      />
+
+      {/* 主球体容器 */}
+      <div className="relative w-full h-full rounded-full">
+        {/* 外层发光 */}
         <div 
-          className="w-1.5 h-1.5 rounded-full"
-          style={{ background: color }}
+          className="absolute inset-0 rounded-full blur-3xl animate-glow-pulse"
+          style={{
+            background: 'radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.6), rgba(139, 168, 255, 0.5) 50%, rgba(147, 197, 253, 0.4) 80%, transparent)',
+          }}
         />
-        <span 
-          className="text-[10px] font-bold uppercase tracking-wide"
-          style={{ color: '#6A6A6A' }}
-        >
-          {title}
-        </span>
+
+        {/* 二层发光 */}
+        <div 
+          className="absolute inset-0 rounded-full blur-2xl animate-glow-pulse-delayed"
+          style={{
+            background: 'radial-gradient(circle at 50% 50%, rgba(196, 181, 253, 0.5), rgba(167, 139, 250, 0.4) 60%, transparent)',
+          }}
+        />
+        
+        {/* 玻璃球体基底 */}
+        <div 
+          className="absolute inset-2 rounded-full blur-sm"
+          style={{
+            background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.8) 0%, rgba(139, 168, 255, 0.85) 40%, rgba(167, 139, 250, 0.75) 100%)',
+            boxShadow: '0 20px 50px rgba(139, 92, 246, 0.2), inset 0 0 50px rgba(255, 255, 255, 0.2)',
+          }}
+        />
+
+        {/* 流动渐变层 */}
+        <div
+          className="absolute inset-2 rounded-full blur-sm animate-rotate-slow"
+          style={{
+            background: 'conic-gradient(from 0deg, transparent 0%, rgba(167, 139, 250, 0.6) 20%, rgba(139, 168, 255, 0.7) 40%, rgba(147, 197, 253, 0.6) 60%, transparent 80%)',
+            opacity: 0.6,
+          }}
+        />
+
+        {/* 磨砂玻璃层 */}
+        <div 
+          className="absolute inset-4 rounded-full backdrop-blur-sm"
+          style={{
+            background: 'radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.7), rgba(221, 214, 254, 0.45) 35%, rgba(196, 181, 253, 0.35) 70%, transparent 95%)',
+          }}
+        />
+
+        {/* 顶部高光 */}
+        <div 
+          className="absolute top-10 left-10 w-32 h-18 rounded-full blur-xl animate-highlight-pulse"
+          style={{
+            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.95), transparent 65%)',
+          }}
+        />
+
+        {/* 粒子光点 */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-white/60 rounded-full blur-sm animate-particle"
+            style={{
+              top: `${20 + Math.sin(i * 1.047) * 30}%`,
+              left: `${50 + Math.cos(i * 1.047) * 35}%`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          />
+        ))}
       </div>
-      <p 
-        className="text-[10px] leading-snug line-clamp-3"
-        style={{ color: '#2A2A2A', opacity: 0.8 }}
-      >
-        {content}
-      </p>
     </div>
   );
 }
@@ -157,42 +132,47 @@ export default function ReportLoading() {
   }, [isComplete, content, navigate]);
 
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#F5F1ED' }}
-    >
-      <TextureBackground />
-      <AmbientLight />
+    <div className="min-h-screen w-full bg-white flex flex-col overflow-hidden relative">
+      {/* 背景装饰光晕 */}
+      <BackgroundGlow />
+
+      {/* 顶部标题栏 */}
+      <header 
+        className="flex items-center justify-between px-4 py-4 relative z-10"
+        style={{ borderBottom: '1px solid rgba(243, 244, 246, 1)' }}
+      >
+        <Link 
+          to="/"
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </Link>
+        <h1 className="text-gray-900 font-medium">生成报告中</h1>
+        <div className="w-10 h-10" />
+      </header>
 
       {/* 主内容区 */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-32">
-        {/* 粒子光圈 */}
-        <ParticleAperture />
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-32 max-w-md mx-auto">
+        {/* 玻璃态球体 */}
+        <GlassOrb />
 
         {/* 加载文字 */}
         <p 
-          className="mt-16 text-xl tracking-wide"
+          className="mt-16 text-xl tracking-wide text-center"
           style={{
             fontFamily: '"Noto Serif SC", serif',
-            color: '#6A6A6A',
+            color: '#374151',
             fontWeight: 500,
-            opacity: 0.9,
           }}
         >
           Dora 正在解析你的内心档案<LoadingDots />
         </p>
+        <p className="mt-3 text-sm text-gray-400">
+          请稍候，这需要一些时间...
+        </p>
       </div>
-
-      {/* 返回首页按钮 */}
-      <Link 
-        to="/"
-        className="absolute top-4 left-4 z-50 flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors"
-        style={{ color: '#8C8C8C' }}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
-        </svg>
-      </Link>
     </div>
   );
 }
