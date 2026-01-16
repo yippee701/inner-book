@@ -411,7 +411,7 @@ export default function ProfilePage() {
       <BackgroundGlow />
 
       {/* 顶部返回首页按钮 */}
-      <div className="absolute top-6 right-5 z-10">
+      <div className="absolute top-5 right-5 z-11">
         <Link to="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
           <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -419,8 +419,8 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      {/* 主内容区 */}
-      <div className="relative z-10 px-5 pt-6 pb-20 max-w-md">
+      {/* 主内容区 - 可滚动 */}
+      <div className="flex-1 overflow-y-auto relative z-10 px-5 pt-6 pb-24 max-w-md">
         {isLoading ? (
           <LoadingSkeleton />
         ) : error ? (

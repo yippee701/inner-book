@@ -202,11 +202,11 @@ export default function RegisterPage() {
   }, [canSubmit, loading, username, password, phone, navigate]);
 
   return (
-    <div className="h-screen-safe w-full bg-white relative overflow-hidden flex flex-col">
+    <div className="h-screen-safe w-full bg-white relative flex flex-col">
       <BackgroundDecoration />
       
       {/* 顶部返回 */}
-      <header className="relative z-10 h-14 flex items-center px-4">
+      <header className="flex-shrink-0 relative z-10 h-14 flex items-center px-4">
         <Link 
           to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
           className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
@@ -217,8 +217,8 @@ export default function RegisterPage() {
         </Link>
       </header>
       
-      {/* 主内容 */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 pb-10">
+      {/* 主内容 - 可滚动 */}
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col justify-center px-8 pb-10">
         <Logo />
         
         <div className="w-full max-w-sm mx-auto">

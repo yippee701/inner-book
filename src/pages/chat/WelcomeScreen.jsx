@@ -16,7 +16,7 @@ export default function WelcomeScreen({
   welcomeMessage = WELCOME_MESSAGE 
 }) {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
       {/* 欢迎消息 */}
       <div className="text-left mb-6">

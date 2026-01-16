@@ -170,7 +170,7 @@ export default function Chat() {
 
       {/* 顶部标题栏 */}
       <header 
-        className="flex items-center justify-between px-4 py-4 relative z-10"
+        className="flex items-center justify-between px-4 py-1 relative z-10"
         style={{ borderBottom: '1px solid rgba(243, 244, 246, 1)' }}
       >
         <Link 
@@ -197,8 +197,8 @@ export default function Chat() {
       </div>
 
       {/* 聊天内容区 */}
-      <div className="flex-1 overflow-y-auto px-5 pb-32 relative z-10">
-        <div className="max-w-lg mx-auto">
+      <div className={`flex-1 px-5 relative z-10 ${hasStarted ? 'overflow-y-auto pb-32' : 'overflow-hidden flex flex-col'}`}>
+        <div className={`max-w-lg mx-auto ${!hasStarted ? 'flex-1 flex flex-col' : ''}`}>
           {!hasStarted ? (
             <WelcomeScreen 
               onStart={handleStart} 

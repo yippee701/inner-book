@@ -90,7 +90,7 @@ export default function Homepage() {
       />
       
       {/* 顶部导航栏 */}
-      <header className="relative z-20 flex items-center justify-between px-6 pt-14 pb-8 max-w-lg mx-auto">
+      <header className="relative z-20 flex items-center justify-between px-6 pt-4 pb-8 max-w-lg mx-auto">
         <div className="w-10" />
         <h1 
           className="text-xl font-medium"

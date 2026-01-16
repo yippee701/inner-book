@@ -223,11 +223,11 @@ export default function LoginPage() {
   }, [canSubmitPassword, loading, username, password, navigate]);
 
   return (
-    <div className="h-screen-safe w-full bg-white relative overflow-hidden flex flex-col">
+    <div className="h-screen-safe w-full bg-white relative flex flex-col">
       <BackgroundDecoration />
       
       {/* 顶部返回 */}
-      <header className="relative z-10 h-14 flex items-center px-4">
+      <header className="flex-shrink-0 relative z-10 h-14 flex items-center px-4">
         <Link to="/" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors">
           <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
@@ -235,8 +235,8 @@ export default function LoginPage() {
         </Link>
       </header>
       
-      {/* 主内容 */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 pb-10">
+      {/* 主内容 - 可滚动 */}
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col justify-center px-8 pb-10">
         <Logo title="登录" subtitle="欢迎回来" />
         
         <div className="w-full max-w-sm mx-auto">
