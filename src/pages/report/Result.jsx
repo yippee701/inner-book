@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import XMarkdown from '@ant-design/x-markdown';
 import { useReport } from '../../contexts/ReportContext';
 import { generateReportTitle } from '../../utils/chat';
@@ -377,24 +377,10 @@ function LoginOverlay({ onLogin, registerUrl }) {
 export default function Result() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { content, isComplete, isFromHistory, isLoggedIn } = useReport();
-  const scrollContainerRef = useRef(null);
+  const { content, isComplete, isLoggedIn } = useReport();
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
-
-  // 如果是历史报告，进入页面时滚动到底部
-  useEffect(() => {
-    if (isFromHistory && content && scrollContainerRef.current) {
-      // 延迟执行，确保内容已渲染
-      setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({
-          top: scrollContainerRef.current.scrollHeight,
-          behavior: 'instant'
-        });
-      }, 100);
-    }
-  }, [isFromHistory, content]);
 
   // 跳转到登录页（带返回地址）
   const handleGoToLogin = useCallback(() => {
@@ -453,7 +439,7 @@ export default function Result() {
       </header>
 
       {/* 内容区 */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10">
+      <div className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10">
         <div className="max-w-md mx-auto py-3">
           <ReportContent content={content} />
         </div>

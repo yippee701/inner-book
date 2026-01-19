@@ -194,6 +194,11 @@ export default function Chat() {
       restoreMessages(pendingReport.messages);
       setHasStarted(true);
       setPendingReport(null);
+      
+      // 延迟滚动到底部，等待 DOM 更新
+      setTimeout(() => {
+        messageListRef.current?.scrollToBottom(true);
+      }, 100);
     }
   }, [pendingReport, resumeReport, restoreMessages]);
 
