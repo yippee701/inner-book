@@ -116,7 +116,7 @@ const MessageList = forwardRef(function MessageList({ messages }, ref) {
     const container = getScrollContainer();
     const endElement = messagesEndRef.current;
     
-    if (!endElement) return;
+    if (!endElement || !container) return;
     
     if (container === window) {
       // 如果容器是 window，使用 scrollIntoView
@@ -125,22 +125,39 @@ const MessageList = forwardRef(function MessageList({ messages }, ref) {
         block: 'end'
       });
     } else {
-      // 如果容器是元素，使用 scrollTop 精确控制
-      const scrollHeight = container.scrollHeight;
-      const clientHeight = container.clientHeight;
+      // 使用 visualViewport 获取实际可视区域高度
+      const visualViewportHeight = window.visualViewport?.height || window.innerHeight;
+      const containerRect = container.getBoundingClientRect();
       
-      // 考虑键盘高度：可视区域高度 = 容器高度 - 键盘高度
-      const visibleHeight = clientHeight - keyboardHeight;
+      // 计算容器在可视区域内的实际可用高度
+      // 容器顶部到可视区域底部的距离
+      const containerTopInViewport = Math.max(0, containerRect.top);
+      const availableHeight = visualViewportHeight - containerTopInViewport;
       
-      // 计算目标滚动位置：滚动到底部，考虑键盘占用的可视空间
-      // scrollTop = scrollHeight - visibleHeight
-      const targetScrollTop = scrollHeight - visibleHeight;
+      // 计算消息底部元素的位置
+      const endRect = endElement.getBoundingClientRect();
+      const endBottomInContainer = endRect.bottom - containerRect.top + container.scrollTop;
+      
+      // 计算目标滚动位置：让消息底部在可视区域底部可见
+      // 留一些边距避免紧贴底部
+      const padding = 30;
+      const targetScrollTop = endBottomInContainer - availableHeight + padding;
+      
+      console.log('滚动计算:', {
+        keyboardHeight,
+        visualViewportHeight,
+        containerTop: containerRect.top,
+        availableHeight,
+        endBottomInContainer,
+        targetScrollTop,
+        scrollHeight: container.scrollHeight
+      });
       
       if (instant) {
-        container.scrollTop = Math.max(0, targetScrollTop);
+        container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight));
       } else {
         container.scrollTo({
-          top: Math.max(0, targetScrollTop),
+          top: Math.max(0, Math.min(targetScrollTop, container.scrollHeight)),
           behavior: 'smooth'
         });
       }
