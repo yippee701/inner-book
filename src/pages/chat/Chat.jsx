@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 // 组件
@@ -79,6 +79,28 @@ export default function Chat() {
 
   const [hasStarted, setHasStarted] = useState(false);
   const [pendingReport, setPendingReport] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const inputContainerRef = useRef(null);
+
+  // 监听移动端键盘弹出，调整输入框位置
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      // 计算键盘高度 = 窗口高度 - 可视视口高度
+      const keyboardH = window.innerHeight - viewport.height;
+      setKeyboardHeight(keyboardH > 0 ? keyboardH : 0);
+    };
+
+    viewport.addEventListener('resize', handleResize);
+    viewport.addEventListener('scroll', handleResize);
+
+    return () => {
+      viewport.removeEventListener('resize', handleResize);
+      viewport.removeEventListener('scroll', handleResize);
+    };
+  }, []);
 
   // 组件挂载时检查是否有未完成的报告
   useEffect(() => {
@@ -197,7 +219,10 @@ export default function Chat() {
       </div>
 
       {/* 聊天内容区 */}
-      <div className={`flex-1 px-5 relative z-10 ${hasStarted ? 'overflow-y-auto pb-32' : 'overflow-hidden flex flex-col'}`}>
+      <div 
+        className={`flex-1 px-5 relative z-10 ${hasStarted ? 'overflow-y-auto' : 'overflow-hidden flex flex-col'}`}
+        style={{ paddingBottom: hasStarted ? `${128 + keyboardHeight}px` : 0 }}
+      >
         <div className={`max-w-lg mx-auto ${!hasStarted ? 'flex-1 flex flex-col' : ''}`}>
           {!hasStarted ? (
             <WelcomeScreen 
@@ -215,7 +240,11 @@ export default function Chat() {
 
       {/* 输入区域 */}
       {hasStarted && (
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white px-5 pb-4 z-20">
+      <div 
+        ref={inputContainerRef}
+        className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-4 z-20 transition-[bottom] duration-100"
+        style={{ bottom: keyboardHeight }}
+      >
         <div 
           className="w-full rounded-full flex items-center px-5 gap-3"
           style={{ backgroundColor: '#F3F4F6' }}

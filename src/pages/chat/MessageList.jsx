@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Bubble } from '@ant-design/x';
 import XMarkdown from '@ant-design/x-markdown';
 
@@ -20,11 +20,27 @@ const reportRender = content => {
   );
 };
 
+// 动态省略号组件
+function AnimatedDots() {
+  const [dots, setDots] = useState('');
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '' : prev + '.');
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span className="inline-block w-4 text-left">{dots}</span>;
+}
+
 const loadingRender = () => {
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-4 h-4 bg-indigo-500 rounded-full animate-pulse mx-2"></div>
-      <p>Dora 正在思考...</p>
+    <div className="flex items-center">
+      <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse mr-2"></div>
+      <p style={{ color: '#6B7280' }}>
+        Dora 正在思考<AnimatedDots />
+      </p>
     </div>
   );
 };
