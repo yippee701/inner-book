@@ -14,9 +14,18 @@ function throttle(fn, delay) {
   };
 }
 
-const renderMarkdown = content => {
+const markdownRender = content => {
   return (
     <XMarkdown content={content} />
+  );
+};
+
+const loadingRender = () => {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="w-4 h-4 bg-indigo-500 rounded-full animate-pulse mx-2"></div>
+      <p>Dora 正在思考...</p>
+    </div>
   );
 };
 
@@ -114,11 +123,12 @@ export default function MessageList({ messages }) {
           <Bubble
             key={msg.id || index}
             content={msg.content}
-            loading={isLoading}
+            loading={true}
             streaming={isStreaming}
             typing={{ effect: 'typing', step: 2, interval: 30 }}
             onTyping={throttledScroll}
-            contentRender={renderMarkdown}
+            contentRender={markdownRender}
+            loadingRender={loadingRender}
             {...aiBubbleBaseProps}
           />
         );

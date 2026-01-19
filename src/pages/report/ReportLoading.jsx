@@ -116,6 +116,34 @@ function LoadingDots() {
   return <span className="inline-block w-6 text-left">{dots}</span>;
 }
 
+// 进度条组件
+function ProgressBar({ current, total }) {
+  const progress = Math.min((current / total) * 100, 100);
+  
+  return (
+    <div className="w-64 mt-8">
+      {/* 进度条背景 */}
+      <div 
+        className="h-1.5 rounded-full overflow-hidden"
+        style={{ backgroundColor: 'rgba(167, 139, 250, 0.15)' }}
+      >
+        {/* 进度条填充 */}
+        <div 
+          className="h-full rounded-full transition-all duration-300 ease-out"
+          style={{ 
+            width: `${progress}%`,
+            background: 'linear-gradient(90deg, #A78BFA, #8B5CF6)',
+          }}
+        />
+      </div>
+      {/* 进度文字 */}
+      <p className="mt-2 text-xs text-center" style={{ color: '#9CA3AF' }}>
+        已生成 {current.toLocaleString()} 字
+      </p>
+    </div>
+  );
+}
+
 export default function ReportLoading() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -123,6 +151,10 @@ export default function ReportLoading() {
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
+  
+  // 计算进度
+  const currentChars = content ? content.length : 0;
+  const totalChars = Math.max(10000, currentChars);
 
   // 报告生成完成后跳转到结果页
   useEffect(() => {
@@ -172,6 +204,9 @@ export default function ReportLoading() {
         <p className="mt-3 text-sm text-gray-400">
           请稍候，这需要一些时间...
         </p>
+        
+        {/* 进度条 */}
+        <ProgressBar current={currentChars} total={totalChars} />
       </div>
     </div>
   );
