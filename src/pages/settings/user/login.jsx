@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Bmob from 'hydrogen-js-sdk';
+import { useReport } from '../../../contexts/ReportContext';
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -131,6 +132,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
+  const { checkLoginAndSync } = useReport();
   
   // 登录方式：'phone' | 'password'
   const [loginMethod, setLoginMethod] = useState('password');
@@ -171,7 +173,9 @@ export default function LoginPage() {
   }, [canSendCode, phone]);
 
   // 处理登录成功
-  const handleLoginSuccess = (res) => {
+  const handleLoginSuccess = async (res) => {
+    // 检查登录状态并同步本地报告
+    await checkLoginAndSync();
     // 如果有返回地址，则跳转到返回地址，否则跳转到首页
     navigate(returnUrl || '/');
   };

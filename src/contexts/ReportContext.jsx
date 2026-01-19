@@ -50,26 +50,50 @@ export function ReportProvider({ children }) {
   }, [reportState]);
 
   // 检测登录状态
-  useEffect(() => {
-    const checkLogin = () => {
-      try {
-        const bmobData = localStorage.getItem('bmob');
-        if (!bmobData) {
-          setIsLoggedIn(false);
-          return;
-        }
-        const parsed = JSON.parse(bmobData);
-        setIsLoggedIn(!!parsed.sessionToken);
-      } catch {
-        setIsLoggedIn(false);
+  const checkLogin = useCallback(() => {
+    try {
+      const bmobData = localStorage.getItem('bmob');
+      if (!bmobData) {
+        setIsLoggedIn(prev => {
+          if (prev !== false) console.log('登录状态变化: 已登出');
+          return false;
+        });
+        return false;
       }
-    };
-    
+      const parsed = JSON.parse(bmobData);
+      const loggedIn = !!parsed.sessionToken;
+      setIsLoggedIn(prev => {
+        if (prev !== loggedIn) {
+          console.log('登录状态变化:', loggedIn ? '已登录' : '已登出');
+        }
+        return loggedIn;
+      });
+      return loggedIn;
+    } catch {
+      setIsLoggedIn(false);
+      return false;
+    }
+  }, []);
+
+  // 检查登录状态并同步报告（供登录/注册成功后调用）
+  const checkLoginAndSync = useCallback(async () => {
+    const loggedIn = checkLogin();
+    if (loggedIn) {
+      // 登录状态变为 true 时，useEffect 会自动触发同步
+      // 但为了确保立即同步，这里也调用一次
+      await syncLocalReportsToRemote();
+    }
+  }, [checkLogin, syncLocalReportsToRemote]);
+
+  useEffect(() => {
+    // 初始化时检查一次
     checkLogin();
     // 监听 storage 变化（其他标签页登录/登出）
     window.addEventListener('storage', checkLogin);
-    return () => window.removeEventListener('storage', checkLogin);
-  }, []);
+    return () => {
+      window.removeEventListener('storage', checkLogin);
+    };
+  }, [checkLogin]);
 
   // ========== 本地存储方法 ==========
 
@@ -378,6 +402,7 @@ export function ReportProvider({ children }) {
       saveReportToLocal,
       saveReportToRemote,
       syncLocalReportsToRemote,
+      checkLoginAndSync, // 供登录/注册成功后调用
     }}>
       {children}
     </ReportContext.Provider>

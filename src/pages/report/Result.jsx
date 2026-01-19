@@ -311,8 +311,7 @@ function LoginOverlay({ onLogin, registerUrl }) {
     <div 
       className="absolute inset-0 z-40 flex items-center justify-center"
       style={{
-        background: 'linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.7) 20%, rgba(255, 255, 255, 0.95) 40%, #FFFFFF 60%)',
-        backdropFilter: 'blur(2px)',
+        backdropFilter: 'blur(1px)',
       }}
     >
       <div 
@@ -384,7 +383,7 @@ export default function Result() {
 
   // 跳转到登录页（带返回地址）
   const handleGoToLogin = useCallback(() => {
-    const returnUrl = `/report-result?mode=${mode}`;
+    const returnUrl = `/profile`;
     navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
   }, [navigate, mode]);
 
@@ -449,7 +448,7 @@ export default function Result() {
       {!isLoggedIn && (
         <LoginOverlay 
           onLogin={handleGoToLogin} 
-          registerUrl={`/register?returnUrl=${encodeURIComponent(`/report-result?mode=${mode}`)}`}
+          registerUrl={`/register?returnUrl=${encodeURIComponent(`/profile`)}`}
         />
       )}
 
