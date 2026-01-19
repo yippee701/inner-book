@@ -177,10 +177,17 @@ export default function Chat() {
   const aiMessageCount = messages.filter(m => m.role === 'assistant').length;
   const progress = Math.min(aiMessageCount, 10);
 
-  // 对话记录变化时同步到 ReportContext
+  // 对话记录变化时同步到 ReportContext（只在消息完成时更新，不在流式输出过程中更新）
   useEffect(() => {
     if (hasStarted && messages.length > 0) {
-      updateMessages(messages);
+      // 检查最后一条消息是否还在 loading 状态
+      const lastMessage = messages[messages.length - 1];
+      const isLastMessageLoading = lastMessage?.status === 'loading';
+      
+      // 只有在最后一条消息不是 loading 状态时才更新本地存储
+      if (!isLastMessageLoading) {
+        updateMessages(messages);
+      }
     }
   }, [hasStarted, messages, updateMessages]);
 
