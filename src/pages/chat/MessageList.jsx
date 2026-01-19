@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, forwardRef, useImperativeHandle } from 'react';
 import { Bubble } from '@ant-design/x';
 import XMarkdown from '@ant-design/x-markdown';
 
@@ -88,7 +88,7 @@ const userBubbleProps = {
   },
 };
 
-export default function MessageList({ messages }) {
+const MessageList = forwardRef(function MessageList({ messages }, ref) {
   const messagesEndRef = useRef(null);
   const lastMessage = messages[messages.length - 1];
   const lastContent = lastMessage?.content;
@@ -100,6 +100,11 @@ export default function MessageList({ messages }) {
       behavior: instant ? 'instant' : 'smooth' 
     });
   }, []);
+
+  // 暴露 scrollToBottom 方法给父组件
+  useImperativeHandle(ref, () => ({
+    scrollToBottom,
+  }), [scrollToBottom]);
 
   // 节流滚动（打字时用，每 150ms 最多触发一次）
   const throttledScroll = useCallback(
@@ -152,5 +157,7 @@ export default function MessageList({ messages }) {
       <div ref={messagesEndRef} />
     </div>
   );
-}
+});
+
+export default MessageList;
 

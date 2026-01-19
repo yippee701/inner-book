@@ -81,15 +81,23 @@ export default function Chat() {
   const [pendingReport, setPendingReport] = useState(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const inputAreaRef = useRef(null);
+  const messageListRef = useRef(null);
 
   // 监听键盘弹起（移动端）
   useEffect(() => {
     const handleViewportResize = () => {
-      console.log('键盘高度', window.innerHeight, window.visualViewport.height);
       if (window.visualViewport) {
         // 计算键盘高度 = 屏幕高度 - 可视区域高度
         const keyboardH = window.innerHeight - window.visualViewport.height;
-        setKeyboardHeight(keyboardH > 0 ? keyboardH : 0);
+        const newHeight = keyboardH > 0 ? keyboardH : 0;
+        setKeyboardHeight(newHeight);
+        
+        // 键盘弹起后，滚动消息列表到底部
+        if (newHeight > 0 && hasStarted && messageListRef.current) {
+          setTimeout(() => {
+            messageListRef.current?.scrollToBottom(true);
+          }, 100); // 延迟一点确保键盘动画完成
+        }
       }
     };
 
@@ -105,7 +113,7 @@ export default function Chat() {
         window.visualViewport.removeEventListener('scroll', handleViewportResize);
       }
     };
-  }, []);
+  }, [hasStarted]);
 
   // 组件挂载时检查是否有未完成的报告
   useEffect(() => {
@@ -235,7 +243,7 @@ export default function Chat() {
               welcomeMessage={welcomeMessage} 
             />
           ) : (
-            <MessageList messages={messages} />
+            <MessageList ref={messageListRef} messages={messages} />
           )}
         </div>
       </div>
@@ -244,7 +252,7 @@ export default function Chat() {
       {hasStarted && (
       <div 
         ref={inputAreaRef}
-        className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-4 z-20 transition-[bottom] duration-150"
+        className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-2 pt-2 z-20 transition-[bottom] duration-150"
         style={{ bottom: keyboardHeight }}
       >
         <div 
