@@ -146,18 +146,6 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
       const padding = 20; // 底部边距
       const targetScrollTop = scrollHeight - availableHeight + padding;
       
-      console.log('滚动计算:', {
-        keyboardHeight: currentKeyboardHeight,
-        visualViewportHeight,
-        containerTop: containerRect.top,
-        containerClientHeight: container.clientHeight,
-        availableHeight,
-        scrollHeight,
-        targetScrollTop,
-        currentScrollTop: container.scrollTop,
-        maxScrollTop: scrollHeight - container.clientHeight
-      });
-      
       // 确保滚动位置在有效范围内
       const maxScrollTop = scrollHeight - container.clientHeight;
       const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));

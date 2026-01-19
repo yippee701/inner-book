@@ -16,7 +16,6 @@ export function useProfile() {
 
   // 加载页面数据（对话历史和裂变进度）
   const loadData = async () => {
-    console.log(isLoading);
     setError(null);
     
     try {

@@ -103,19 +103,10 @@ export default function Chat() {
       const keyboardH = initialViewportHeight.current - currentHeight;
       const newHeight = keyboardH > 0 ? keyboardH : 0;
       
-      console.log('键盘高度计算:', {
-        initialHeight: initialViewportHeight.current,
-        currentHeight,
-        keyboardH: newHeight,
-        hasStarted,
-        hasMessageListRef: !!messageListRef.current
-      });
-      
       setKeyboardHeight(newHeight);
       
       // 键盘弹起后，滚动消息列表到底部（考虑键盘高度）
       if (newHeight > 0 && hasStarted && messageListRef.current) {
-        console.log('触发滚动到底部');
         setTimeout(() => {
           messageListRef.current?.scrollToBottom(true, newHeight);
         }, 100); // 延迟一点确保键盘动画完成
