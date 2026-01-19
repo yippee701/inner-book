@@ -75,6 +75,38 @@ export function ReportProvider({ children }) {
     }
   }, []);
 
+    // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）
+    const syncLocalReportsToRemote = useCallback(async () => {
+      if (!isLoggedIn) return;
+      
+      try {
+        const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+        if (localReports.length === 0) return;
+        
+        // 区分已完成和未完成的报告
+        const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
+        const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
+        
+        if (completedReports.length === 0) {
+          console.log('没有需要同步的已完成报告');
+          return;
+        }
+        
+        console.log('正在同步已完成的报告到远端...', completedReports.length);
+        
+        for (const report of completedReports) {
+          await saveReportToRemote(report);
+          console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
+        }
+        
+        // 只保留未完成的报告在本地
+        localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(pendingReports));
+        console.log('已完成报告同步完成，本地保留未完成报告数:', pendingReports.length);
+      } catch (err) {
+        console.error('同步本地报告失败:', err);
+      }
+    }, [isLoggedIn, saveReportToRemote]);
+    
   // 检查登录状态并同步报告（供登录/注册成功后调用）
   const checkLoginAndSync = useCallback(async () => {
     const loggedIn = checkLogin();
@@ -154,38 +186,6 @@ export function ReportProvider({ children }) {
       throw err;
     }
   }, []);
-
-  // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）
-  const syncLocalReportsToRemote = useCallback(async () => {
-    if (!isLoggedIn) return;
-    
-    try {
-      const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
-      if (localReports.length === 0) return;
-      
-      // 区分已完成和未完成的报告
-      const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
-      const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
-      
-      if (completedReports.length === 0) {
-        console.log('没有需要同步的已完成报告');
-        return;
-      }
-      
-      console.log('正在同步已完成的报告到远端...', completedReports.length);
-      
-      for (const report of completedReports) {
-        await saveReportToRemote(report);
-        console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
-      }
-      
-      // 只保留未完成的报告在本地
-      localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(pendingReports));
-      console.log('已完成报告同步完成，本地保留未完成报告数:', pendingReports.length);
-    } catch (err) {
-      console.error('同步本地报告失败:', err);
-    }
-  }, [isLoggedIn, saveReportToRemote]);
 
   // 登录后自动同步本地报告
   useEffect(() => {
