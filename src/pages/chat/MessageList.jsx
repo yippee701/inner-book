@@ -114,19 +114,21 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
   // 滚动到底部（考虑键盘高度）
   const scrollToBottom = useCallback((instant = false, overrideKeyboardHeight = null) => {
     const container = getScrollContainer();
-    const endElement = messagesEndRef.current;
     
-    if (!endElement || !container) return;
+    if (!container) return;
     
     // 使用传入的键盘高度，如果没有则使用 prop 中的值
     const currentKeyboardHeight = overrideKeyboardHeight !== null ? overrideKeyboardHeight : keyboardHeight;
     
     if (container === window) {
       // 如果容器是 window，使用 scrollIntoView
-      endElement.scrollIntoView({ 
-        behavior: instant ? 'instant' : 'smooth',
-        block: 'end'
-      });
+      const endElement = messagesEndRef.current;
+      if (endElement) {
+        endElement.scrollIntoView({ 
+          behavior: instant ? 'instant' : 'smooth',
+          block: 'end'
+        });
+      }
     } else {
       // 使用 visualViewport 获取实际可视区域高度（考虑键盘）
       const visualViewportHeight = window.visualViewport?.height || window.innerHeight;
@@ -138,19 +140,11 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
       // 考虑键盘高度：可用高度 = 可视区域高度 - 容器顶部位置 - 键盘高度
       const availableHeight = visualViewportHeight - containerTopInViewport - currentKeyboardHeight;
       
-      // 计算消息底部元素在容器内容中的位置
-      // 方法：从元素向上遍历到容器，累加 offsetTop
-      let element = endElement;
-      let endTopInContainer = 0;
-      while (element && element !== container) {
-        endTopInContainer += element.offsetTop;
-        element = element.offsetParent;
-      }
-      const endBottomInContainer = endTopInContainer + endElement.offsetHeight;
-      
-      // 计算目标滚动位置：让消息底部在可视区域底部可见
-      const padding = 30;
-      const targetScrollTop = endBottomInContainer - availableHeight + padding;
+      // 直接使用 scrollHeight 计算滚动到底部的位置
+      // scrollTop = scrollHeight - availableHeight
+      const scrollHeight = container.scrollHeight;
+      const padding = 20; // 底部边距
+      const targetScrollTop = scrollHeight - availableHeight + padding;
       
       console.log('滚动计算:', {
         keyboardHeight: currentKeyboardHeight,
@@ -158,15 +152,14 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
         containerTop: containerRect.top,
         containerClientHeight: container.clientHeight,
         availableHeight,
-        endTopInContainer,
-        endBottomInContainer,
+        scrollHeight,
         targetScrollTop,
-        scrollHeight: container.scrollHeight,
-        currentScrollTop: container.scrollTop
+        currentScrollTop: container.scrollTop,
+        maxScrollTop: scrollHeight - container.clientHeight
       });
       
       // 确保滚动位置在有效范围内
-      const maxScrollTop = container.scrollHeight - container.clientHeight;
+      const maxScrollTop = scrollHeight - container.clientHeight;
       const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
       
       if (instant) {
