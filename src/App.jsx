@@ -7,6 +7,7 @@ import LoginPage from './pages/settings/user/login'
 import RegisterPage from './pages/settings/user/register'
 import ReportLoading from './pages/report/ReportLoading'
 import ReportResult from './pages/report/Result'
+import ShareLanding from './pages/share/shareLanding'
 import { ToastProvider } from './components/Toast'
 import { ReportProvider } from './contexts/ReportContext'
 import './index.css'
@@ -28,6 +29,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/report-loading" element={<ReportLoading />} />
             <Route path="/report-result" element={<ReportResult />} />
+            <Route path="/share" element={<ShareLanding />} />
           </Routes>
         </Router>
       </ToastProvider>
