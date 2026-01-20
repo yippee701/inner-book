@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import Bmob from 'hydrogen-js-sdk';
 import { getCurrentUsername, getCurrentUserObjectId } from '../utils/user';
-import { generateReportTitle } from '../utils/chat';
+import { generateReportTitle, extractReportSubTitle } from '../utils/chat';
 
 const ReportContext = createContext(null);
 
@@ -74,16 +74,23 @@ export function ReportProvider({ children }) {
       const username = getCurrentUsername();
       if (!username) throw new Error('未获取到用户名');
       
+      // 从报告内容中提取 h1 标题作为 subTitle
+      const subTitle = extractReportSubTitle(report.content);
+      
+      // 从 content 中移除 h1 标题行（已单独存储为 subTitle）
+      const contentWithoutTitle = (report.content || '').replace(/^#\s+.+\n?/m, '').trim();
+      
       const query = Bmob.Query('Report');
-      query.set('content', report.content || '');
+      query.set('content', contentWithoutTitle || '');
       query.set('username', username);
       query.set('title', report.title);
+      query.set('subTitle', subTitle); // 存储报告副标题（h1 内容）
       query.set('status', report.status);
       query.set('mode', report.mode);
       query.set('messages', JSON.stringify(report.messages || [])); // 存储对话记录
       
       const res = await query.save();
-      console.log('报告保存到远端成功:', res);
+      console.log('报告保存到远端成功:', res, 'subTitle:', subTitle);
 
       await updateUserRemainingReport();
 
