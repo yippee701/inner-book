@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import Bmob from 'hydrogen-js-sdk';
 import { getCurrentUsername, getCurrentUserObjectId } from '../utils/user';
 import { generateReportTitle, extractReportSubTitle } from '../utils/chat';
+import { useRdb } from './cloudbaseContext';
 
 const ReportContext = createContext(null);
 
@@ -18,7 +18,7 @@ const LOCAL_REPORTS_KEY = 'pendingReports';
 3. 报告生成完成
    └─ completeReport()
        ├─ 更新本地 (status: completed, 包含 content + messages)
-       └─ 如果已登录 → saveReportToRemote() 保存到 Bmob (包含 messages)
+       └─ 如果已登录 → saveReportToRemote() 保存到远端 (包含 messages)
                      └─ 成功后从本地删除
 
 4. 登录后自动同步
@@ -28,6 +28,7 @@ const LOCAL_REPORTS_KEY = 'pendingReports';
 */
 
 export function ReportProvider({ children }) {
+  const rdb = useRdb();
   const [reportState, setReportState] = useState({
     content: '',         // 报告内容（去除 [Report] 前缀）
     messages: [],        // 对话记录
@@ -54,21 +55,15 @@ export function ReportProvider({ children }) {
       const objectId = getCurrentUserObjectId();
       if (!objectId) throw new Error('获取用户 objectId 失败');
 
-      const query = Bmob.Query('_User')
-      query.get(objectId).then(res => {
-          res.increment('remainingReport', -1);
-          res.save();
-          console.log('更新用户剩余报告成功');
-      }).catch(err => {
-          console.log(err)
-      })
+      // TODO: 更新用户剩余报告
+      debugger
     } catch (err) {
       console.error('更新用户剩余报告失败:', err);
       throw err;
     }
   }, []);
 
-  // 保存报告到远端 Bmob
+  // 保存报告到远端
   const saveReportToRemote = useCallback(async (report) => {
     try {
       const username = getCurrentUsername();
@@ -80,32 +75,39 @@ export function ReportProvider({ children }) {
       // 从 content 中移除 h1 标题行（已单独存储为 subTitle）
       const contentWithoutTitle = (report.content || '').replace(/^#\s+.+\n?/m, '').trim();
       
-      const query = Bmob.Query('Report');
-      query.set('content', contentWithoutTitle || '');
-      query.set('username', username);
-      query.set('title', report.title);
-      query.set('subTitle', subTitle); // 存储报告副标题（h1 内容）
-      query.set('status', report.status);
-      query.set('mode', report.mode);
-      query.set('messages', JSON.stringify(report.messages || [])); // 存储对话记录
-      
-      const res = await query.save();
-      console.log('报告保存到远端成功:', res, 'subTitle:', subTitle);
+      const { data, error } = await rdb.from('report').insert({
+        content: contentWithoutTitle || '',
+        username: username,
+        title: report.title,
+        subTitle: subTitle,
+        status: report.status,
+        mode: report.mode,
+        messages: JSON.stringify(report.messages || []),
+      });
+
+      if (error) {
+        console.error('报告保存到远端失败:', error);
+        throw error;
+      }
+
+      console.log('报告保存到远端成功:', data, 'subTitle:', subTitle);
 
       await updateUserRemainingReport();
 
       // 把报告 id 拼到 url 参数上
-      const reportId = res.objectId;
-      const routePath = `/report-result?mode=${report.mode}&reportId=${reportId}`;
-      // 只修改 location.hash，不进行跳转
-      window.location.hash = routePath;
+      const reportId = data?.[0]?._id || data?.[0]?.id;
+      if (reportId) {
+        const routePath = `/report-result?mode=${report.mode}&reportId=${reportId}`;
+        // 只修改 location.hash，不进行跳转
+        window.location.hash = routePath;
+      }
 
-      return res;
+      return data;
     } catch (err) {
       console.error('报告保存到远端失败:', err);
       throw err;
     }
-  }, []);
+  }, [rdb, updateUserRemainingReport]);
 
   // 检测登录状态
   const checkLogin = useCallback(() => {

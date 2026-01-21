@@ -1,8 +1,7 @@
 /**
- * Profile API - 用户资料和对话历史相关接口
+ * Profile API - 用户资料和报告历史相关接口
  */
 
-import Bmob from 'hydrogen-js-sdk';
 import { getCurrentUsername } from '../utils/user';
 
 // 是否使用 Mock 数据
@@ -46,65 +45,6 @@ async function mockRestartConversation(conversationId) {
   return { success: true, newConversationId: `conv_new_${Date.now()}` };
 }
 
-
-/**
- * 真实 API: 获取对话历史列表（从 Bmob Report 表查询）
- */
-async function fetchReports() {
-  const username = getCurrentUsername();
-  if (!username) {
-    return [];
-  }
-
-  try {
-    const query = Bmob.Query('Report');
-    query.equalTo('username', '==', username);
-    query.order('-createdAt'); // 按创建时间倒序
-    
-    const res = await query.find();
-    
-    if (res && res.length > 0) {
-      // 转换为对话列表格式
-      return res.map(report => ({
-        id: report.objectId,
-        title: report.title || '未命名报告',
-        createdAt: report.createdAt,
-        status: report.status || 'completed',
-        storageType: report.storageType || null,
-        storageInfo: report.storageInfo || null,
-        content: report.content,
-        mode: report.mode || 'discover-self', // 包含 mode 字段
-      }));
-    }
-    
-    return [];
-  } catch (err) {
-    console.error('获取对话历史失败:', err);
-    return [];
-  }
-}
-
-async function fetchUserExtraInfo() {
-  const username = getCurrentUsername();
-  if (!username) {
-    return {};
-  }
-
-  try {
-    const query = Bmob.Query('_User');
-    query.equalTo('username', '==', username);
-    const res = await query.find();
-    if (res && res.length > 0) {
-      return res[0];
-    }
-    
-    return {};
-  } catch (err) {
-    console.error('获取用户信息失败:', err);
-    return {};
-  }
-}
-
 /**
  * 真实 API: 重新开启对话
  */
@@ -119,8 +59,20 @@ async function fetchRestartConversation(conversationId) {
 
 // ========== 导出的 API 函数 ==========
 
-export async function getUserExtraInfo() {
-  return fetchUserExtraInfo();
+export async function getUserExtraInfo(rdb) {
+  const username = getCurrentUsername();
+  if (!username) {
+    return {};
+  }
+  const { data, error } = await rdb.from("user").select().eq('username', username);
+
+  if (error) {
+    console.error('获取用户信息失败:', error);
+    return {};
+  }
+
+  return data[0] || {};
+
 }
 
 /**
@@ -133,6 +85,17 @@ export async function restartConversation(conversationId) {
   return fetchRestartConversation(conversationId);
 }
 
-export async function getReports() {
-  return fetchReports();
+export async function getReports(rdb) {
+  const username = getCurrentUsername();
+  if (!username) {
+    return [];
+  }
+
+  const { data, error } = await rdb.from("report").select('_id, title, createdAt, status').eq('username', username);
+  if (error) {
+    console.error('获取对话历史失败:', error);
+    return [];
+  }
+
+  return data[0] || [];
 }

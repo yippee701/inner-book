@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReports, getUserExtraInfo, restartConversation } from '../api/profile';
 import { isLoggedIn } from '../utils/user';
+import { useRdb } from '../contexts/cloudbaseContext';
 
 /**
  * 检查用户是否有剩余对话次数
@@ -22,6 +23,7 @@ export function checkCanStartChat(isUserLoggedIn, userExtraInfo) {
  */
 export function useProfile() {
   const navigate = useNavigate();
+  const rdb = useRdb();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -41,8 +43,8 @@ export function useProfile() {
       
       // 获取对话历史和裂变进度
       const [convData, userExtraInfo] = await Promise.all([
-        getReports(),
-        getUserExtraInfo(),
+        getReports(rdb),
+        getUserExtraInfo(rdb),
       ]);
       
       setReports(convData);

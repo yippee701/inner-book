@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import Bmob from 'hydrogen-js-sdk';
-
+import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useProfile } from '../../../hooks/useProfile';
 import { useReport } from '../../../contexts/ReportContext';
 
@@ -385,6 +384,7 @@ function NotLoggedIn({ onLogin }) {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const auth = useAuth();
   const { user, reports, userExtraInfo, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
   const { setHistoryReport } = useReport();
 
@@ -411,10 +411,11 @@ export default function ProfilePage() {
   // 处理退出登录
   const handleLogout = async () => {
     try {
-      // 这里会把 localStorage 中所有数据清空，包括 pendingReport 数据
-      Bmob.User.logout();
+      // 退出登录
+      // TODO： 确认是否会自动清除 localStorage，清除哪些内容
+      await auth.signOut();
       
-      // 刷新页面或跳转到首页
+      // 跳转到首页
       navigate('/');
     } catch (err) {
       console.error('退出登录失败:', err);

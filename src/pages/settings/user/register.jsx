@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import Bmob from 'hydrogen-js-sdk';
+import { useAuth } from '../../../contexts/cloudbaseContext';
 
 // ========== 通用组件 ==========
 
@@ -130,6 +130,7 @@ function Agreement() {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const auth = useAuth();
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
   
@@ -159,23 +160,16 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      const params = {
-        username,
-        password,
-        email: `${username}@temp.com`,
-        currentInvites: 0,
-        remainingReport: 2,
-        level: 0,
-      };
-      
-      // 如果填写了手机号，添加到注册参数
-      if (phone) {
-        params.phone = phone;
-      }
-      
-      console.log('注册参数:', params);
-      
-      const res = await Bmob.User.register(params);
+      const { data, error } = await auth.signUp({
+        phone_number: phone || '',
+        // TODO: verification_code: verificationCode,
+        // TODO: verification_token: verificationTokenRes.verification_token,
+        name: username,
+        // 可选，设置密码
+        password: password,
+        // 可选，设置登录用户名
+        username: "username",
+      });
       
       if (res.code && res.error) {
         throw { code: res.code, message: res.error };

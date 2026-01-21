@@ -1,5 +1,4 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import Bmob from "hydrogen-js-sdk"
 import Homepage from './pages/Homepage'
 import Chat from './pages/chat/Chat'
 import ProfilePage from './pages/settings/profile/profile'
@@ -10,30 +9,29 @@ import ReportResult from './pages/report/Result'
 import ShareLanding from './pages/share/shareLanding'
 import { ToastProvider } from './components/Toast'
 import { ReportProvider } from './contexts/ReportContext'
+import { CloudbaseProvider } from './contexts/cloudbaseContext'
 import './index.css'
 
 function App() {
-  const appSecret = import.meta.env.VITE_BMOB_APP_SECRET;
-  const apiSecCode = import.meta.env.VITE_BMOB_API_SEC_CODE;
-  Bmob.initialize(appSecret, apiSecCode);
-
   return (
-    <ReportProvider>
-      <ToastProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/report-loading" element={<ReportLoading />} />
-            <Route path="/report-result" element={<ReportResult />} />
-            <Route path="/share" element={<ShareLanding />} />
-          </Routes>
-        </Router>
-      </ToastProvider>
-    </ReportProvider>
+    <CloudbaseProvider>
+      <ReportProvider>
+        <ToastProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/report-loading" element={<ReportLoading />} />
+              <Route path="/report-result" element={<ReportResult />} />
+              <Route path="/share" element={<ShareLanding />} />
+            </Routes>
+          </Router>
+        </ToastProvider>
+      </ReportProvider>
+    </CloudbaseProvider>
   )
 }
 
