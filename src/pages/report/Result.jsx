@@ -54,7 +54,7 @@ function ConversionZone({ onUpgrade, onShare }) {
               border: '1px solid rgba(167, 139, 250, 0.3)',
             }}
           >
-            邀请好友
+            分享好友
           </button>
           <button 
             onClick={onUpgrade}
