@@ -204,7 +204,7 @@ async function handleStreamResponse(response, onStream) {
           fullContent += content;
           onStream(fullContent);
         }
-      } catch (e) {
+      } catch {
         // 忽略解析错误
       }
     }
@@ -223,7 +223,7 @@ async function handleStreamResponse(response, onStream) {
             fullContent += content;
             onStream(fullContent);
           }
-        } catch (e) {
+        } catch {
           // 忽略
         }
       }

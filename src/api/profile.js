@@ -40,7 +40,7 @@ const MOCK_CONVERSATIONS = [
 /**
  * Mock: 重新开启对话
  */
-async function mockRestartConversation(conversationId) {
+async function mockRestartConversation(_conversationId) {
   await new Promise(resolve => setTimeout(resolve, 300));
   return { success: true, newConversationId: `conv_new_${Date.now()}` };
 }

@@ -1,4 +1,4 @@
-function onRequest(request, response, modules) {
+function onRequest(_request, response, modules) {
   const http = modules.oHttp;
   const HOST_NAME = 'sg.uiuiapi.com';
   const OPENAI_API_KEY = ""; // 请在环境变量中配置
@@ -38,7 +38,9 @@ function onRequest(request, response, modules) {
                       if (errJson.error && errJson.error.message) {
                           errMsg = errJson.error.message;
                       }
-                  } catch (e) {}
+                  } catch {
+                    // 忽略解析错误
+                  }
                   response.end("chat 接口返回错误：" + errMsg);
               });
               return;
@@ -72,7 +74,7 @@ function onRequest(request, response, modules) {
                       if (content) {
                           response.write(content);
                       }
-                  } catch (e) {
+                  } catch {
                       // 忽略解析错误
                   }
               }

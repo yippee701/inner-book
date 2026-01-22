@@ -31,7 +31,7 @@ export function useProfile() {
   const isUserLoggedIn = isLoggedIn();
 
   // 加载页面数据（对话历史和裂变进度）
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setError(null);
     
     try {
@@ -55,7 +55,7 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isUserLoggedIn, rdb]);
 
   const getUserInfoFromLocal = () => {
     const bmobData = localStorage.getItem('bmob');
@@ -67,7 +67,7 @@ export function useProfile() {
   // 初始加载
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // 重新开启对话
   const handleRestartConversation = useCallback(async (conversationId) => {

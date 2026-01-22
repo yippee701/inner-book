@@ -162,7 +162,7 @@ export default function ReportLoading() {
     if (isComplete && content) {
       navigate(`/report-result?mode=${mode}`);
     }
-  }, [isComplete, content, navigate]);
+  }, [isComplete, content, navigate, mode]);
 
   return (
     <div className="h-screen-safe w-full bg-white flex flex-col overflow-hidden relative">

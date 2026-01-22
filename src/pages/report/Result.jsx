@@ -411,7 +411,7 @@ export default function Result() {
     const shareUrl = `${baseUrl}#/share?mode=${mode}&reportId=${reportId}`;    
     setShareUrl(shareUrl);
     setIsShareDialogOpen(true);
-  }, [message]);
+  }, [message, mode]);
 
   // 关闭分享弹窗
   const handleCloseShareDialog = useCallback(() => {

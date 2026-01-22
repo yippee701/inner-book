@@ -193,6 +193,8 @@ export default function LoginPage() {
     if (!canSubmitPhone || loading) return;
     setError('');
 
+    // TODO 现在会报用户不存在
+    
     // 先验证验证码
     let verificationTokenRes = null;
     if (verification && verificationCode) {
