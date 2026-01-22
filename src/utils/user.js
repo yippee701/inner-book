@@ -1,13 +1,11 @@
-import { CLOUDBASE_ENV } from '../constants/global';
-
-const key = `user_info_${CLOUDBASE_ENV}`
+import { CLOUDBASE_ENV, USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
 
 /**
  * 从 localStorage 获取当前用户名
  */
 export function getCurrentUsername() {
   try {
-    const localUserInfo = localStorage.getItem(key);
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
     if (!localUserInfo) return null;
     const parsed = JSON.parse(localUserInfo);
     return parsed.content?.name || null;
@@ -21,7 +19,7 @@ export function getCurrentUsername() {
  */
 export function getCurrentUserObjectId() {
   try {
-    const localUserInfo = localStorage.getItem(key);
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
     if (!localUserInfo) return null;
     const parsed = JSON.parse(localUserInfo);
     return parsed.content?.uid || null;
@@ -37,11 +35,11 @@ export function getCurrentUserObjectId() {
  */
 export function isLoggedIn() {
   try {
-    const localUserInfo = localStorage.getItem(key);
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
     if (!localUserInfo) return false;
     
     const parsed = JSON.parse(localUserInfo);
-    return parsed.content ? true : false;
+    return parsed.content ? (parsed.content.name === 'anonymous' ? false : true) : false;
   } catch {
     return false;
   }

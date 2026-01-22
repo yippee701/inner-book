@@ -164,9 +164,9 @@ const markdownComponents = {
     <p 
       className="text-base mb-4 -mt-3"
       style={{ color: '#666666' }}
-    >
+        >
       {children}
-    </p>
+        </p>
   ),
 
   // 四级标题 - 子章节
@@ -181,14 +181,14 @@ const markdownComponents = {
 
   // 引用块 - 核心洞察框
   blockquote: ({ children }) => (
-    <div 
+        <div 
       className="rounded-2xl p-5 mb-4"
       style={{
         background: 'linear-gradient(135deg, rgba(107, 107, 255, 0.08), rgba(139, 92, 246, 0.08))',
         border: '1px solid rgba(139, 92, 246, 0.15)',
         backdropFilter: 'blur(10px)',
       }}
-    >
+        >
       <div 
         className="text-base leading-relaxed"
         style={{ 
@@ -203,7 +203,7 @@ const markdownComponents = {
 
   // 段落
   p: ({ children }) => (
-    <p 
+            <p 
       className="text-[15px] leading-[1.7] mb-3"
       style={{ color: '#1F2937' }}
     >
@@ -242,7 +242,7 @@ const markdownComponents = {
             style={{
               background: 'rgba(255,255,255,0.8)',
               filter: 'blur(1px)',
-            }}
+              }}
           />
         </div>
         {/* 文字 */}
@@ -324,8 +324,8 @@ function LoginOverlay({ onLogin, registerUrl }) {
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           border: '1px solid rgba(167, 139, 250, 0.2)',
-        }}
-      >
+            }}
+          >
         {/* 锁图标 */}
         <div 
           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
@@ -367,7 +367,7 @@ function LoginOverlay({ onLogin, registerUrl }) {
           to={registerUrl || '/register'} 
           className="mt-3 text-sm"
           style={{ color: '#8B5CF6' }}
-        >
+      >
           还没有账号？立即注册
         </Link>
       </div>
@@ -450,7 +450,7 @@ export default function Result() {
         <Link 
           to="/"
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-        >
+      >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>

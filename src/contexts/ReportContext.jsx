@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { getCurrentUsername, getCurrentUserObjectId } from '../utils/user';
+import { getCurrentUsername, getCurrentUserObjectId, isLoggedIn } from '../utils/user';
 import { generateReportTitle, extractReportSubTitle } from '../utils/chat';
 import { useRdb } from './cloudbaseContext';
 
@@ -111,29 +111,8 @@ export function ReportProvider({ children }) {
 
   // 检测登录状态
   const checkLogin = useCallback(() => {
-    try {
-      const bmobData = localStorage.getItem('bmob');
-      if (!bmobData) {
-        setIsLoggedIn(prev => {
-          if (prev !== false) console.log('登录状态变化: 已登出');
-          return false;
-        });
-        return false;
-      }
-      const parsed = JSON.parse(bmobData);
-      const loggedIn = !!parsed.sessionToken;
-      setIsLoggedIn(prev => {
-        if (prev !== loggedIn) {
-          console.log('登录状态变化:', loggedIn ? '已登录' : '已登出');
-        }
-        return loggedIn;
-      });
-      return loggedIn;
-    } catch {
-      setIsLoggedIn(false);
-      return false;
-    }
-  }, []);
+    return isLoggedIn();
+  }, [isLoggedIn]);
 
     // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）
     const syncLocalReportsToRemote = useCallback(async () => {

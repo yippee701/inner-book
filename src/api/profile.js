@@ -64,7 +64,7 @@ export async function getUserExtraInfo(rdb) {
   if (!username) {
     return {};
   }
-  const { data, error } = await rdb.from("user").select().eq('username', username);
+  const { data, error } = await rdb.from("user_info").select('level, remainingReport, currentInvites').eq('username', username);
 
   if (error) {
     console.error('获取用户信息失败:', error);
@@ -91,11 +91,11 @@ export async function getReports(rdb) {
     return [];
   }
 
-  const { data, error } = await rdb.from("report").select('_id, title, createdAt, status').eq('username', username);
+  const { data, error } = await rdb.from("report").select('title, createdAt, status, objectId').eq('username', username);
   if (error) {
     console.error('获取对话历史失败:', error);
     return [];
   }
 
-  return data[0] || [];
+  return data || [];
 }

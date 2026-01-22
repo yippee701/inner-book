@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReports, getUserExtraInfo, restartConversation } from '../api/profile';
-import { isLoggedIn } from '../utils/user';
+import { isLoggedIn, getCurrentUsername } from '../utils/user';
 import { useRdb } from '../contexts/cloudbaseContext';
+import { USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
 
 /**
  * 检查用户是否有剩余对话次数
@@ -57,13 +58,6 @@ export function useProfile() {
     }
   }, [isUserLoggedIn, rdb]);
 
-  const getUserInfoFromLocal = () => {
-    const bmobData = localStorage.getItem('bmob');
-    if (!bmobData) return null;
-    const parsed = JSON.parse(bmobData);
-    return parsed || null;
-  }
-
   // 初始加载
   useEffect(() => {
     loadData();
@@ -92,7 +86,9 @@ export function useProfile() {
   return {
     reports,
     userExtraInfo,
-    user: getUserInfoFromLocal(),
+    user: {
+      username: getCurrentUsername(),
+    },
     isLoading: isLoading,
     error,
     restartConversation: handleRestartConversation,

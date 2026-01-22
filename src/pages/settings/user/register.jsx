@@ -185,7 +185,7 @@ export default function RegisterPage() {
   // 注册
   const handleRegister = useCallback(async () => {
     if (!canSubmit || loading || !auth) return;
-
+    
     setError('');
     setSuccess('');
     setLoading(true);
@@ -227,13 +227,13 @@ export default function RegisterPage() {
       console.log('注册成功:', data);
       setSuccess('注册成功！正在跳转...');
       setLoading(false);
-
+      
       // 延迟跳转
       setTimeout(() => {
         if (returnUrl) {
           navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
         } else {
-          navigate('/login');
+        navigate('/login');
         }
       }, 1500);
     } catch (err) {

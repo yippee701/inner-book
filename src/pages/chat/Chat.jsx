@@ -87,7 +87,7 @@ export default function Chat() {
   const messageListRef = useRef(null);
   // 记录初始视口高度（键盘未弹起时的高度）
   const initialViewportHeight = useRef(window.visualViewport?.height || window.innerHeight);
-  
+
   // 获取用户信息用于检查对话次数
   const { isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
   
