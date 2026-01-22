@@ -146,9 +146,12 @@ export default function LoginPage() {
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verification, setVerification] = useState(null);
 
   // 验证
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
+  const phoneNumber = phone ? `+86 ${phone}` : '';
   const canSendCode = isValidPhone && countdown === 0;
   const canSubmitPhone = isValidPhone && code.length === 6;
   const canSubmitPassword = username.length >= 3 && password.length >= 6;
@@ -165,13 +168,16 @@ export default function LoginPage() {
     if (!canSendCode) return;
     setError('');
     try {
-      await cloudbase.requestSmsCode({ mobilePhoneNumber: phone });
+      const verificationResult = await auth.getVerification({
+        phone_number: phoneNumber,
+      });
+      setVerification(verificationResult);
       setCountdown(COUNTDOWN_SECONDS);
     } catch (err) {
-      setError('验证码发送失败，请稍后重试');
       console.error('发送验证码失败:', err);
+      setError('验证码发送失败，请稍后重试');
     }
-  }, [canSendCode, phone]);
+  }, [canSendCode, phoneNumber, auth]);
 
   // 处理登录成功
   const handleLoginSuccess = async (res) => {
@@ -181,10 +187,28 @@ export default function LoginPage() {
     navigate(returnUrl || '/');
   };
 
+  
   // 手机号登录
   const handlePhoneLogin = useCallback(async () => {
     if (!canSubmitPhone || loading) return;
     setError('');
+
+    // 先验证验证码
+    let verificationTokenRes = null;
+    if (verification && verificationCode) {
+      try {
+        verificationTokenRes = await auth.verify({
+          verification_id: verification.verification_id,
+          verification_code: verificationCode,
+        });
+      } catch (err) {
+        console.error('验证码验证错误:', err);
+        setError('验证码错误，请重新输入');
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     
     try {
@@ -205,7 +229,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [canSubmitPhone, loading, phone, code, auth]);
+  }, [canSubmitPhone, loading, phone, code, auth, verification, verificationCode]);
 
   // 用户名密码登录
   const handlePasswordLogin = useCallback(async () => {
