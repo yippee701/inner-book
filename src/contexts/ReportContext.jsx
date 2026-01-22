@@ -111,7 +111,7 @@ export function ReportProvider({ children }) {
 
   // 检测登录状态
   const checkLogin = useCallback(() => {
-    return isLoggedIn();
+    return isLoggedIn;
   }, [isLoggedIn]);
 
     // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）

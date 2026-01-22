@@ -35,13 +35,13 @@ export function useProfile() {
   const loadData = useCallback(async () => {
     setError(null);
     
+    if (!rdb) return;
+    if (!isUserLoggedIn) {
+      setReports([]);
+      setUserExtraInfo({});
+      return;
+    }
     try {
-      if (!isUserLoggedIn) {
-        setReports([]);
-        setUserExtraInfo({});
-        return;
-      }
-      
       // 获取对话历史和裂变进度
       const [convData, userExtraInfo] = await Promise.all([
         getReports(rdb),

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import cloudbase from "@cloudbase/js-sdk";
+import { isLoggedIn } from '../utils/user';
 
 const CloudbaseContext = createContext(null);
 
@@ -31,7 +32,9 @@ export function CloudbaseProvider({ children }) {
     setRdb(rdbInstance);
 
     // 匿名登录
-    authInstance.signInAnonymously();
+    if (!isLoggedIn) {
+      authInstance.signInAnonymously();
+    }
 
     return () => {
       // 清理（如果需要）
