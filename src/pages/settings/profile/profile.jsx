@@ -387,7 +387,6 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const auth = useAuth();
   const { user, reports, userExtraInfo, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
-  const { setHistoryReport } = useReport();
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
@@ -400,13 +399,10 @@ export default function ProfilePage() {
 
   // 处理查看历史报告
   const handleViewReport = (report) => {
-    if (report.content) {
-      setHistoryReport(report.content);
-      // 将 reportId 和 mode 拼接到 URL 上
-      const mode = report.mode || 'discover-self';
-      const reportId = report.id;
-      navigate(`/report-result?mode=${mode}&reportId=${reportId}`);
-    }
+    // 将 reportId 和 mode 拼接到 URL 上
+    const mode = report.mode || 'discover-self';
+    const reportId = report.reportId;
+    navigate(`/report-result?mode=${mode}&reportId=${reportId}`);
   };
 
   // 处理退出登录
@@ -475,7 +471,7 @@ export default function ProfilePage() {
             {/* 对话卡片列表 */}
             <div className="flex flex-col gap-4">
               {reports.map((report, index) => (
-                <div key={report.objectId}>
+                <div key={report.reportId}>
                   <ReportCard 
                     report={report} 
                     onRestart={handleRestart}

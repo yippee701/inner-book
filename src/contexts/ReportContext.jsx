@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef } f
 import { getCurrentUsername, getCurrentUserObjectId, isLoggedIn } from '../utils/user';
 import { generateReportTitle, extractReportSubTitle } from '../utils/chat';
 import { useRdb } from './cloudbaseContext';
+import { REPORT_STATUS } from '../constants/reportStatus';
 
 const ReportContext = createContext(null);
 
@@ -39,8 +40,6 @@ export function ReportProvider({ children }) {
     currentMode: null,   // 当前报告的模式
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
   // 防止重复保存到远端
   const isSavingRef = useRef(false);
   
@@ -52,8 +51,8 @@ export function ReportProvider({ children }) {
 
   const updateUserRemainingReport = useCallback(async () => {
     try {
-      const objectId = getCurrentUserObjectId();
-      if (!objectId) throw new Error('获取用户 objectId 失败');
+      const reportId = getCurrentUserObjectId();
+      if (!reportId) throw new Error('获取用户 reportId 失败');
 
       // TODO: 更新用户剩余报告
       debugger
@@ -109,62 +108,47 @@ export function ReportProvider({ children }) {
     }
   }, [rdb, updateUserRemainingReport]);
 
-  // 检测登录状态
-  const checkLogin = useCallback(() => {
-    return isLoggedIn;
-  }, [isLoggedIn]);
-
-    // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）
-    const syncLocalReportsToRemote = useCallback(async () => {
-      if (!isLoggedIn) return;
+  // 同步本地报告到远端（只同步已完成的报告，generating 状态的保留在本地）
+  const syncLocalReportsToRemote = useCallback(async () => {
+    if (!isLoggedIn) return;
+    
+    try {
+      const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+      if (localReports.length === 0) return;
       
-      try {
-        const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
-        if (localReports.length === 0) return;
-        
-        // 区分已完成和未完成的报告
-        const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
-        const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
-        
-        if (completedReports.length === 0) {
-          console.log('没有需要同步的已完成报告');
-          return;
-        }
-        
-        console.log('正在同步已完成的报告到远端...', completedReports.length);
-        
-        for (const report of completedReports) {
-          await saveReportToRemote(report);
-          console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
-        }
-        
-        // 只保留未完成的报告在本地
-        localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(pendingReports));
-        console.log('已完成报告同步完成，本地保留未完成报告数:', pendingReports.length);
-      } catch (err) {
-        console.error('同步本地报告失败:', err);
+      // 区分已完成和未完成的报告
+      const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
+      const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
+      
+      if (completedReports.length === 0) {
+        console.log('没有需要同步的已完成报告');
+        return;
       }
-    }, [isLoggedIn, saveReportToRemote]);
+      
+      console.log('正在同步已完成的报告到远端...', completedReports.length);
+      
+      for (const report of completedReports) {
+        await saveReportToRemote(report);
+        console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
+      }
+      
+      // 只保留未完成的报告在本地
+      localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(pendingReports));
+      console.log('已完成报告同步完成，本地保留未完成报告数:', pendingReports.length);
+    } catch (err) {
+      console.error('同步本地报告失败:', err);
+    }
+  }, [saveReportToRemote]);
     
   // 检查登录状态并同步报告（供登录/注册成功后调用）
   const checkLoginAndSync = useCallback(async () => {
-    const loggedIn = checkLogin();
+    const loggedIn = isLoggedIn;
     if (loggedIn) {
       // 登录状态变为 true 时，useEffect 会自动触发同步
       // 但为了确保立即同步，这里也调用一次
       await syncLocalReportsToRemote();
     }
-  }, [checkLogin, syncLocalReportsToRemote]);
-
-  useEffect(() => {
-    // 初始化时检查一次
-    checkLogin();
-    // 监听 storage 变化（其他标签页登录/登出）
-    window.addEventListener('storage', checkLogin);
-    return () => {
-      window.removeEventListener('storage', checkLogin);
-    };
-  }, [checkLogin]);
+  }, [syncLocalReportsToRemote]);
 
   // 保存报告到本地 localStorage
   const saveReportToLocal = useCallback((report) => {
@@ -338,31 +322,43 @@ export function ReportProvider({ children }) {
     }
   }, [isLoggedIn, saveReportToRemote, updateLocalReport]);
 
-  // 重置报告状态
-  const resetReport = useCallback(() => {
-    setReportState({
-      content: '',
-      messages: [],
-      isGenerating: false,
-      isComplete: false,
-      isFromHistory: false,
-      currentReportId: null,
-      currentMode: null,
-    });
-  }, []);
-
-  // 设置历史报告内容（用于查看历史记录）
-  const setHistoryReport = useCallback((content, messages = []) => {
-    setReportState({
-      content: content || '',
-      messages: messages || [],
-      isGenerating: false,
-      isComplete: true,
-      isFromHistory: true,
-      currentReportId: null,
-      currentMode: null,
-    });
-  }, []);
+  const getReportDetail = useCallback(async (reportId) => {
+    if (!reportId) {
+      console.warn('reportId 为空，无法获取报告内容');
+      return '';
+    }
+    if (!rdb) {
+      console.warn('rdb 未初始化，无法获取报告内容');
+      return '';
+    }
+    
+    try {
+      const { data, error } = await rdb.from('report').select('content, status, subTitle, username').eq('reportId', reportId);
+      if (error) {
+        console.error('获取报告内容失败:', error);
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.warn('报告不存在:', reportId);
+        return '';
+      }
+      
+      const reportDetail = data[0] || '';
+      const isCompleted = data[0]?.status === REPORT_STATUS.COMPLETED;
+      
+      setReportState(prev => ({
+        ...prev,
+        content: reportDetail.content,
+        isComplete: isCompleted,
+      }));
+      
+      return reportDetail;
+    } catch (err) {
+      console.error('获取报告内容异常:', err);
+      return '';
+    }
+  }, [rdb]);
 
   // 获取指定模式下的未完成报告
   const getPendingReport = useCallback((mode) => {
@@ -407,9 +403,8 @@ export function ReportProvider({ children }) {
       updateMessages,
       updateReportContent,
       completeReport,
-      resetReport,
-      setHistoryReport,
       getPendingReport,
+      getReportDetail,
       resumeReport,
       saveReportToLocal,
       saveReportToRemote,

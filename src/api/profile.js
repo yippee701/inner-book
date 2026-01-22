@@ -91,7 +91,7 @@ export async function getReports(rdb) {
     return [];
   }
 
-  const { data, error } = await rdb.from("report").select('title, createdAt, status, objectId').eq('username', username);
+  const { data, error } = await rdb.from("report").select('title, createdAt, status, reportId').eq('username', username);
   if (error) {
     console.error('获取对话历史失败:', error);
     return [];

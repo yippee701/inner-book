@@ -15,7 +15,7 @@ export function getCurrentUsername() {
 }
 
 /**
- * 从 localStorage 获取当前用户 objectId
+ * 从 localStorage 获取当前用户 reportId
  */
 export function getCurrentUserObjectId() {
   try {

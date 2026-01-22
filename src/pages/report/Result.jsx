@@ -6,6 +6,7 @@ import { generateReportTitle } from '../../utils/chat';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { useToast } from '../../components/Toast';
 import ShareDialog from '../share/shareDialog';
+import { useRdb } from '../../contexts/cloudbaseContext';
 
 // ========== 子组件 ==========
 
@@ -122,6 +123,7 @@ function GlowingSphere() {
 
 /**
  * 自定义 Markdown 组件 - 用于结构化展示报告
+ * 注意：XMarkdown 的 components prop 接收 domNode 和 streamStatus，需要用 children 获取子元素
  */
 const markdownComponents = {
   // 一级标题 - 主标题（通常是报告标题）
@@ -164,9 +166,9 @@ const markdownComponents = {
     <p 
       className="text-base mb-4 -mt-3"
       style={{ color: '#666666' }}
-        >
+    >
       {children}
-        </p>
+    </p>
   ),
 
   // 四级标题 - 子章节
@@ -203,7 +205,7 @@ const markdownComponents = {
 
   // 段落
   p: ({ children }) => (
-            <p 
+    <p 
       className="text-[15px] leading-[1.7] mb-3"
       style={{ color: '#1F2937' }}
     >
@@ -290,7 +292,7 @@ const markdownComponents = {
  * 报告内容渲染组件
  * 使用 XMarkdown 渲染 Markdown 格式的报告，带自定义样式
  */
-function ReportContent({ content }) {
+function ReportContent({ content, subTitle }) {
     return (
       <div 
       className="rounded-3xl p-4 sm:p-8"
@@ -300,7 +302,7 @@ function ReportContent({ content }) {
         }}
       >
       <XMarkdown 
-        content={content}
+        content={`# ${subTitle}\n\n ${content}`}
         components={markdownComponents}
       />
       </div>
@@ -380,14 +382,17 @@ function LoginOverlay({ onLogin, registerUrl }) {
 export default function Result() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { content, isComplete, isLoggedIn } = useReport();
+  const { getReportDetail, content, isLoggedIn } = useReport();
+  const rdb = useRdb();
+  const [subTitle, setSubTitle] = useState('');
   const { message } = useToast();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
-
+  
   // 跳转到登录页（带返回地址）
   const handleGoToLogin = useCallback(() => {
     const returnUrl = `/profile`;
@@ -418,18 +423,46 @@ export default function Result() {
     setIsShareDialogOpen(false);
   }, []);
 
-  // 注意：报告保存逻辑已统一在 ReportContext 的 completeReport() 中处理
-  // 这里不再重复保存，避免多次调用接口
-
-  // 如果没有报告内容，重定向到首页
+  // 加载报告内容
   useEffect(() => {
-    if (!content && !isComplete) {
-      navigate('/');
+    // 等待 rdb 和 getReportDetail 初始化完成
+    if (!rdb || !getReportDetail) {
+      return;
     }
-  }, [content, isComplete, navigate]);
+
+    const loadReport = async () => {
+      const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+      const reportId = currentSearchParams.get('reportId');    
+      
+      if (!reportId) {
+        message.warning('报告 ID 不存在，无法查看');
+        navigate('/');
+        return;
+      }
+      
+      setIsLoadingReport(true);
+      try {
+        const reportDetail = await getReportDetail(reportId);
+        if (!reportDetail) {
+          message.warning('报告内容不存在');
+          navigate('/');
+          return;
+        }
+        setSubTitle(reportDetail.subTitle);
+      } catch (err) {
+        console.error('加载报告失败:', err);
+        message.error('加载报告失败，请稍后重试');
+        navigate('/');
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+
+    loadReport();
+  }, [navigate, getReportDetail, message, rdb]);
 
   // 没有内容时显示加载
-  if (!content) {
+  if (isLoadingReport || !content) {
     return (
       <div className="h-screen-safe flex items-center justify-center bg-white">
         <p style={{ color: '#6B7280' }}>加载中...</p>
@@ -471,7 +504,7 @@ export default function Result() {
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10">
         <div className="max-w-md mx-auto py-3">
-          <ReportContent content={content} />
+          <ReportContent content={content} subTitle={subTitle} />
         </div>
       </div>
 
