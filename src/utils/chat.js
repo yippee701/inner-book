@@ -29,3 +29,12 @@ export function extractReportSubTitle(content) {
   
   return '';
 }
+
+/**
+ * 清理报告内容，移除 [Report] 前缀 和 h1 标题
+ * @param {string} content - 报告内容（Markdown 格式）
+ * @returns {string} 清理后的报告内容
+ */
+export function cleanReportContent(content) {
+  return content.replace(/^\[Report\]\s*/i, '').replace(/^#\s+.+\n?/m, '').trim();
+}

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { getCurrentUsername, getCurrentUserObjectId, isLoggedIn } from '../utils/user';
-import { generateReportTitle, extractReportSubTitle } from '../utils/chat';
+import { getCurrentUsername, isLoggedIn } from '../utils/user';
+import { generateReportTitle, extractReportSubTitle, cleanReportContent } from '../utils/chat';
 import { useRdb } from './cloudbaseContext';
 import { REPORT_STATUS } from '../constants/reportStatus';
 import { getReportDetail } from '../api/report';
@@ -113,11 +113,8 @@ export function ReportProvider({ children }) {
         return reportId.substring(0, 10);
       }
       
-      // 从 content 中移除 h1 标题行（已单独存储为 subTitle）
-      const contentWithoutTitle = (report.content || '').replace(/^#\s+.+\n?/m, '').trim();
-      
       const { data, error } = await rdb.from('report').insert({
-        content: contentWithoutTitle || '',
+        content: cleanReportContent(report.content) || '',
         username: username,
         title: report.title,
         subTitle: subTitle,
@@ -134,7 +131,8 @@ export function ReportProvider({ children }) {
 
       console.log('报告保存到远端成功:', data, 'subTitle:', subTitle);
 
-      await updateUserRemainingReport();
+      // 改用邀请码逻辑，暂时不需要更新剩余次数
+      // await updateUserRemainingReport();
 
       // 把报告 id 拼到 url 参数上
       const reportId = data?.[0]?._id || data?.[0]?.id;
@@ -296,10 +294,10 @@ export function ReportProvider({ children }) {
 
   // 更新报告内容（流式）
   const updateReportContent = useCallback((content) => {
-    const cleanContent = content.replace(/^\[Report\]\s*/i, '');
     setReportState(prev => ({
       ...prev,
-      content: cleanContent,
+      subTitle: extractReportSubTitle(content),
+      content: cleanReportContent(content),
     }));
   }, []);
 
@@ -382,6 +380,7 @@ export function ReportProvider({ children }) {
         setReportState(prev => ({
           ...prev,
           content: reportDetail.content,
+          subTitle: reportDetail.subTitle,
           isComplete: reportDetail.isCompleted,
         }));
       }
@@ -456,4 +455,3 @@ export function useReport() {
   }
   return context;
 }
-

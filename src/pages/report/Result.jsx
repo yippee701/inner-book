@@ -2,7 +2,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useCallback, useMemo, useState } from 'react';
 import XMarkdown from '@ant-design/x-markdown';
 import { useReport } from '../../contexts/ReportContext';
-import { generateReportTitle, extractReportSubTitle } from '../../utils/chat';
+import { generateReportTitle, extractReportSubTitle, cleanReportContent } from '../../utils/chat';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { useToast } from '../../components/Toast';
 import ShareDialog from '../share/shareDialog';
@@ -429,14 +429,10 @@ export default function Result() {
     const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
     const reportId = currentSearchParams.get('reportId');
 
-    // 情况1：从 ReportLoading 跳转过来，content 已在 ReportContext 中
-    if (content) {
-      // 从 content 中提取 subTitle
-      const extractedSubTitle = extractReportSubTitle(content);
-      setSubTitle(extractedSubTitle);
-      // 从 content 中移除 h1 标题行（已单独存储为 subTitle）
-      const contentWithoutTitle = content.replace(/^#\s+.+\n?/m, '').trim();
-      setDisplayContent(contentWithoutTitle);
+    // 情况1：从 ReportLoading 跳转过来 或者已经拉取过一次了
+    if (content && subTitle) {
+      setDisplayContent(content);
+      setSubTitle(subTitle);
       setIsLoadingReport(false);
       return;
     }

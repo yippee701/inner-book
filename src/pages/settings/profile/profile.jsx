@@ -479,7 +479,7 @@ export default function ProfilePage() {
                   />
                   
                   {/* 在第二张卡片后显示裂变进度条 */}
-                  {index === 1 && <FissionBar userExtraInfo={userExtraInfo}/>}
+                  {/* {index === 1 && <FissionBar userExtraInfo={userExtraInfo}/>} */}
                 </div>
               ))}
             </div>
