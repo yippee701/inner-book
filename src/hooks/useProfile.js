@@ -37,8 +37,7 @@ export function useProfile() {
     
     if (!rdb) return;
     if (!isUserLoggedIn) {
-      setReports([]);
-      setUserExtraInfo({});
+      setIsLoading(false);
       return;
     }
     try {
