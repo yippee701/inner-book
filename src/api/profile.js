@@ -1,8 +1,7 @@
 /**
- * Profile API - 用户资料和对话历史相关接口
+ * Profile API - 用户资料和报告历史相关接口
  */
 
-import Bmob from 'hydrogen-js-sdk';
 import { getCurrentUsername } from '../utils/user';
 
 // 是否使用 Mock 数据
@@ -10,6 +9,43 @@ const IS_MOCK_MODE = true;
 
 // API 基础配置
 const API_BASE_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:80';
+
+// 缓存配置
+const CACHE_DURATION = 30 * 1000; // 30秒
+const cache = new Map();
+
+/**
+ * 获取缓存键
+ */
+function getCacheKey(rdb, table, params) {
+  return `${table}_${JSON.stringify(params)}`;
+}
+
+/**
+ * 检查缓存是否有效
+ */
+function getCachedData(cacheKey) {
+  const cached = cache.get(cacheKey);
+  if (!cached) return null;
+  
+  const now = Date.now();
+  if (now - cached.timestamp > CACHE_DURATION) {
+    cache.delete(cacheKey);
+    return null;
+  }
+  
+  return cached.data;
+}
+
+/**
+ * 设置缓存
+ */
+function setCachedData(cacheKey, data) {
+  cache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+}
 
 // ========== Mock 数据 ==========
 
@@ -41,68 +77,9 @@ const MOCK_CONVERSATIONS = [
 /**
  * Mock: 重新开启对话
  */
-async function mockRestartConversation(conversationId) {
+async function mockRestartConversation(_conversationId) {
   await new Promise(resolve => setTimeout(resolve, 300));
   return { success: true, newConversationId: `conv_new_${Date.now()}` };
-}
-
-
-/**
- * 真实 API: 获取对话历史列表（从 Bmob Report 表查询）
- */
-async function fetchReports() {
-  const username = getCurrentUsername();
-  if (!username) {
-    return [];
-  }
-
-  try {
-    const query = Bmob.Query('Report');
-    query.equalTo('username', '==', username);
-    query.order('-createdAt'); // 按创建时间倒序
-    
-    const res = await query.find();
-    
-    if (res && res.length > 0) {
-      // 转换为对话列表格式
-      return res.map(report => ({
-        id: report.objectId,
-        title: report.title || '未命名报告',
-        createdAt: report.createdAt,
-        status: report.status || 'completed',
-        storageType: report.storageType || null,
-        storageInfo: report.storageInfo || null,
-        content: report.content,
-        mode: report.mode || 'discover-self', // 包含 mode 字段
-      }));
-    }
-    
-    return [];
-  } catch (err) {
-    console.error('获取对话历史失败:', err);
-    return [];
-  }
-}
-
-async function fetchUserExtraInfo() {
-  const username = getCurrentUsername();
-  if (!username) {
-    return {};
-  }
-
-  try {
-    const query = Bmob.Query('_User');
-    query.equalTo('username', '==', username);
-    const res = await query.find();
-    if (res && res.length > 0) {
-      return res[0];
-    }
-    
-    return {};
-  } catch (err) {
-    console.error('获取用户信息失败:', err);
-    return {};
-  }
 }
 
 /**
@@ -119,8 +96,46 @@ async function fetchRestartConversation(conversationId) {
 
 // ========== 导出的 API 函数 ==========
 
-export async function getUserExtraInfo() {
-  return fetchUserExtraInfo();
+export async function getUserExtraInfo(rdb) {
+  const username = getCurrentUsername();
+  if (!username) {
+    return {};
+  }
+  
+  if (!rdb) {
+    console.warn('rdb 未初始化，无法获取用户信息');
+    return {};
+  }
+  
+  // 检查缓存
+  const cacheKey = getCacheKey(rdb, 'user_extra_info', { username });
+  const cached = getCachedData(cacheKey);
+  if (cached !== null) {
+    console.log('[getUserExtraInfo] 使用缓存数据');
+    return cached;
+  }
+  
+  try {
+    const { data, error } = await rdb
+      .from("user_info")
+      .select('level, remainingReport, currentInvites')
+      .eq('username', username);
+
+    if (error) {
+      console.error('获取用户信息失败:', error);
+      return {};
+    }
+
+    const result = data[0] || {};
+    
+    // 设置缓存
+    setCachedData(cacheKey, result);
+    
+    return result;
+  } catch (err) {
+    console.error('获取用户信息失败:', err);
+    return {};
+  }
 }
 
 /**
@@ -133,6 +148,44 @@ export async function restartConversation(conversationId) {
   return fetchRestartConversation(conversationId);
 }
 
-export async function getReports() {
-  return fetchReports();
+export async function getReports(rdb) {
+  const username = getCurrentUsername();
+  if (!username) {
+    return [];
+  }
+  
+  if (!rdb) {
+    console.warn('rdb 未初始化，无法获取报告列表');
+    return [];
+  }
+  
+  // 检查缓存
+  const cacheKey = getCacheKey(rdb, 'reports', { username });
+  const cached = getCachedData(cacheKey);
+  if (cached !== null) {
+    console.log('[getReports] 使用缓存数据');
+    return cached;
+  }
+  
+  try {
+    const { data, error } = await rdb
+      .from("report")
+      .select('title, createdAt, status, reportId')
+      .eq('username', username);
+    
+    if (error) {
+      console.error('获取对话历史失败:', error);
+      return [];
+    }
+
+    const result = data || [];
+    
+    // 设置缓存
+    setCachedData(cacheKey, result);
+    
+    return result;
+  } catch (err) {
+    console.error('获取报告列表失败:', err);
+    return [];
+  }
 }

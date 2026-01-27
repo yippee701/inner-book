@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext } from 'react';
+import { useState, useCallback, useMemo, createContext, useContext } from 'react';
 
 // Toast Context
 const ToastContext = createContext(null);
@@ -93,12 +93,15 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // 便捷方法
-  const message = useCallback((text, duration) => addToast(text, 'info', duration), [addToast]);
-  message.info = (text, duration) => addToast(text, 'info', duration);
-  message.success = (text, duration) => addToast(text, 'success', duration);
-  message.warning = (text, duration) => addToast(text, 'warning', duration);
-  message.error = (text, duration) => addToast(text, 'error', duration);
+  // 便捷方法 - 使用 useMemo 创建对象，避免修改 useCallback 返回值
+  const message = useMemo(() => {
+    const msg = (text, duration) => addToast(text, 'info', duration);
+    msg.info = (text, duration) => addToast(text, 'info', duration);
+    msg.success = (text, duration) => addToast(text, 'success', duration);
+    msg.warning = (text, duration) => addToast(text, 'warning', duration);
+    msg.error = (text, duration) => addToast(text, 'error', duration);
+    return msg;
+  }, [addToast]);
 
   return (
     <ToastContext.Provider value={{ message, addToast, removeToast }}>

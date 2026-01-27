@@ -1,8 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import Bmob from 'hydrogen-js-sdk';
-
+import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useProfile } from '../../../hooks/useProfile';
-import { useReport } from '../../../contexts/ReportContext';
+import { REPORT_STATUS } from '../../../constants/reportStatus';
 
 // ========== 子组件 ==========
 
@@ -72,7 +71,7 @@ function UserHeader({ user, userExtraInfo }) {
           >
             {user.username}
           </span>
-          <span 
+          {/* <span 
             className="text-[11px] px-2 py-0.5 rounded-full text-white"
             style={{ 
               background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
@@ -81,7 +80,7 @@ function UserHeader({ user, userExtraInfo }) {
             }}
           >
             {userExtraInfo?.level || 0}
-          </span>
+          </span> */}
         </div>
         
         {/* 资产卡片 */}
@@ -92,7 +91,7 @@ function UserHeader({ user, userExtraInfo }) {
             border: '1px solid rgba(167, 139, 250, 0.2)',
           }}
         >
-          <span className="text-[13px]" style={{ color: '#374151' }}>
+          {/* <span className="text-[13px]" style={{ color: '#374151' }}>
             剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#8B5CF6' }}>{userExtraInfo.remainingReport}</strong> 次
           </span>
           <span className="text-xs flex items-center" style={{ color: '#8B5CF6' }}>
@@ -100,7 +99,7 @@ function UserHeader({ user, userExtraInfo }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </span>
+          </span> */}
         </div>
       </div>
     </div>
@@ -139,9 +138,9 @@ function FissionBar({ userExtraInfo }) {
  */
 function ReportCard({ report, onRestart, onView }) {
   const { status, storageType, storageInfo, title, createdAt, content } = report;
-  const isExpired = status === 'expired';
-  const isGenerating = status === 'generating';
-  const canView = status === 'completed' && content;
+  const isExpired = status === REPORT_STATUS.EXPIRED;
+  const isGenerating = status === REPORT_STATUS.GENERATING;
+  const canView = status === REPORT_STATUS.COMPLETED;
   
   // 计算倒计时进度
   const countdownProgress = storageType === 'countdown' && storageInfo
@@ -385,8 +384,8 @@ function NotLoggedIn({ onLogin }) {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const auth = useAuth();
   const { user, reports, userExtraInfo, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
-  const { setHistoryReport } = useReport();
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
@@ -399,22 +398,20 @@ export default function ProfilePage() {
 
   // 处理查看历史报告
   const handleViewReport = (report) => {
-    if (report.content) {
-      setHistoryReport(report.content);
-      // 将 reportId 和 mode 拼接到 URL 上
-      const mode = report.mode || 'discover-self';
-      const reportId = report.id;
-      navigate(`/report-result?mode=${mode}&reportId=${reportId}`);
-    }
+    // 将 reportId 和 mode 拼接到 URL 上
+    const mode = report.mode || 'discover-self';
+    const reportId = report.reportId;
+    navigate(`/report-result?mode=${mode}&reportId=${reportId}`);
   };
 
   // 处理退出登录
   const handleLogout = async () => {
     try {
-      // 这里会把 localStorage 中所有数据清空，包括 pendingReport 数据
-      Bmob.User.logout();
+      // 退出登录
+      // TODO： 确认是否会自动清除 localStorage，清除哪些内容
+      await auth.signOut();
       
-      // 刷新页面或跳转到首页
+      // 跳转到首页
       navigate('/');
     } catch (err) {
       console.error('退出登录失败:', err);
@@ -473,7 +470,7 @@ export default function ProfilePage() {
             {/* 对话卡片列表 */}
             <div className="flex flex-col gap-4">
               {reports.map((report, index) => (
-                <div key={report.id}>
+                <div key={report.reportId}>
                   <ReportCard 
                     report={report} 
                     onRestart={handleRestart}
@@ -481,7 +478,7 @@ export default function ProfilePage() {
                   />
                   
                   {/* 在第二张卡片后显示裂变进度条 */}
-                  {index === 1 && <FissionBar userExtraInfo={userExtraInfo}/>}
+                  {/* {index === 1 && <FissionBar userExtraInfo={userExtraInfo}/>} */}
                 </div>
               ))}
             </div>

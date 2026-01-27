@@ -1,27 +1,28 @@
+import { CLOUDBASE_ENV, USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
 
 /**
  * 从 localStorage 获取当前用户名
  */
 export function getCurrentUsername() {
   try {
-    const bmobData = localStorage.getItem('bmob');
-    if (!bmobData) return null;
-    const parsed = JSON.parse(bmobData);
-    return parsed.username || null;
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
+    if (!localUserInfo) return null;
+    const parsed = JSON.parse(localUserInfo);
+    return parsed.content?.name || null;
   } catch {
     return null;
   }
 }
 
 /**
- * 从 localStorage 获取当前用户 objectId
+ * 从 localStorage 获取当前用户 reportId
  */
-export function getCurrentUserObjectId() {
+export function getCurrentUserId() {
   try {
-    const bmobData = localStorage.getItem('bmob');
-    if (!bmobData) return null;
-    const parsed = JSON.parse(bmobData);
-    return parsed.objectId || null;
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
+    if (!localUserInfo) return null;
+    const parsed = JSON.parse(localUserInfo);
+    return parsed.content?.uid || null;
   } catch {
     return null;
   }
@@ -34,11 +35,11 @@ export function getCurrentUserObjectId() {
  */
 export function isLoggedIn() {
   try {
-    const bmobData = localStorage.getItem('bmob');
-    if (!bmobData) return false;
+    const localUserInfo = localStorage.getItem(USER_INFO_LOCAL_STORAGE_KEY);
+    if (!localUserInfo) return false;
     
-    const parsed = JSON.parse(bmobData);
-    return parsed.sessionToken ? true : false;
+    const parsed = JSON.parse(localUserInfo);
+    return parsed.content ? (parsed.content.name === 'anonymous' ? false : true) : false;
   } catch {
     return false;
   }

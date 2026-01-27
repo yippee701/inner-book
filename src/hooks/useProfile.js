@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReports, getUserExtraInfo, restartConversation } from '../api/profile';
-import { isLoggedIn } from '../utils/user';
+import { isLoggedIn, getCurrentUsername } from '../utils/user';
+import { useRdb } from '../contexts/cloudbaseContext';
+import { USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
 
 /**
  * 检查用户是否有剩余对话次数
@@ -22,6 +24,7 @@ export function checkCanStartChat(isUserLoggedIn, userExtraInfo) {
  */
 export function useProfile() {
   const navigate = useNavigate();
+  const rdb = useRdb();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -29,20 +32,20 @@ export function useProfile() {
   const isUserLoggedIn = isLoggedIn();
 
   // 加载页面数据（对话历史和裂变进度）
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setError(null);
     
+    if (!rdb) return;
+    if (!isUserLoggedIn) {
+      setReports([]);
+      setUserExtraInfo({});
+      return;
+    }
     try {
-      if (!isUserLoggedIn) {
-        setReports([]);
-        setUserExtraInfo({});
-        return;
-      }
-      
       // 获取对话历史和裂变进度
       const [convData, userExtraInfo] = await Promise.all([
-        getReports(),
-        getUserExtraInfo(),
+        getReports(rdb),
+        getUserExtraInfo(rdb),
       ]);
       
       setReports(convData);
@@ -53,19 +56,12 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getUserInfoFromLocal = () => {
-    const bmobData = localStorage.getItem('bmob');
-    if (!bmobData) return null;
-    const parsed = JSON.parse(bmobData);
-    return parsed || null;
-  }
+  }, [isUserLoggedIn, rdb]);
 
   // 初始加载
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // 重新开启对话
   const handleRestartConversation = useCallback(async (conversationId) => {
@@ -90,7 +86,9 @@ export function useProfile() {
   return {
     reports,
     userExtraInfo,
-    user: getUserInfoFromLocal(),
+    user: {
+      username: getCurrentUsername(),
+    },
     isLoading: isLoading,
     error,
     restartConversation: handleRestartConversation,

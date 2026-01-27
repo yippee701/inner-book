@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import Bmob from 'hydrogen-js-sdk';
+import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useReport } from '../../../contexts/ReportContext';
 
 const COUNTDOWN_SECONDS = 60;
@@ -133,6 +133,7 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
   const { checkLoginAndSync } = useReport();
+  const auth = useAuth();
   
   // 登录方式：'phone' | 'password'
   const [loginMethod, setLoginMethod] = useState('password');
@@ -145,9 +146,12 @@ export default function LoginPage() {
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verification, setVerification] = useState(null);
 
   // 验证
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
+  const phoneNumber = phone ? `+86 ${phone}` : '';
   const canSendCode = isValidPhone && countdown === 0;
   const canSubmitPhone = isValidPhone && code.length === 6;
   const canSubmitPassword = username.length >= 3 && password.length >= 6;
@@ -164,13 +168,16 @@ export default function LoginPage() {
     if (!canSendCode) return;
     setError('');
     try {
-      await Bmob.requestSmsCode({ mobilePhoneNumber: phone });
+      const verificationResult = await auth.getVerification({
+        phone_number: phoneNumber,
+      });
+      setVerification(verificationResult);
       setCountdown(COUNTDOWN_SECONDS);
     } catch (err) {
-      setError('验证码发送失败，请稍后重试');
       console.error('发送验证码失败:', err);
+      setError('验证码发送失败，请稍后重试');
     }
-  }, [canSendCode, phone]);
+  }, [canSendCode, phoneNumber, auth]);
 
   // 处理登录成功
   const handleLoginSuccess = async (res) => {
@@ -180,23 +187,43 @@ export default function LoginPage() {
     navigate(returnUrl || '/');
   };
 
+  
   // 手机号登录
   const handlePhoneLogin = useCallback(async () => {
     if (!canSubmitPhone || loading) return;
     setError('');
+
+    // TODO 现在会报用户不存在
+    
+    // 先验证验证码
+    let verificationTokenRes = null;
+    if (verification && verificationCode) {
+      try {
+        verificationTokenRes = await auth.verify({
+          verification_id: verification.verification_id,
+          verification_code: verificationCode,
+        });
+      } catch (err) {
+        console.error('验证码验证错误:', err);
+        setError('验证码错误，请重新输入');
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     
     try {
-      const res = await Bmob.User.signOrLoginByMobilePhone(Number(phone), Number(code));
-      if (res.code && res.error) {
-        throw { code: res.code, message: res.error };
-      }
-      handleLoginSuccess(res);
+      const res = await auth.signIn({
+        username: phone, 
+        verification_token: code, // TODO，改成真实的验证码
+      });
+      await handleLoginSuccess(res);
     } catch (err) {
       console.error('登录错误:', err);
       const errorCode = err.code || err.status;
-      
-      if (errorCode === 101) {
+      // TODO, 根据错误码适配
+      if (errorCode === 'INVALID_PHONE') {
         setError('该手机号未注册，请先注册');
       } else {
         setError(err.message || err.error || '登录失败，请检查验证码');
@@ -204,7 +231,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [canSubmitPhone, loading, phone, code, navigate]);
+  }, [canSubmitPhone, loading, phone, code, auth, verification, verificationCode]);
 
   // 用户名密码登录
   const handlePasswordLogin = useCallback(async () => {
@@ -213,18 +240,19 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const res = await Bmob.User.login(username, password);
-      if (res.code && res.error) {
-        throw { code: res.code, message: res.error };
-      }
-      handleLoginSuccess(res);
+      // 支持用户名密码登录
+      const res = await auth.signIn({
+        username, 
+        password,
+      });
+      await handleLoginSuccess(res);
     } catch (err) {
       console.error('登录错误:', err);
       setError(err.message || err.error || '用户名或密码错误');
     } finally {
       setLoading(false);
     }
-  }, [canSubmitPassword, loading, username, password, navigate]);
+  }, [canSubmitPassword, loading, username, password, auth]);
 
   return (
     <div className="h-screen-safe w-full bg-white relative flex flex-col">

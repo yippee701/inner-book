@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import XMarkdown from '@ant-design/x-markdown';
-import Bmob from 'hydrogen-js-sdk';
+import { useRdb } from '../../contexts/cloudbaseContext';
 import { getModeLabel } from '../../constants/modes';
 
 // ========== 背景装饰 ==========
@@ -160,6 +160,7 @@ function Footer() {
 
 // ========== 主组件 ==========
 export default function ShareLanding() {
+  const rdb = useRdb();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') || 'discover-self';
   const reportId = searchParams.get('reportId');
@@ -178,28 +179,24 @@ export default function ShareLanding() {
     }
 
     const fetchReport = async () => {
-      try {
-        const query = Bmob.Query('Report');
-        const res = await query.get(reportId);
-        if (res) {
-          setReport({
-            content: res.content,
-            username: res.username,
-            title: res.title,
-            mode: res.mode,
-            subTitle: res.subTitle,
-          });
-        }
-      } catch (err) {
-        console.error('获取报告失败:', err);
+      const { data, error } = await rdb.from('report').select().eq('id', reportId);
+      if (error) {
+        console.error('获取报告失败:', error);
         setError('报告不存在或已被删除');
-      } finally {
         setLoading(false);
+        return;
       }
+      if (data.length === 0) {
+        setError('报告不存在或已被删除');
+        setLoading(false);
+        return;
+      }
+      setReport(data[0]);
+      setLoading(false); 
     };
 
     fetchReport();
-  }, [reportId]);
+  }, [reportId, rdb]);
 
   if (loading) {
     return (

@@ -1,11 +1,15 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useCallback, useMemo, useState } from 'react';
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import XMarkdown from '@ant-design/x-markdown';
 import { useReport } from '../../contexts/ReportContext';
-import { generateReportTitle } from '../../utils/chat';
+import { generateReportTitle} from '../../utils/chat';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { useToast } from '../../components/Toast';
 import ShareDialog from '../share/shareDialog';
+import InviteCodeDialog from '../../components/inviteCodeDialog';
+import InviteLoginDialog from '../../components/inviteLoginDialog';
+import { useRdb } from '../../contexts/cloudbaseContext';
+import { getReportDetail as getReportDetailApi } from '../../api/report';
 
 // ========== 子组件 ==========
 
@@ -54,7 +58,7 @@ function ConversionZone({ onUpgrade, onShare }) {
               border: '1px solid rgba(167, 139, 250, 0.3)',
             }}
           >
-            邀请好友
+            分享好友
           </button>
           <button 
             onClick={onUpgrade}
@@ -122,6 +126,7 @@ function GlowingSphere() {
 
 /**
  * 自定义 Markdown 组件 - 用于结构化展示报告
+ * 注意：XMarkdown 的 components prop 接收 domNode 和 streamStatus，需要用 children 获取子元素
  */
 const markdownComponents = {
   // 一级标题 - 主标题（通常是报告标题）
@@ -164,9 +169,9 @@ const markdownComponents = {
     <p 
       className="text-base mb-4 -mt-3"
       style={{ color: '#666666' }}
-    >
+        >
       {children}
-    </p>
+        </p>
   ),
 
   // 四级标题 - 子章节
@@ -181,14 +186,14 @@ const markdownComponents = {
 
   // 引用块 - 核心洞察框
   blockquote: ({ children }) => (
-    <div 
+        <div 
       className="rounded-2xl p-5 mb-4"
       style={{
         background: 'linear-gradient(135deg, rgba(107, 107, 255, 0.08), rgba(139, 92, 246, 0.08))',
         border: '1px solid rgba(139, 92, 246, 0.15)',
         backdropFilter: 'blur(10px)',
       }}
-    >
+        >
       <div 
         className="text-base leading-relaxed"
         style={{ 
@@ -239,17 +244,17 @@ const markdownComponents = {
         >
           <div 
             className="absolute top-[3px] left-[3px] w-1 h-1 rounded-full"
-            style={{
+              style={{ 
               background: 'rgba(255,255,255,0.8)',
               filter: 'blur(1px)',
-            }}
+              }}
           />
         </div>
         {/* 文字 */}
         <div 
           className="flex-1 text-[15px] leading-[1.7]"
           style={{ color: '#1F2937' }}
-        >
+            >
           {children}
         </div>
       </div>
@@ -290,7 +295,7 @@ const markdownComponents = {
  * 报告内容渲染组件
  * 使用 XMarkdown 渲染 Markdown 格式的报告，带自定义样式
  */
-function ReportContent({ content }) {
+function ReportContent({ content, subTitle }) {
     return (
       <div 
       className="rounded-3xl p-4 sm:p-8"
@@ -300,7 +305,7 @@ function ReportContent({ content }) {
         }}
       >
       <XMarkdown 
-        content={content}
+        content={`# ${subTitle}\n\n ${content}`}
         components={markdownComponents}
       />
       </div>
@@ -324,8 +329,8 @@ function LoginOverlay({ onLogin, registerUrl }) {
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           border: '1px solid rgba(167, 139, 250, 0.2)',
-        }}
-      >
+            }}
+          >
         {/* 锁图标 */}
         <div 
           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
@@ -367,7 +372,7 @@ function LoginOverlay({ onLogin, registerUrl }) {
           to={registerUrl || '/register'} 
           className="mt-3 text-sm"
           style={{ color: '#8B5CF6' }}
-        >
+      >
           还没有账号？立即注册
         </Link>
       </div>
@@ -380,14 +385,76 @@ function LoginOverlay({ onLogin, registerUrl }) {
 export default function Result() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { content, isComplete, isLoggedIn } = useReport();
+  const { 
+    getReportDetail, 
+    content, 
+    subTitle, 
+    isLoggedIn: reportIsLoggedIn,
+    handleInviteCodeSubmit,
+    registerInviteCodeDialog,
+    registerInviteLoginDialog,
+  } = useReport();
+  const rdb = useRdb();
+  const [displayContent, setDisplayContent] = useState('');
   const { message } = useToast();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
+  
+  // 对话框状态
+  const [showInviteCodeDialog, setShowInviteCodeDialog] = useState(false);
+  const [showInviteLoginDialog, setShowInviteLoginDialog] = useState(false);
+  const [isVerifyingInviteCode, setIsVerifyingInviteCode] = useState(false);
+  const [pendingUnlockReportId, setPendingUnlockReportId] = useState(null);
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
-
+  
+  // 注册对话框回调
+  useEffect(() => {
+    if (registerInviteCodeDialog) {
+      registerInviteCodeDialog((reportId) => {
+        setPendingUnlockReportId(reportId);
+        setShowInviteCodeDialog(true);
+      });
+    }
+    if (registerInviteLoginDialog) {
+      registerInviteLoginDialog(() => {
+        setShowInviteLoginDialog(true);
+      });
+    }
+  }, [registerInviteCodeDialog, registerInviteLoginDialog]);
+  
+  // 处理邀请码提交
+  const handleInviteCodeSubmitWrapper = useCallback(async (inviteCode) => {
+    if (!pendingUnlockReportId) {
+      message.warning('报告 ID 不存在');
+      return;
+    }
+    
+    setIsVerifyingInviteCode(true);
+    try {
+      await handleInviteCodeSubmit(pendingUnlockReportId, inviteCode);
+      setShowInviteCodeDialog(false);
+      const unlockedReportId = pendingUnlockReportId;
+      setPendingUnlockReportId(null);
+      message.success('邀请码验证成功，报告已解锁');
+      
+      // 重新加载报告内容（跳过缓存）
+      if (rdb) {
+        const reportDetail = await getReportDetailApi(rdb, unlockedReportId, true);
+        if (reportDetail) {
+          setDisplayContent(reportDetail.content || '');
+        }
+      }
+    } catch (err) {
+      message.error(err.message || '邀请码验证失败');
+      throw err;
+    } finally {
+      setIsVerifyingInviteCode(false);
+    }
+  }, [pendingUnlockReportId, handleInviteCodeSubmit, getReportDetail, message]);
+  
   // 跳转到登录页（带返回地址）
   const handleGoToLogin = useCallback(() => {
     const returnUrl = `/profile`;
@@ -411,25 +478,66 @@ export default function Result() {
     const shareUrl = `${baseUrl}#/share?mode=${mode}&reportId=${reportId}`;    
     setShareUrl(shareUrl);
     setIsShareDialogOpen(true);
-  }, [message]);
+  }, [message, mode]);
 
   // 关闭分享弹窗
   const handleCloseShareDialog = useCallback(() => {
     setIsShareDialogOpen(false);
   }, []);
 
-  // 注意：报告保存逻辑已统一在 ReportContext 的 completeReport() 中处理
-  // 这里不再重复保存，避免多次调用接口
-
-  // 如果没有报告内容，重定向到首页
+  // 加载报告内容
   useEffect(() => {
-    if (!content && !isComplete) {
-      navigate('/');
+    const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const reportId = currentSearchParams.get('reportId');
+
+    // 情况1：从 ReportLoading 跳转过来 或者已经拉取过一次了
+    // if (content && re) {
+    //   setDisplayContent(content);
+    //   setIsLoadingReport(false);
+    //   return;
+    // }
+
+    // 情况2：从历史记录点击进来，需要从数据库拉取
+    // 等待 rdb 和 getReportDetail 初始化完成
+    if (!rdb || !getReportDetail) {
+      return;
     }
-  }, [content, isComplete, navigate]);
+
+    if (!reportId) {
+      message.warning('报告 ID 不存在，无法查看');
+      navigate('/');
+      return;
+    }
+
+    const loadReport = async () => {
+      setIsLoadingReport(true);
+      try {
+        const reportDetail = await getReportDetail(reportId);
+        if (!reportDetail) {
+          message.warning('报告内容不存在');
+          navigate('/');
+          return;
+        }
+        // 从数据库获取的 content 已经移除了 h1 标题，直接使用
+        setDisplayContent(reportDetail.content || '');
+
+        if (reportDetail.lock === 1) {
+          setShowInviteCodeDialog(true);
+        }
+      } catch (err) {
+        console.error('加载报告失败:', err);
+        message.error('加载报告失败，请稍后重试');
+        navigate('/');
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+
+    loadReport();
+  }, [navigate, getReportDetail, message, rdb, content, subTitle]);
 
   // 没有内容时显示加载
-  if (!content) {
+  if (isLoadingReport || !displayContent) {
     return (
       <div className="h-screen-safe flex items-center justify-center bg-white">
         <p style={{ color: '#6B7280' }}>加载中...</p>
@@ -450,7 +558,7 @@ export default function Result() {
         <Link 
           to="/"
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-        >
+      >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -471,12 +579,12 @@ export default function Result() {
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10">
         <div className="max-w-md mx-auto py-3">
-          <ReportContent content={content} />
+          <ReportContent content={displayContent} subTitle={subTitle} />
         </div>
       </div>
 
       {/* 未登录蒙层 */}
-      {!isLoggedIn && (
+      {!reportIsLoggedIn && (
         <LoginOverlay 
           onLogin={handleGoToLogin} 
           registerUrl={`/register?returnUrl=${encodeURIComponent(`/profile`)}`}
@@ -491,6 +599,24 @@ export default function Result() {
         isOpen={isShareDialogOpen}
         onClose={handleCloseShareDialog}
         shareUrl={shareUrl}
+      />
+      
+      {/* 邀请码对话框 */}
+      <InviteCodeDialog
+        isOpen={showInviteCodeDialog}
+        onClose={() => {
+          setShowInviteCodeDialog(false);
+          setPendingUnlockReportId(null);
+        }}
+        onSubmit={handleInviteCodeSubmitWrapper}
+        isLoading={isVerifyingInviteCode}
+      />
+      
+      {/* 邀请登录对话框 */}
+      <InviteLoginDialog
+        isOpen={showInviteLoginDialog}
+        onClose={() => setShowInviteLoginDialog(false)}
+        returnUrl={window.location.hash.replace('#', '')}
       />
     </div>
   );

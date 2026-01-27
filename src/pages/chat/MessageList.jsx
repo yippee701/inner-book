@@ -167,10 +167,9 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
   }), [scrollToBottom]);
 
   // 节流滚动（打字时用，每 150ms 最多触发一次）
-  const throttledScroll = useCallback(
-    throttle(() => scrollToBottom(true), 150),
-    [scrollToBottom]
-  );
+  const throttledScroll = useCallback(() => {
+    throttle(() => scrollToBottom(true), 150)();
+  }, [scrollToBottom]);
 
   // 消息数量变化或内容更新时滚动（使用当前的 keyboardHeight）
   useEffect(() => {

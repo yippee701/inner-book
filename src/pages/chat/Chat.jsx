@@ -11,7 +11,7 @@ import NoQuotaDialog from '../../components/NoQuotaDialog';
 import { useChat } from '../../hooks/useChat';
 import { useReport } from '../../contexts/ReportContext';
 import { useProfile, checkCanStartChat } from '../../hooks/useProfile';
-import { getWelcomeMessage } from '../../api/chat';
+import { getWelcomeMessage } from '../../constants/welcome-message';
 import { getModeFromSearchParams } from '../../constants/modes';
 
 // 粒子光圈图标组件 - 玻璃态设计
@@ -87,7 +87,7 @@ export default function Chat() {
   const messageListRef = useRef(null);
   // 记录初始视口高度（键盘未弹起时的高度）
   const initialViewportHeight = useRef(window.visualViewport?.height || window.innerHeight);
-  
+
   // 获取用户信息用于检查对话次数
   const { isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
   
@@ -282,6 +282,7 @@ export default function Chat() {
               onStartNew={handleStartNew}
               hasPendingReport={!!pendingReport}
               welcomeMessage={welcomeMessage} 
+              mode={chatMode}
             />
           ) : (
             <MessageList ref={messageListRef} messages={messages} keyboardHeight={keyboardHeight} />
