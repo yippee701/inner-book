@@ -71,7 +71,7 @@ function UserHeader({ user, userExtraInfo }) {
           >
             {user.username}
           </span>
-          <span 
+          {/* <span 
             className="text-[11px] px-2 py-0.5 rounded-full text-white"
             style={{ 
               background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
@@ -80,7 +80,7 @@ function UserHeader({ user, userExtraInfo }) {
             }}
           >
             {userExtraInfo?.level || 0}
-          </span>
+          </span> */}
         </div>
         
         {/* 资产卡片 */}
@@ -91,7 +91,7 @@ function UserHeader({ user, userExtraInfo }) {
             border: '1px solid rgba(167, 139, 250, 0.2)',
           }}
         >
-          <span className="text-[13px]" style={{ color: '#374151' }}>
+          {/* <span className="text-[13px]" style={{ color: '#374151' }}>
             剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#8B5CF6' }}>{userExtraInfo.remainingReport}</strong> 次
           </span>
           <span className="text-xs flex items-center" style={{ color: '#8B5CF6' }}>
@@ -99,7 +99,7 @@ function UserHeader({ user, userExtraInfo }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </span>
+          </span> */}
         </div>
       </div>
     </div>
