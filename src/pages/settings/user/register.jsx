@@ -30,38 +30,38 @@ function BackgroundDecoration() {
 
 function Logo() {
   return (
-    <div className="flex flex-col items-center mb-10">
-      <div className="relative w-20 h-20 mb-3 flex items-center justify-center">
+    <div className="flex flex-col items-center mb-4">
+      <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
         <div 
-          className="absolute w-20 h-20 rounded-full animate-breathe" 
+          className="absolute w-16 h-16 rounded-full animate-breathe" 
           style={{ 
             background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 168, 255, 0.3))', 
             border: '1px solid rgba(167, 139, 250, 0.4)' 
           }} 
         />
         <div 
-          className="absolute w-14 h-14 rounded-full backdrop-blur-sm" 
+          className="absolute w-12 h-12 rounded-full backdrop-blur-sm" 
           style={{ 
             background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.6), rgba(167, 139, 250, 0.5))', 
             border: '1px solid rgba(255, 255, 255, 0.6)' 
           }} 
         />
-        <svg className="relative z-10 w-7 h-7" style={{ color: '#FFFFFF' }} fill="currentColor" viewBox="0 0 24 24">
+        <svg className="relative z-10 w-6 h-6" style={{ color: '#FFFFFF' }} fill="currentColor" viewBox="0 0 24 24">
           <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
         </svg>
       </div>
-      <h1 className="text-xl font-bold tracking-wide" style={{ fontFamily: '"Noto Serif SC", serif', color: '#1F2937' }}>注册账号</h1>
-      <p className="text-sm mt-1" style={{ color: '#6B7280' }}>开启你的探索之旅</p>
+      <h1 className="text-lg font-bold tracking-wide" style={{ fontFamily: '"Noto Serif SC", serif', color: '#1F2937' }}>注册账号</h1>
+      <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>开启你的探索之旅</p>
     </div>
   );
 }
 
 function InputField({ label, type = 'text', value, onChange, placeholder, disabled, hint }) {
   return (
-    <div className="mb-4">
-      <label className="block text-sm mb-2" style={{ color: '#4B5563' }}>{label}</label>
+    <div className="mb-3">
+      <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>{label}</label>
       <div 
-        className="flex items-center px-4 py-3 rounded-xl transition-all"
+        className="flex items-center px-4 py-2.5 rounded-xl transition-all"
         style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' }}
       >
         <input
@@ -84,7 +84,7 @@ function SubmitButton({ onClick, loading, disabled, text = '确认' }) {
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className="w-full py-4 rounded-full text-white text-lg font-medium transition-all active:scale-[0.98] disabled:opacity-60"
+      className="w-full py-3 rounded-full text-white text-base font-medium transition-all active:scale-[0.98] disabled:opacity-60"
       style={{ backgroundColor: '#1F2937', boxShadow: disabled ? 'none' : '0 8px 20px rgba(0, 0, 0, 0.15)' }}
     >
       {loading ? (
@@ -103,7 +103,7 @@ function SubmitButton({ onClick, loading, disabled, text = '确认' }) {
 function ErrorMessage({ message }) {
   if (!message) return null;
   return (
-    <div className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
+    <div className="mb-3 px-4 py-2 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
       {message}
     </div>
   );
@@ -112,7 +112,7 @@ function ErrorMessage({ message }) {
 function SuccessMessage({ message }) {
   if (!message) return null;
   return (
-    <div className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#8B5CF6' }}>
+    <div className="mb-3 px-4 py-2 rounded-xl text-sm" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#8B5CF6' }}>
       {message}
     </div>
   );
@@ -120,7 +120,7 @@ function SuccessMessage({ message }) {
 
 function Agreement() {
   return (
-    <p className="text-center text-xs mt-6 leading-relaxed" style={{ color: '#9CA3AF' }}>
+    <p className="text-center text-xs mt-3 leading-relaxed" style={{ color: '#9CA3AF' }}>
       注册即表示同意
       <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《用户协议》</a>和
       <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《隐私政策》</a>
@@ -248,7 +248,7 @@ export default function RegisterPage() {
       <BackgroundDecoration />
       
       {/* 顶部返回 */}
-      <header className="flex-shrink-0 relative z-10 h-14 flex items-center px-4">
+      <header className="flex-shrink-0 relative z-10 h-12 flex items-center px-4">
         <Link 
           to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
           className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
@@ -260,7 +260,7 @@ export default function RegisterPage() {
       </header>
       
       {/* 主内容 - 可滚动 */}
-      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col justify-center px-8 pb-10">
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col justify-center px-6 pb-6">
         <Logo />
         
         <div className="w-full max-w-sm mx-auto">
@@ -306,9 +306,9 @@ export default function RegisterPage() {
           />
           
           {/* 验证码输入框 */}
-          <div className="mb-4">
-            <label className="block text-sm mb-2" style={{ color: '#4B5563' }}>验证码</label>
-            <div className="flex items-center px-4 py-3 rounded-xl" style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+          <div className="mb-3">
+            <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>验证码</label>
+            <div className="flex items-center px-4 py-2.5 rounded-xl" style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
               <input
                 type="text"
                 value={verificationCode}
@@ -335,13 +335,13 @@ export default function RegisterPage() {
           
           {/* 验证提示 */}
           {confirmPassword && !isPasswordMatch && (
-            <p className="text-xs mb-4" style={{ color: '#EF4444' }}>两次输入的密码不一致</p>
+            <p className="text-xs mb-3" style={{ color: '#EF4444' }}>两次输入的密码不一致</p>
           )}
           
           <SubmitButton onClick={handleRegister} loading={loading} disabled={!canSubmit} text="注册" />
 
           {/* 登录链接 */}
-          <p className="text-center text-sm mt-6" style={{ color: '#6B7280' }}>
+          <p className="text-center text-sm mt-4" style={{ color: '#6B7280' }}>
             已有账号？
             <Link 
               to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
