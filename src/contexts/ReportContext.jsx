@@ -24,8 +24,8 @@ const LOCAL_REPORTS_KEY = 'pendingReports';
    └─ completeReport()
       └─ 更新本地 (status: completed, 包含 content + subTitle + messages)
       └─ 更新远端 (包含 content + subTitle + messages，report.lock=1 report.status=completed)
-        └─ 如果已登录 → 保存一下 username 和 _openid
-        └─ 如果未登录，也要同步到远端，但是不保存 username 和 _openid
+        └─ 如果已登录 → 保存一下 username 和 _openid，并且从本地删除该记录
+        └─ 如果未登录，也要同步到远端，但是不保存 username 和 _openid，并且暂时保存在本地，不要从本地删除
       └─ 提示输入邀请码，使用 inviteCodeDialog 组件
       └─ 输入邀请码后，验证邀请码是否有效
         └─ 如果有效，则 report.lock=0 report.inviteCode=邀请码 (会在服务端服务实现解锁逻辑)
@@ -446,9 +446,11 @@ export function ReportProvider({ children }) {
             saveUserInfo: loggedIn, // 如果已登录，保存 username 和 _openid
           });
           
-          // 同步成功后，从本地删除这条记录
-          const updatedReports = localReports.filter(r => r.reportId !== reportId);
-          localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(updatedReports));
+          // 同步成功后，如果已登录，则从本地删除这条记录，如果未登录则暂时保存在本地
+          if(loggedIn) {
+            const updatedReports = localReports.filter(r => r.reportId !== reportId);
+            localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(updatedReports));
+          }
           console.log('报告已同步到远端 (completed, lock=1)');
           
           // 提示输入邀请码（通过回调通知 Result.jsx）
