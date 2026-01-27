@@ -36,7 +36,7 @@ export function CloudbaseProvider({ children }) {
     setRdb(rdbInstance);
 
     // 匿名登录
-    if (!isLoggedIn) {
+    if (!isLoggedIn()) {
       authInstance.signInAnonymously();
     }
 

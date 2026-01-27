@@ -61,7 +61,7 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 async function sendMessageViaProxy(messages, onStream = null, mode) {
   const credentials = localStorage.getItem(CREDENTIALS_LOCAL_STORAGE_KEY);
   const credentialsObj = JSON.parse(credentials);
-  const token = credentialsObj.access_token;
+  const token = credentialsObj?.access_token;
   const response = await fetch(`https://inner-book-server-220939-8-1251129499.sh.run.tcloudbase.com/v1/cloudrun/inner-book-server/chat`, {
     method: 'POST',
     mode: 'cors',
