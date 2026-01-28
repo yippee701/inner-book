@@ -62,7 +62,7 @@ function getLocalPendingReport(mode) {
   try {
     const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
     const pendingReport = localReports.find(
-      r => r.mode === mode && r.status === 'generating'
+      r => r.mode === mode && r.status === 'pending'
     );
     console.log('检查本地报告, mode:', mode, '找到:', pendingReport?.title || '无');
     return pendingReport || null;
@@ -179,7 +179,7 @@ export default function Chat() {
     completeReport();
   }, [completeReport]);
 
-  const { messages, isLoading, sendUserMessage, restoreMessages } = useChat({
+  const { messages, isLoading, sendUserMessage, restoreMessages, retryMessage } = useChat({
     mode: chatMode,
     onReportStart: handleReportStart,
     onReportUpdate: handleReportUpdate,
@@ -285,7 +285,12 @@ export default function Chat() {
               mode={chatMode}
             />
           ) : (
-            <MessageList ref={messageListRef} messages={messages} keyboardHeight={keyboardHeight} />
+            <MessageList 
+              ref={messageListRef} 
+              messages={messages} 
+              keyboardHeight={keyboardHeight}
+              onRetry={retryMessage}
+            />
           )}
         </div>
       </div>

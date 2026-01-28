@@ -78,20 +78,10 @@ export function useChat(options = {}) {
     }, TYPEWRITER_SPEED);
   }, [clearTypewriterTimer, onReportStart, onReportUpdate]);
 
-  // 发送消息给大模型
-  const sendUserMessage = useCallback(async (userMessage) => {
-    if (!userMessage.trim() || isLoading) return;
+  // 内部方法：发送消息给大模型（不添加用户消息）
+  const sendMessageInternal = useCallback(async (apiMessages, userMsgId = null) => {
+    if (isLoading) return;
 
-    // 添加用户消息
-    const newUserMsg = {
-      id: Date.now(),
-      role: 'user',
-      content: userMessage,
-      status: 'local'
-    };
-    
-    const updatedMessages = [...messages, newUserMsg];
-    setMessages(updatedMessages);
     setIsLoading(true);
     reportStartedRef.current = false;
 
@@ -104,19 +94,20 @@ export function useChat(options = {}) {
     // 添加 AI 消息占位符
     const aiMsgId = Date.now() + 1;
     aiMsgIdRef.current = aiMsgId;
-    setMessages(prev => [...prev, {
-      id: aiMsgId,
-      role: 'assistant',
-      content: '',
-      status: 'loading'
-    }]);
+    setMessages(prev => {
+      // 如果提供了 userMsgId，更新该消息的状态为 local
+      const updated = userMsgId 
+        ? prev.map(msg => msg.id === userMsgId ? { ...msg, status: 'local' } : msg)
+        : prev;
+      return [...updated, {
+        id: aiMsgId,
+        role: 'assistant',
+        content: '',
+        status: 'loading'
+      }];
+    });
 
     try {
-      // 构建发送给 API 的消息格式
-      const apiMessages = updatedMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
 
       // 判断是否使用打字机缓冲（mock 模式已有打字机效果，不需要缓冲）
       const useTypewriterBuffer = !IS_MOCK_MODE;
@@ -179,11 +170,46 @@ export function useChat(options = {}) {
       console.error('发送消息失败:', error);
       isStreamingRef.current = false;
       clearTypewriterTimer();
-      setMessages(prev => prev.filter(msg => msg.id !== aiMsgId));
+      // 删除 AI 消息占位符，标记用户消息为失败状态
+      setMessages(prev => {
+        const filtered = prev.filter(msg => msg.id !== aiMsgId);
+        if (userMsgId) {
+          return filtered.map(msg => 
+            msg.id === userMsgId 
+              ? { ...msg, status: 'error' }
+              : msg
+          );
+        }
+        return filtered;
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [messages, isLoading, mode, onReportStart, onReportUpdate, onReportComplete, clearTypewriterTimer, startTypewriter]);
+  }, [isLoading, mode, onReportStart, onReportUpdate, onReportComplete, clearTypewriterTimer, startTypewriter]);
+
+  // 发送消息给大模型
+  const sendUserMessage = useCallback(async (userMessage) => {
+    if (!userMessage.trim() || isLoading) return;
+
+    // 添加用户消息
+    const newUserMsg = {
+      id: Date.now(),
+      role: 'user',
+      content: userMessage,
+      status: 'local'
+    };
+    
+    const updatedMessages = [...messages, newUserMsg];
+    setMessages(updatedMessages);
+
+    // 构建发送给 API 的消息格式
+    const apiMessages = updatedMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+
+    await sendMessageInternal(apiMessages, newUserMsg.id);
+  }, [messages, isLoading, sendMessageInternal]);
 
   // 清空消息
   const clearMessages = useCallback(() => {
@@ -195,12 +221,38 @@ export function useChat(options = {}) {
     setMessages(msgs || []);
   }, []);
 
+  // 重新发送失败的消息
+  const retryMessage = useCallback(async (failedMessageId) => {
+    // 找到失败的消息
+    const failedMessage = messages.find(msg => msg.id === failedMessageId);
+    if (!failedMessage || failedMessage.status !== 'error') {
+      return;
+    }
+
+    // 找到失败消息的索引
+    const failedIndex = messages.findIndex(msg => msg.id === failedMessageId);
+    
+    // 保留失败消息及其之前的所有消息，移除失败消息之后的所有消息（包括可能存在的 AI 占位符）
+    const messagesToKeep = messages.slice(0, failedIndex + 1); // +1 表示包含失败消息本身
+    setMessages(messagesToKeep);
+    
+    // 构建发送给 API 的消息格式（包含失败消息）
+    const apiMessages = messagesToKeep.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+
+    // 直接调用内部发送方法，不添加新的用户消息
+    await sendMessageInternal(apiMessages, failedMessageId);
+  }, [messages, sendMessageInternal]);
+
   return {
     messages,
     isLoading,
     sendUserMessage,
     clearMessages,
     restoreMessages,
+    retryMessage,
   };
 }
 
