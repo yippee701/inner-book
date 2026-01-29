@@ -280,11 +280,11 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
           />
         );
       })}
-      {currentRoundSuggestion != null && roundLabel != null && (
+      {currentRoundSuggestion != null && roundLabel != null && lastMessage?.role === 'assistant' && !isStreaming && (
         <Bubble.System
           content={
             <Space>
-            {`第 ${roundLabel} 轮你上次这样回答过：${currentRoundSuggestion}`}
+            {`你上次这样回答过：${currentRoundSuggestion}`}
             <Typography.Link onClick={() => onSuggestionClick?.(currentRoundSuggestion)}>输入</Typography.Link>
           </Space>
           }
