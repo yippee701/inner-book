@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState, forwardRef, useImperativeHandle } from 'react';
-import { Bubble } from '@ant-design/x';
+import { Bubble, Actions } from '@ant-design/x';
 import XMarkdown from '@ant-design/x-markdown';
+import { RedoOutlined, CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 // 节流函数
 function throttle(fn, delay) {
@@ -191,36 +192,54 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
 
         if (isUser) {
           const isFailed = msg.status === 'error';
+          
+          // 失败消息的 footer actions
+          const actionItems = isFailed ? [
+            {
+              key: 'retry',
+              icon: <RedoOutlined />,
+              label: '重新发送',
+            },
+            {
+              key: 'copy',
+              icon: <CopyOutlined />,
+              label: '复制',
+            },
+          ] : [];
+
+          const extraSlot = isFailed ? () => (
+            <ExclamationCircleOutlined
+              className="pt-5"
+              style={{
+                color: 'red',
+              }}
+            />
+          ) : null;
+
+          const handleActionClick = (event, content) => {
+            const { key } = event;
+            if (key === 'retry') {
+              onRetry?.(msg.id);
+            } else if (key === 'copy') {
+              navigator.clipboard.writeText(content).catch(err => {
+                console.error('复制失败:', err);
+              });
+            }
+          };
+
           return (
-            <div key={msg.id || index} className="relative group flex items-center gap-2">
-              {isFailed && (
-                <button
-                  onClick={() => onRetry?.(msg.id)}
-                  className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 active:bg-red-200 transition-colors border border-red-200"
-                  title="重新发送"
-                >
-                  <svg 
-                    className="w-3.5 h-3.5 text-red-600" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-                    />
-                  </svg>
-                </button>
-              )}
-              <div className="flex-1">
-                <Bubble
-                  content={msg.content}
-                  {...userBubbleProps}
+            <Bubble
+              key={msg.id || index}
+              content={msg.content}
+              extra={extraSlot}
+              footer={(content) => (
+                <Actions 
+                  items={actionItems} 
+                  onClick={(key) => handleActionClick(key, content)} 
                 />
-              </div>
-            </div>
+              )}
+              {...userBubbleProps}
+            />
           );
         }
 
