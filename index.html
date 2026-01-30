@@ -11,6 +11,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      document.addEventListener('touchmove', function(event) {
+        event.preventDefault();
+      }, { passive: false });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
