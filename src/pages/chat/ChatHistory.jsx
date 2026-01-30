@@ -89,6 +89,25 @@ export default function ChatHistory() {
         <div className="max-w-lg mx-auto pt-4">
           {loading ? (
             <div className="flex items-center justify-center py-12 text-gray-500">加载对话中...</div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(139, 168, 255, 0.1))',
+                }}
+              >
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-sm text-center" style={{ fontFamily: '"Noto Sans SC", sans-serif' }}>
+                暂无对话记录
+              </p>
+              <p className="text-gray-400 text-xs mt-1 text-center">
+                该报告可能尚未同步对话内容
+              </p>
+            </div>
           ) : (
             <MessageList
               ref={messageListRef}
