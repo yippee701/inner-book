@@ -10,30 +10,8 @@ import InviteCodeDialog from '../../components/inviteCodeDialog';
 import InviteLoginDialog from '../../components/inviteLoginDialog';
 import { useRdb } from '../../contexts/cloudbaseContext';
 import { getReportDetail as getReportDetailApi } from '../../api/report';
-
-// ========== 子组件 ==========
-
-/**
- * 背景装饰光晕 - 浅紫色弥散效果
- */
-function BackgroundGlow() {
-  return (
-    <>
-      <div 
-        className="absolute top-10 left-1/3 w-96 h-96 rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'rgba(196, 181, 253, 0.2)' }}
-      />
-      <div 
-        className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'rgba(221, 214, 254, 0.15)' }}
-      />
-      <div 
-        className="absolute bottom-1/4 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-        style={{ background: 'rgba(233, 213, 255, 0.2)' }}
-      />
-    </>
-  );
-}
+import { getModeLabel } from '../../constants/modes';
+import { BackgroundBlobs } from '../../components/reportBackground';
 
 /**
  * 底部转化区组件
@@ -87,64 +65,17 @@ function ConversionZone({ onUpgrade, onShare }) {
 }
 
 /**
- * 发光球体组件
- */
-function GlowingSphere() {
-  return (
-    <div 
-      className="w-16 h-16 rounded-full relative mb-6 mx-auto"
-      style={{
-        background: 'radial-gradient(circle at 30% 30%, rgba(107, 107, 255, 0.1), rgba(139, 92, 246, 0.4))',
-        boxShadow: '0 0 30px rgba(107, 107, 255, 0.3)',
-      }}
-    >
-      {/* 网格图案 */}
-      <div 
-        className="absolute inset-0 rounded-full overflow-hidden"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px)
-          `,
-          backgroundSize: '16px 16px',
-          transform: 'rotate(15deg)',
-          maskImage: 'radial-gradient(black, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(black, transparent 70%)',
-        }}
-      />
-      {/* 高光 */}
-      <div 
-        className="absolute top-[15%] left-[15%] w-[20%] h-[20%] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,255,255,0.8), transparent 70%)',
-          filter: 'blur(4px)',
-        }}
-      />
-    </div>
-  );
-}
-
-/**
  * 自定义 Markdown 组件 - 用于结构化展示报告
  * 注意：XMarkdown 的 components prop 接收 domNode 和 streamStatus，需要用 children 获取子元素
  */
 const markdownComponents = {
   // 一级标题 - 主标题（通常是报告标题）
-  h1: ({ children }) => (
+  h1: (
+    { children }) => (
     <div className="text-center mb-2">
-      <GlowingSphere />
-      <h1 
-        className="text-2xl mb-2"
-        style={{ 
-          fontFamily: '"Noto Serif SC", serif',
-          fontWeight: 900,
-          color: '#1F2937',
-          letterSpacing: '-0.5px',
-        }}
-      >
+      <h1>
         {children}
       </h1>
-      <p className="text-base" style={{ color: '#777777' }}>By Dora</p>
     </div>
   ),
 
@@ -295,7 +226,7 @@ const markdownComponents = {
  * 报告内容渲染组件
  * 使用 XMarkdown 渲染 Markdown 格式的报告，带自定义样式
  */
-function ReportContent({ content, subTitle }) {
+function ReportContent({ content, subTitle, modeLabel }) {
     return (
       <div 
       className="rounded-3xl p-4 sm:p-8"
@@ -304,10 +235,40 @@ function ReportContent({ content, subTitle }) {
         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.02)',
         }}
       >
-      <XMarkdown 
-        content={`# ${subTitle}\n\n ${content}`}
-        components={markdownComponents}
-      />
+        {/* Header */}
+        <div className="flex justify-between items-start mb-8">
+          <div className="flex items-center gap-2 text-indigo-500 font-bold text-lg">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            Inner Book
+          </div>
+          <div className="bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-semibold">
+            {modeLabel}
+          </div>
+        </div>    
+
+        {/* Quote Section */}
+        <div className="text-center mb-6">
+          <svg className="w-8 h-8 text-purple-200 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+          </svg>
+          <h1 
+            className="text-2xl leading-relaxed text-indigo-500 mb-4"
+            style={{ fontFamily: "'Noto Serif SC', serif" }}
+          >
+            {subTitle}
+          </h1>
+          <div 
+            className="w-10 h-1 mx-auto rounded-full"
+            style={{ background: 'linear-gradient(to right, #8B5CF6, #B794F6)' }}
+          />
+        </div>
+
+        <XMarkdown 
+          components={markdownComponents}
+          content={content}
+        />
       </div>
     );
 }
@@ -374,6 +335,7 @@ export default function Result() {
 
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
+  const modeLabel = useMemo(() => getModeLabel(mode), [mode]);
   
   // 注册对话框回调
   useEffect(() => {
@@ -422,12 +384,6 @@ export default function Result() {
       setIsVerifyingInviteCode(false);
     }
   }, [pendingUnlockReportId, handleInviteCodeSubmit, getReportDetail, message, reportIsLoggedIn]);
-  
-  // 跳转到登录页（带返回地址）
-  const handleGoToLogin = useCallback(() => {
-    const returnUrl = `/profile`;
-    navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-  }, [navigate, mode]);
 
   // 处理升级按钮点击
   const handleUpgrade = useCallback(() => {
@@ -458,14 +414,6 @@ export default function Result() {
     const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
     const reportId = currentSearchParams.get('reportId');
 
-    // 情况1：从 ReportLoading 跳转过来 或者已经拉取过一次了
-    // if (content && re) {
-    //   setDisplayContent(content);
-    //   setIsLoadingReport(false);
-    //   return;
-    // }
-
-    // 情况2：从历史记录点击进来，需要从数据库拉取
     // 等待 rdb 和 getReportDetail 初始化完成
     if (!rdb || !getReportDetail) {
       return;
@@ -516,12 +464,12 @@ export default function Result() {
   return (
     <div className="h-screen-safe w-full bg-white flex flex-col overflow-hidden relative">
       {/* 背景装饰光晕 */}
-      <BackgroundGlow />
+      <BackgroundBlobs />
 
       {/* 顶部标题栏 */}
       <header 
         className="flex items-center justify-between px-4 py-2 relative z-50"
-        style={{ borderBottom: '1px solid rgba(243, 244, 246, 1)' }}
+        style={{ backgroundColor: ' rgba(243, 244, 246, 0.4)', borderBottom: '1px solid rgba(243, 244, 246, 1)' }}
       >
         <Link 
           to="/"
@@ -551,7 +499,7 @@ export default function Result() {
         className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10"
       >
         <div className="max-w-md mx-auto py-3">
-          <ReportContent content={displayContent} subTitle={subTitle} />
+          <ReportContent content={displayContent} subTitle={subTitle} modeLabel={modeLabel}/>
           {/* 查看完整对话过程 */}
           {(
             <div className="mt-4 mb-2 flex items-center gap-2 w-full justify-center">
