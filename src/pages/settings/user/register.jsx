@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
+import { useToast } from '../../../components/Toast';
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -56,7 +57,7 @@ function Logo() {
   );
 }
 
-function InputField({ label, type = 'text', value, onChange, placeholder, disabled, hint }) {
+function InputField({ label, type = 'text', value, onChange, onBlur, placeholder, disabled, hint }) {
   return (
     <div className="mb-3">
       <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>{label}</label>
@@ -68,6 +69,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder, disabl
           type={type}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
           placeholder={placeholder}
           disabled={disabled}
           className="flex-1 outline-none bg-transparent text-base"
@@ -100,22 +102,13 @@ function SubmitButton({ onClick, loading, disabled, text = '确认' }) {
   );
 }
 
-function ErrorMessage({ message }) {
-  if (!message) return null;
-  return (
-    <div className="mb-3 px-4 py-2 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
-      {message}
-    </div>
-  );
-}
-
-function SuccessMessage({ message }) {
-  if (!message) return null;
-  return (
-    <div className="mb-3 px-4 py-2 rounded-xl text-sm" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#8B5CF6' }}>
-      {message}
-    </div>
-  );
+/** 从接口/异常中提取可展示的错误文案 */
+function getErrorMessage(err) {
+  if (err == null) return '操作失败，请稍后重试';
+  if (typeof err === 'string') return err;
+  const msg = err.error_description ?? err.error ?? err.error_code;
+  if (msg) return msg;
+  return '操作失败，请稍后重试';
 }
 
 function Agreement() {
@@ -134,8 +127,9 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const auth = useAuth();
   const [searchParams] = useSearchParams();
+  const { message: toast } = useToast();
   const returnUrl = searchParams.get('returnUrl');
-  
+
   // 表单状态
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -145,19 +139,37 @@ export default function RegisterPage() {
   const [verification, setVerification] = useState(null);
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  // 是否展示校验失败原因（仅在失焦或点击注册后展示，避免输入过程中一直提醒）
+  const [showValidationHint, setShowValidationHint] = useState(false);
 
   // 验证
-  const isValidUsername = username.length >= 3 && username.length <= 20 && /^[a-zA-Z0-9_]+$/.test(username);
+  const isValidUsername = username.length >= 6 && username.length <= 25 && /"^$|^[a-z][0-9a-z_-]{5,24}$/.test(username);
   const isValidPassword = password.length >= 6;
   const isPasswordMatch = password === confirmPassword;
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
   const isValidCode = verificationCode.length === 6;
-  
+
   const canSubmit = isValidUsername && isValidPassword && isPasswordMatch && isValidPhone && isValidCode;
   const canSendCode = isValidPhone && countdown === 0;
   const phoneNumber = phone ? `+86 ${phone}` : '';
+
+  // 无法点击注册时展示的校验失败原因（按优先级取第一条）
+  const validationHint = useMemo(() => {
+    if (canSubmit) return null;
+    if (username.length > 0 && !isValidUsername) return '用户名需 6–25 位字母、以小写字母开头、数字或下划线';
+    if (password.length > 0 && !isValidPassword) return '密码至少 6 位';
+    if (confirmPassword.length > 0 && !isPasswordMatch) return '两次输入的密码不一致';
+    if (phone.length > 0 && !isValidPhone) return '请输入正确的 11 位手机号';
+    if (verificationCode.length > 0 && !isValidCode) return '请输入 6 位验证码';
+    if (username.length === 0) return '请填写用户名';
+    if (password.length === 0) return '请设置密码';
+    if (confirmPassword.length === 0) return '请再次输入密码';
+    if (phone.length === 0) return '请填写手机号';
+    if (verificationCode.length === 0) return '请填写验证码';
+    return null;
+  }, [canSubmit, username, password, confirmPassword, phone, verificationCode, isValidUsername, isValidPassword, isPasswordMatch, isValidPhone, isValidCode]);
+
+  const onFieldBlur = useCallback(() => setShowValidationHint(true), []);
 
   // 倒计时
   useEffect(() => {
@@ -169,27 +181,25 @@ export default function RegisterPage() {
   // 发送验证码
   const handleSendCode = useCallback(async () => {
     if (!canSendCode || !auth) return;
-    setError('');
     try {
       const verificationResult = await auth.getVerification({
         phone_number: phoneNumber,
       });
       setVerification(verificationResult);
       setCountdown(COUNTDOWN_SECONDS);
+      toast.success('验证码已发送');
     } catch (err) {
       console.error('发送验证码失败:', err);
-      setError('验证码发送失败，请稍后重试');
+      toast.error(getErrorMessage(err) || '验证码发送失败，请稍后重试', 5000);
     }
-  }, [canSendCode, phoneNumber, auth]);
+  }, [canSendCode, phoneNumber, auth, toast]);
 
   // 注册
   const handleRegister = useCallback(async () => {
     if (!canSubmit || loading || !auth) return;
-    
-    setError('');
-    setSuccess('');
+
     setLoading(true);
-    
+
     try {
       // 先验证验证码
       let verificationTokenRes = null;
@@ -201,14 +211,14 @@ export default function RegisterPage() {
           });
         } catch (err) {
           console.error('验证码验证错误:', err);
-          setError('验证码错误，请重新输入');
+          toast.error(getErrorMessage(err) || '验证码错误，请重新输入', 5000);
           setLoading(false);
           return;
         }
       }
 
-      // 注册
-      const { data, error } = await auth.signUp({
+      // 注册（接口可能返回 { data, error } 或直接抛错）
+      const signUpResult = await auth.signUp({
         phone_number: phoneNumber,
         verification_code: verificationCode,
         verification_token: verificationTokenRes?.verification_token,
@@ -217,31 +227,31 @@ export default function RegisterPage() {
         username: username,
       });
 
-      if (error) { 
-        console.error('注册错误:', error);
-        setError(error?.message || '注册失败，请稍后重试');
+      const resError = signUpResult?.error ?? signUpResult?.err;
+      if (resError) {
+        console.error('注册错误:', resError);
+        toast.error(getErrorMessage(resError) || '注册失败，请稍后重试', 5000);
         setLoading(false);
         return;
       }
-      
-      console.log('注册成功:', data);
-      setSuccess('注册成功！正在跳转...');
+
+      console.log('注册成功:', signUpResult?.data ?? signUpResult);
+      toast.success('注册成功！正在跳转...', 2000);
       setLoading(false);
-      
-      // 延迟跳转
+
       setTimeout(() => {
         if (returnUrl) {
           navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
         } else {
-        navigate('/login');
+          navigate('/login');
         }
       }, 1500);
     } catch (err) {
       console.error('注册错误:', err);
-      setError(err.message || err.error || '注册失败，请稍后重试');
+      toast.error(getErrorMessage(err) || '注册失败，请稍后重试', 5000);
       setLoading(false);
     }
-  }, [canSubmit, loading, username, password, phone, phoneNumber, verificationCode, verification, auth, returnUrl, navigate]);
+  }, [canSubmit, loading, username, password, phone, phoneNumber, verificationCode, verification, auth, returnUrl, navigate, toast]);
 
   return (
     <div className="h-screen-safe w-full bg-white relative flex flex-col">
@@ -264,47 +274,48 @@ export default function RegisterPage() {
         <Logo />
         
         <div className="w-full max-w-sm mx-auto">
-          <ErrorMessage message={error} />
-          <SuccessMessage message={success} />
-
           <InputField
             label="用户名"
             value={username}
             onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))}
+            onBlur={onFieldBlur}
             placeholder="请输入用户名"
             disabled={loading}
-            hint="3-20位字母、数字或下划线"
+            hint="6-25位字母、以小写字母开头、数字或下划线"
           />
-          
+
           <InputField
             label="密码"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={onFieldBlur}
             placeholder="请输入密码"
             disabled={loading}
             hint="至少6位字符"
           />
-          
+
           <InputField
             label="确认密码"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={onFieldBlur}
             placeholder="请再次输入密码"
             disabled={loading}
           />
-          
+
           <InputField
             label="手机号"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+            onBlur={onFieldBlur}
             placeholder="请输入手机号"
             disabled={loading}
             prefix="+86"
           />
-          
+
           {/* 验证码输入框 */}
           <div className="mb-3">
             <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>验证码</label>
@@ -313,6 +324,7 @@ export default function RegisterPage() {
                 type="text"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onBlur={onFieldBlur}
                 placeholder="请输入验证码"
                 disabled={loading}
                 maxLength={6}
@@ -332,13 +344,23 @@ export default function RegisterPage() {
               </button>
             </div>
           </div>
-          
-          {/* 验证提示 */}
-          {confirmPassword && !isPasswordMatch && (
-            <p className="text-xs mb-3" style={{ color: '#EF4444' }}>两次输入的密码不一致</p>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              if (!canSubmit) setShowValidationHint(true);
+            }}
+            onKeyDown={(e) => e.key === 'Enter' && !canSubmit && setShowValidationHint(true)}
+          >
+            <SubmitButton onClick={handleRegister} loading={loading} disabled={!canSubmit} text="注册" />
+          </div>
+
+          {/* 仅在失焦或点击注册后展示校验失败原因 */}
+          {showValidationHint && !canSubmit && validationHint && (
+            <p className="text-xs text-center mt-2" style={{ color: '#EF4444' }}>
+              {validationHint}
+            </p>
           )}
-          
-          <SubmitButton onClick={handleRegister} loading={loading} disabled={!canSubmit} text="注册" />
 
           {/* 登录链接 */}
           <p className="text-center text-sm mt-4" style={{ color: '#6B7280' }}>
