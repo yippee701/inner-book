@@ -176,8 +176,12 @@ export async function getMessages(db, reportId) {
         return;
       }
       try {
-        const messages = data.data?.[0]?.messages || [];
-        resolve(JSON.parse(messages));
+        if(data.data.length > 0) {
+          const messages = data.data.slice(-1)[0].messages || [];
+          resolve(messages);
+        } else {
+          resolve([]);
+        }
       } catch (err) {
         reject(err);
       }
