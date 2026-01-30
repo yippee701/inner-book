@@ -58,7 +58,6 @@ const aiBubbleBaseProps = {
       fontFamily: '"Noto Sans SC", sans-serif',
       fontSize: '15px',
       color: '#000000',
-      lineHeight: '1.8',
       letterSpacing: '0.02em',
       padding: '0',
     },
@@ -73,19 +72,12 @@ const userBubbleProps = {
   styles: {
     content: {
       fontFamily: '"Noto Sans SC", sans-serif',
-      fontSize: '15px',
       color: '#000000',
-      lineHeight: '1.6',
-      maxWidth: '85%',
       backgroundColor: 'rgba(255, 255, 255, 0.5)',
       backdropFilter: 'blur(12px)',
       border: '1px solid rgba(255, 255, 255, 0.6)',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-      borderRadius: '20px',
-      padding: '12px 20px',
-      wordBreak: 'normal',
-      overflowWrap: 'break-word',
-      whiteSpace: 'pre-wrap',
+      borderRadius: '12px',
     },
   },
 };
@@ -94,10 +86,7 @@ const userBubbleProps = {
 const systemBubbleStyles = {
   content: {
     fontFamily: '"Noto Sans SC", sans-serif',
-    fontSize: '14px',
     color: '#6B7280',
-    lineHeight: '1.6',
-    padding: '10px 14px',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderColor: 'rgba(129, 128, 128, 0.3)',
   },
@@ -217,7 +206,7 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
           const isFailed = msg.status === 'error';
           
           // 失败消息的 footer actions
-          const actionItems = isFailed ? [
+          const actionItems = [
             {
               key: 'retry',
               icon: <RedoOutlined />,
@@ -228,7 +217,7 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
               icon: <CopyOutlined />,
               label: '复制',
             },
-          ] : [];
+          ];
 
           const extraSlot = isFailed ? () => (
             <ExclamationCircleOutlined
@@ -255,12 +244,14 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
               key={msg.id || index}
               content={msg.content}
               extra={extraSlot}
-              footer={(content) => (
-                <Actions 
-                  items={actionItems} 
-                  onClick={(key) => handleActionClick(key, content)} 
-                />
-              )}
+              {...(isFailed && {
+                footer: (content) => (
+                  <Actions 
+                    items={actionItems} 
+                    onClick={(key) => handleActionClick(key, content)} 
+                  />
+                )
+              })}
               {...userBubbleProps}
             />
           );
