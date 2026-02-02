@@ -408,7 +408,6 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       // 退出登录
-      // TODO： 确认是否会自动清除 localStorage，清除哪些内容
       await auth.signOut();
       
       // 跳转到首页

@@ -146,8 +146,7 @@ export default function LoginPage() {
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verification, setVerification] = useState(null);
+  const [verificationResult, setVerificationResult] = useState(null);
 
   // 验证
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
@@ -171,7 +170,7 @@ export default function LoginPage() {
       const verificationResult = await auth.getVerification({
         phone_number: phoneNumber,
       });
-      setVerification(verificationResult);
+      setVerificationResult(verificationResult);
       setCountdown(COUNTDOWN_SECONDS);
     } catch (err) {
       console.error('发送验证码失败:', err);
@@ -192,46 +191,26 @@ export default function LoginPage() {
   const handlePhoneLogin = useCallback(async () => {
     if (!canSubmitPhone || loading) return;
     setError('');
-
-    // TODO 现在会报用户不存在
-    
-    // 先验证验证码
-    let verificationTokenRes = null;
-    if (verification && verificationCode) {
-      try {
-        verificationTokenRes = await auth.verify({
-          verification_id: verification.verification_id,
-          verification_code: verificationCode,
-        });
-      } catch (err) {
-        console.error('验证码验证错误:', err);
-        setError('验证码错误，请重新输入');
-        setLoading(false);
-        return;
-      }
+    if (!verificationResult) {
+      setError('请先获取验证码');
+      return;
     }
-
     setLoading(true);
     
     try {
-      const res = await auth.signIn({
-        username: phone, 
-        verification_token: code, // TODO，改成真实的验证码
+      const res = await auth.signInWithSms({
+        phoneNum: phone, 
+        verificationInfo: verificationResult,
+        verificationCode: code,
       });
       await handleLoginSuccess(res);
     } catch (err) {
       console.error('登录错误:', err);
-      const errorCode = err.code || err.status;
-      // TODO, 根据错误码适配
-      if (errorCode === 'INVALID_PHONE') {
-        setError('该手机号未注册，请先注册');
-      } else {
-        setError(err.message || err.error || '登录失败，请检查验证码');
-      }
+      setError(err.message || err.error || '登录失败，请检查验证码');
     } finally {
       setLoading(false);
     }
-  }, [canSubmitPhone, loading, phone, code, auth, verification, verificationCode]);
+  }, [canSubmitPhone, loading, phone, code, auth]);
 
   // 用户名密码登录
   const handlePasswordLogin = useCallback(async () => {
