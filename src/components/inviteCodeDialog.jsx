@@ -73,7 +73,7 @@ export default function InviteCodeDialog({ isOpen, onClose, onSubmit, isLoading 
           输入邀请码
         </h3>
         <p className="text-sm text-center mb-1" style={{ color: '#6B7280', maxWidth: '240px' }}>
-          立刻解锁专属于你的INNER BOOK报告，获得道路选择、职业发展、人际社交等方面的详细建议
+          立刻解锁专属于你的INNER BOOK报告
         </p>
         
         {/* 输入框 */}
@@ -118,7 +118,7 @@ export default function InviteCodeDialog({ isOpen, onClose, onSubmit, isLoading 
         <p
         className="mt-1 text-sm text-center"
         style={{ color: '#8B5CF6' }}>
-          没有邀请码？立即上小红书关注INNER BOOK官方账号获取
+          没有邀请码？立即上小红书关注 INNER BOOK 官方账号获取
         </p>
       </div>
     </div>

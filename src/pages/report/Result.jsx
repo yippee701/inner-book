@@ -42,14 +42,14 @@ function ConversionZone({ onShareImage, onShareLink }) {
         </button>
         <button 
           onClick={onShareLink}
-          className="flex-shrink-0 h-10 px-3 rounded-full text-xs font-normal transition-all active:scale-[0.98]"
+          className="flex-shrink-0 h-12 px-3 rounded-full text-xs font-normal transition-all active:scale-[0.98]"
           style={{
             color: '#9CA3AF',
             backgroundColor: 'transparent',
             border: '1px solid rgba(209, 213, 219, 0.6)',
           }}
         >
-          链接
+          分享链接
         </button>
       </div>
 
