@@ -84,6 +84,7 @@ export function ReportProvider({ children }) {
     content: '',         // 报告内容（去除 [Report] 前缀）
     messages: [],        // 对话记录
     isGenerating: false, // 正在生成中
+    isPending: true,    // 正在对话中
     isComplete: false,   // 生成完成
     isFromHistory: false, // 是否来自历史报告
     currentReportId: null, // 当前报告的 ID（统一使用 reportId）
@@ -303,7 +304,7 @@ export function ReportProvider({ children }) {
       currentMode: mode,
       messages: [],
       content: '',
-      isGenerating: true,
+      isPending: true,
       isComplete: false,
       isFromHistory: false,
     }));
@@ -332,6 +333,7 @@ export function ReportProvider({ children }) {
     setReportState(prev => ({
       ...prev,
       isGenerating: true,
+      isPending: true,
       isComplete: false,
     }));
   }, []);
@@ -431,6 +433,7 @@ export function ReportProvider({ children }) {
     setReportState(prev => ({
       ...prev,
       isGenerating: false,
+      isPending: false,
       isComplete: true,
     }));
 
@@ -561,6 +564,7 @@ export function ReportProvider({ children }) {
       messages: report.messages || [],
       content: report.content || '',
       isGenerating: false, // 恢复时不是正在生成状态
+      isPending: true,
       isComplete: false,
       isFromHistory: false,
     }));

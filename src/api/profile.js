@@ -47,33 +47,6 @@ function setCachedData(cacheKey, data) {
   });
 }
 
-// ========== Mock 数据 ==========
-
-/**
- * Mock 裂变进度数据
- */
-const MOCK_FISSION_DATA = {
-  currentInvites: 0,
-  targetInvites: 2,
-  rewardName: '职业规划对话',
-};
-
-/**
- * Mock 对话历史数据
- */
-const MOCK_CONVERSATIONS = [
-  {
-    id: 'conv_001',
-    title: '探索我的职业价值观',
-    createdAt: '2025-05-18 10:15',
-    status: 'generating', // generating | completed | expired
-    storageType: null, // permanent | countdown | validUntil | null
-    storageInfo: null,
-  },
-];
-
-// ========== Mock API 实现 ==========
-
 /**
  * Mock: 重新开启对话
  */
