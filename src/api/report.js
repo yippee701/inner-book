@@ -91,7 +91,7 @@ export async function getReportDetail(rdb, reportId, skipCache = false) {
   try {
     const { data, error } = await rdb
       .from('report')
-      .select('content, status, subTitle, username, lock, inviteCode')
+      .select('content, status, subTitle, username, lock, inviteCode, mode')
       .eq('reportId', reportId);
     
     if (error) {

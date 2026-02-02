@@ -143,7 +143,7 @@ export async function getReports(rdb) {
   try {
     const { data, error } = await rdb
       .from("report")
-      .select('title, createdAt, status, reportId')
+      .select('title, createdAt, status, reportId, mode')
       .eq('username', username);
     
     if (error) {
