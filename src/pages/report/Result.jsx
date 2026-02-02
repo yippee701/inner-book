@@ -6,6 +6,7 @@ import { generateReportTitle} from '../../utils/chat';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { useToast } from '../../components/Toast';
 import ShareDialog from '../share/shareDialog';
+import ShareReportImage from '../../components/ShareReportImage';
 import InviteCodeDialog from '../../components/inviteCodeDialog';
 import InviteLoginDialog from '../../components/inviteLoginDialog';
 import { useRdb } from '../../contexts/cloudbaseContext';
@@ -14,41 +15,42 @@ import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
 
 /**
- * 底部转化区组件
+ * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
-function ConversionZone({ onUpgrade, onShare }) {
+function ConversionZone({ onShareImage, onShareLink }) {
   return (
     <div 
-      className="absolute bottom-0 left-0 right-0 min-h-32 flex flex-col items-center justify-end pb-4 z-50"
+      className="absolute bottom-0 left-0 right-0 min-h-28 flex flex-col items-center justify-end pb-4 z-50"
       style={{
         background: 'linear-gradient(to top, #FFFFFF 85%, rgba(255, 255, 255, 0) 100%)',
       }}
     >
-      <div className="flex flex-col items-center gap-4 mb-4 w-full max-w-md px-6">
-        {/* 按钮组 */}
-        <div className="flex gap-3 w-full">
-          <button 
-            onClick={onShare}
-            className="flex-1 h-12 rounded-full text-base font-medium transition-all active:scale-[0.98]"
-            style={{
-              color: '#374151',
-              backgroundColor: 'rgba(243, 244, 246, 0.8)',
-              border: '1px solid rgba(167, 139, 250, 0.3)',
-            }}
-          >
-            分享好友
-          </button>
-          <button 
-            onClick={onUpgrade}
-            className="flex-1 h-12 rounded-full text-base text-white font-medium transition-all active:scale-[0.98]"
-            style={{
-              backgroundColor: '#1F2937',
-              boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
-            }}
-          >
-            升级 Inner Book
-          </button>
-        </div>
+      <div className="flex items-center gap-2 mb-4 w-full max-w-md px-6">
+        <button 
+          onClick={onShareImage}
+          className="flex-1 min-w-0 h-12 rounded-full text-base font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          style={{
+            color: '#FFFFFF',
+            backgroundColor: '#1F2937',
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6 6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          分享报告长图
+        </button>
+        <button 
+          onClick={onShareLink}
+          className="flex-shrink-0 h-10 px-3 rounded-full text-xs font-normal transition-all active:scale-[0.98]"
+          style={{
+            color: '#9CA3AF',
+            backgroundColor: 'transparent',
+            border: '1px solid rgba(209, 213, 219, 0.6)',
+          }}
+        >
+          链接
+        </button>
       </div>
 
       {/* 签名 */}
@@ -291,6 +293,7 @@ export default function Result() {
   const [displayContent, setDisplayContent] = useState('');
   const { message } = useToast();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isShareImageOpen, setIsShareImageOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [isLoadingReport, setIsLoadingReport] = useState(true);
   
@@ -385,13 +388,8 @@ export default function Result() {
     }
   }, [pendingUnlockReportId, handleInviteCodeSubmit, getReportDetail, message, reportIsLoggedIn]);
 
-  // 处理升级按钮点击
-  const handleUpgrade = useCallback(() => {
-    message.info('功能开发中');
-  }, [message]);
-
-  // 处理分享按钮点击
-  const handleShare = useCallback(() => {
+  // 分享链接（打开 ShareDialog）
+  const handleShareLink = useCallback(() => {
     const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
     const reportId = currentSearchParams.get('reportId');
     if (!reportId) {
@@ -399,15 +397,42 @@ export default function Result() {
       return;
     }
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
-    const shareUrl = `${baseUrl}#/share?mode=${mode}&reportId=${reportId}`;    
-    setShareUrl(shareUrl);
+    const url = `${baseUrl}#/share?mode=${mode}&reportId=${reportId}`;
+    setShareUrl(url);
     setIsShareDialogOpen(true);
   }, [message, mode]);
 
-  // 关闭分享弹窗
+  // 分享报告长图（打开 ShareReportImage）
+  const handleShareImage = useCallback(() => {
+    const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const reportId = currentSearchParams.get('reportId');
+    if (!reportId) {
+      message.warning('报告 ID 不存在，无法分享');
+      return;
+    }
+    if (!displayContent?.trim()) {
+      message.warning('报告内容为空，无法生成长图');
+      return;
+    }
+    setIsShareImageOpen(true);
+  }, [message, displayContent]);
+
   const handleCloseShareDialog = useCallback(() => {
     setIsShareDialogOpen(false);
   }, []);
+
+  const handleCloseShareImage = useCallback(() => {
+    setIsShareImageOpen(false);
+  }, []);
+
+  // 长图弹窗用的 shareUrl（与分享链接一致）
+  const shareUrlForImage = useMemo(() => {
+    const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const reportId = currentSearchParams.get('reportId');
+    if (!reportId) return '';
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    return `${baseUrl}#/share?mode=${mode}&reportId=${reportId}`;
+  }, [mode, searchParams]);
 
   // 加载报告内容
   useEffect(() => {
@@ -515,12 +540,19 @@ export default function Result() {
       </div>
 
       {/* 底部转化区 */}
-      <ConversionZone
-        onUpgrade={handleUpgrade}
-        onShare={handleShare}
+      <ConversionZone onShareImage={handleShareImage} onShareLink={handleShareLink} />
+
+      {/* 分享报告长图 */}
+      <ShareReportImage
+        isOpen={isShareImageOpen}
+        onClose={handleCloseShareImage}
+        title={subTitle || generateReportTitle(mode)}
+        subTitle={subTitle}
+        content={displayContent}
+        shareUrl={shareUrlForImage}
       />
 
-      {/* 分享弹窗 */}
+      {/* 分享链接弹窗 */}
       <ShareDialog 
         isOpen={isShareDialogOpen}
         onClose={handleCloseShareDialog}
