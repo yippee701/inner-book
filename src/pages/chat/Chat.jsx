@@ -305,22 +305,14 @@ export default function Chat() {
         className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-2 pt-2 z-20"
         style={{ bottom: 0 }}
       >
-        <div 
-          className="w-full rounded-2xl flex items-center px-5 gap-3"
-          style={{ 
-            backgroundColor: '#F3F4F6',
-            boxShadow: 'rgba(0, 0, 0, 0.04) 0px 2px 8px'
-          }}
-        >
-          <div className="flex-1">
-            <ChatInput 
-              onSend={sendUserMessage} 
-              isLoading={isLoading}
-              disabled={!hasStarted}
-              suggestionToFill={suggestionToFill}
-              onSuggestionConsumed={() => setSuggestionToFill(null)}
-            />
-          </div>
+        <div className="flex-1">
+          <ChatInput 
+            onSend={sendUserMessage} 
+            isLoading={isLoading}
+            disabled={!hasStarted}
+            suggestionToFill={suggestionToFill}
+            onSuggestionConsumed={() => setSuggestionToFill(null)}
+          />
         </div>
         <p className="mt-3 text-center text-xs text-gray-500">
           推荐使用输入法的语音输入功能
