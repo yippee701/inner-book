@@ -27,12 +27,12 @@ export default function InviteLoginDialog({ isOpen, onClose, returnUrl }) {
           </div>
           
           {/* 标题 */}
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             登录后保存报告
           </h3>
           
           {/* 描述 */}
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          <p className="text-gray-500 text-base mb-6 leading-relaxed">
             强烈建议注册/登录，可以保存报告到个人主页，随时查看
           </p>
           
@@ -40,21 +40,21 @@ export default function InviteLoginDialog({ isOpen, onClose, returnUrl }) {
           <div className="flex flex-col gap-3">
             <Link
               to={loginUrl}
-              className="w-full py-3 rounded-xl text-white bg-gray-900 font-medium transition-colors hover:bg-black text-center"
+              className="btn-primary w-full font-medium transition-colors hover:bg-black text-center"
               onClick={onClose}
             >
               登录
             </Link>
             <Link
               to={registerUrl}
-              className="w-full py-3 rounded-xl text-gray-600 bg-gray-100 font-medium transition-colors hover:bg-gray-200 text-center"
+              className="btn-secondary w-full transition-colors hover:bg-gray-200 text-center"
               onClick={onClose}
             >
               注册
             </Link>
             <button
               onClick={onClose}
-              className="w-full py-3 rounded-xl text-gray-500 font-medium transition-colors hover:text-gray-700"
+              className="w-full py-3 rounded-xl text-sm text-gray-500 font-medium transition-colors hover:text-gray-700"
             >
               稍后再说
             </button>

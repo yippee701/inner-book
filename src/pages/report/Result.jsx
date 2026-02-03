@@ -28,12 +28,7 @@ function ConversionZone({ onShareImage, onShareLink }) {
       <div className="flex items-center gap-2 mb-4 w-full max-w-md px-6">
         <button 
           onClick={onShareImage}
-          className="flex-1 min-w-0 h-12 rounded-full text-base font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-          style={{
-            color: '#FFFFFF',
-            backgroundColor: '#1F2937',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
-          }}
+          className="btn-primary flex-1 min-w-0 h-12 font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6 6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -42,12 +37,7 @@ function ConversionZone({ onShareImage, onShareLink }) {
         </button>
         <button 
           onClick={onShareLink}
-          className="flex-shrink-0 h-12 px-3 rounded-full text-xs font-normal transition-all active:scale-[0.98]"
-          style={{
-            color: '#9CA3AF',
-            backgroundColor: 'transparent',
-            border: '1px solid rgba(209, 213, 219, 0.6)',
-          }}
+          className="btn-secondary w-24 flex-shrink-0 h-12 !px-2 !text-xs font-normal transition-all active:scale-[0.98]"
         >
           分享链接
         </button>
@@ -75,14 +65,14 @@ function ConversionZone({ onShareImage, onShareLink }) {
 function ReportContent({ content, subTitle, modeLabel }) {
     return (
       <div 
-      className="rounded-3xl p-4 sm:p-8"
+      className="rounded-3xl p-5"
         style={{
         backgroundColor: '#FFFFFF',
         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.02)',
         }}
       >
         {/* Header */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2 text-indigo-500 font-bold text-base">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -95,12 +85,12 @@ function ReportContent({ content, subTitle, modeLabel }) {
         </div>    
 
         {/* Quote Section */}
-        <div className="text-center mb-6 text-dora">
-          <svg className="w-8 h-8 text-purple-200 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+        <div className="text-center mb-2 text-dora">
+          <svg className="w-8 h-8 text-purple-200 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
             <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
           </svg>
           <h1 
-            className="text-2xl leading-relaxed text-indigo-500 mb-4"
+            className="text-2xl leading-relaxed text-indigo-500 mb-2"
           >
             {subTitle}
           </h1>
@@ -365,7 +355,7 @@ export default function Result() {
       <div
         ref={contentScrollRef}
         onScroll={handleContentScroll}
-        className="flex-1 overflow-y-auto pb-[220px] px-3 relative z-10"
+        className="flex-1 overflow-y-auto pb-[220px] px-5 relative z-10"
       >
         <div className="max-w-md mx-auto py-3">
           <ReportContent content={displayContent} subTitle={subTitle} modeLabel={modeLabel}/>

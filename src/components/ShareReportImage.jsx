@@ -291,7 +291,7 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="mt-3 w-full max-w-[335px] h-12 rounded-full text-base font-medium text-white bg-gray-900 hover:bg-gray-800 active:scale-[0.98]"
+                  className="btn-primary mt-3 w-full max-w-[335px] h-12 font-medium hover:bg-gray-800 active:scale-[0.98]"
                 >
                   保存图片
                 </button>

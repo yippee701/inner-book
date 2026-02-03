@@ -78,11 +78,9 @@ export default function ShareDialog({ isOpen, onClose, shareUrl }) {
         {/* 复制按钮 */}
         <button
           onClick={handleCopy}
-          className="w-full h-12 rounded-full text-base font-medium transition-all active:scale-[0.98]"
+          className="btn-primary w-full h-12 font-medium transition-all active:scale-[0.98]"
           style={{
             backgroundColor: copied ? '#10B981' : '#1F2937',
-            color: '#FFFFFF',
-            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
           }}
         >
           {copied ? '✓ 已复制' : '一键复制'}
