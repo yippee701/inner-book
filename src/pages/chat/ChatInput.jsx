@@ -22,7 +22,6 @@ export default function ChatInput({ onSend, isLoading, disabled, suggestionToFil
     <XProvider theme={{
       token: {
         colorPrimary: '#324155',
-        paddingSM: 4,
       },
     }}>
       <Sender
@@ -34,18 +33,15 @@ export default function ChatInput({ onSend, isLoading, disabled, suggestionToFil
         placeholder="输入消息..."
         autoSize={{ minRows: 1, maxRows: 4 }}
         style={{
-          background: 'transparent',
-          borderRadius: '9999px',
           border: 'none',
           boxShadow: 'none',
         }}
         styles={{
           input: {
             color: '#000000',
-            fontSize: '14px',
+            fontSize: '16px',
             padding: '8px 0',
             minHeight: '40px',
-            background: 'transparent',
           },
           suffix: {
             paddingBottom: '3px',

@@ -306,8 +306,11 @@ export default function Chat() {
         style={{ bottom: 0 }}
       >
         <div 
-          className="w-full rounded-4xl flex items-center px-5 gap-3"
-          style={{ backgroundColor: '#F3F4F6' }}
+          className="w-full rounded-2xl flex items-center px-5 gap-3"
+          style={{ 
+            backgroundColor: '#F3F4F6',
+            boxShadow: 'rgba(0, 0, 0, 0.04) 0px 2px 8px'
+          }}
         >
           <div className="flex-1">
             <ChatInput 
