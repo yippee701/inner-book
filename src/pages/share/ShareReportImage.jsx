@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
-import { useToast } from './Toast';
+import { useToast } from '../../components/Toast';
 
 /** 去掉 markdown 格式，得到纯文本 */
 function stripMarkdown(text) {

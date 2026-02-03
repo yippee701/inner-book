@@ -1,19 +1,18 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
-import XMarkdown from '@ant-design/x-markdown';
 import { useReport } from '../../contexts/ReportContext';
 import { generateReportTitle} from '../../utils/chat';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { useToast } from '../../components/Toast';
 import ShareDialog from '../share/shareDialog';
-import ShareReportImage from '../../components/ShareReportImage';
+import ShareReportImage from '../share/ShareReportImage';
 import InviteCodeDialog from '../../components/inviteCodeDialog';
 import InviteLoginDialog from '../../components/inviteLoginDialog';
 import { useRdb } from '../../contexts/cloudbaseContext';
 import { getReportDetail as getReportDetailApi } from '../../api/report';
 import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
-import markdownComponents from '../../components/reportMarkdown';
+import ReportContentCard from '../../components/ReportContentCard';
 import { getCurrentUsername } from '../../utils/user';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
@@ -58,57 +57,6 @@ function ConversionZone({ onShareImage, onShareLink }) {
 }
 
 
-
-/**
- * 报告内容渲染组件
- * 使用 XMarkdown 渲染 Markdown 格式的报告，带自定义样式
- */
-function ReportContent({ content, subTitle, modeLabel }) {
-    return (
-      <div 
-      className="rounded-3xl p-5"
-        style={{
-        backgroundColor: '#FFFFFF',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.02)',
-        }}
-      >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-2 text-indigo-500 font-bold text-base">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            INNER BOOK
-          </div>
-          <div className="bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-semibold">
-            {modeLabel}
-          </div>
-        </div>    
-
-        {/* Quote Section */}
-        <div className="text-center mb-2 text-dora">
-          <svg className="w-8 h-8 text-purple-200 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-          </svg>
-          <h1 
-            className="text-2xl leading-relaxed text-indigo-500 mb-2"
-          >
-            {subTitle}
-          </h1>
-          <div 
-            className="w-10 h-1 mx-auto rounded-full"
-            style={{ background: 'linear-gradient(to right, #8B5CF6, #B794F6)' }}
-          />
-        </div>
-
-        <XMarkdown 
-          className="text-dora"
-          components={markdownComponents}
-          content={content}
-        />
-      </div>
-    );
-}
 
 // ========== 主组件 ==========
 
@@ -362,7 +310,7 @@ export default function Result() {
         className="flex-1 overflow-y-auto pb-[220px] px-5 relative z-10"
       >
         <div className="max-w-md mx-auto py-3">
-          <ReportContent content={displayContent} subTitle={subTitle} modeLabel={modeLabel}/>
+          <ReportContentCard content={displayContent} subTitle={subTitle} modeLabel={modeLabel} />
           {/* 查看完整对话过程 */}
           {(
             <div className="mt-4 mb-2 flex items-center gap-2 w-full justify-center">
