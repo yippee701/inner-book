@@ -230,7 +230,7 @@ export function ReportProvider({ children }) {
     
   // 检查登录状态并同步报告（供登录/注册成功后调用）
   const checkLoginAndSync = useCallback(async () => {
-    const loggedIn = isLoggedIn;
+    const loggedIn = isLoggedIn();
     if (loggedIn) {
       // 登录状态变为 true 时，useEffect 会自动触发同步
       // 但为了确保立即同步，这里也调用一次
