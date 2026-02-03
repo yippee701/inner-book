@@ -14,6 +14,7 @@ import { getReportDetail as getReportDetailApi } from '../../api/report';
 import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
 import markdownComponents from '../../components/reportMarkdown';
+import { getCurrentUsername } from '../../utils/user';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
@@ -112,6 +113,7 @@ function ReportContent({ content, subTitle, modeLabel }) {
 // ========== 主组件 ==========
 
 export default function Result() {
+  const username = getCurrentUsername();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { 
@@ -384,6 +386,7 @@ export default function Result() {
         subTitle={subTitle}
         content={displayContent}
         shareUrl={shareUrlForImage}
+        username={username}
       />
 
       {/* 分享链接弹窗 */}

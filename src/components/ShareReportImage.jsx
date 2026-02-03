@@ -29,7 +29,7 @@ function truncatePlainText(text, maxChars = REPORT_PREVIEW_CHARS) {
 /**
  * 分享报告长图 - 用 HTML 还原设计稿，再用 html2canvas 截图
  */
-export default function ShareReportImage({ isOpen, onClose, title, subTitle, content, shareUrl }) {
+export default function ShareReportImage({ isOpen, onClose, title, subTitle, content, shareUrl, username }) {
   const cardRef = useRef(null);
   const [imageDataUrl, setImageDataUrl] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -150,7 +150,7 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
             INNER BOOK
           </div>
           <div style={{ fontSize: 12, color: '#666', marginTop: 8, lineHeight: 1.5 }}>
-            邀请你体验 INNER BOOK，探索内心世界
+            {username || '好友'} 邀请你体验 INNER BOOK，探索内心世界
           </div>
 
           {/* 标题 + 装饰线 + 描述 */}
