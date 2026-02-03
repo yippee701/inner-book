@@ -59,7 +59,7 @@ function ConversionZone({ onShareImage, onShareLink }) {
         style={{ color: '#9CA3AF' }}
       >
         <span className="w-5 h-px" style={{ backgroundColor: '#D1D5DB' }} />
-        <span>Inner Book</span>
+        <span>INNER BOOK</span>
         <span className="w-5 h-px" style={{ backgroundColor: '#D1D5DB' }} />
       </div>
     </div>
@@ -243,7 +243,7 @@ function ReportContent({ content, subTitle, modeLabel }) {
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            Inner Book
+            INNER BOOK
           </div>
           <div className="bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-semibold">
             {modeLabel}

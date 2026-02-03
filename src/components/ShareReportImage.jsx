@@ -148,10 +148,10 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
 
           {/* Logo */}
           <div style={{ fontSize: 18, fontWeight: 600, color: '#333', letterSpacing: '-0.5px' }}>
-            Inner Book
+            INNER BOOK
           </div>
           <div style={{ fontSize: 12, color: '#666', marginTop: 8, lineHeight: 1.5 }}>
-            邀请你体验 Inner Book，探索内心世界
+            邀请你体验 INNER BOOK，探索内心世界
           </div>
 
           {/* 标题 + 装饰线 + 描述 */}

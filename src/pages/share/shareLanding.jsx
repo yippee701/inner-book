@@ -24,7 +24,7 @@ function SharerCard({ username }) {
       </div>
       <div className="flex flex-col">
         <span className="font-bold text-gray-900">{username || '好友'}</span>
-        <span className="text-sm text-gray-500">邀请你一起体验 Inner Book，探索内心世界</span>
+        <span className="text-sm text-gray-500">邀请你一起体验 INNER BOOK，探索内心世界</span>
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ function ContentCard({ subTitle, content, modeLabel }) {
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
-          Inner Book
+          INNER BOOK
         </div>
         <div className="bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-semibold">
           {modeLabel}
@@ -213,7 +213,7 @@ export default function ShareLanding() {
           className="text-center mb-8"
           style={{ animation: 'fadeInUp 0.8s ease-out 0.5s backwards' }}
         >
-          <h2 className="font-bold text-xl text-gray-900 mb-3">Inner Book 是什么?</h2>
+          <h2 className="font-bold text-xl text-gray-900 mb-3">INNER BOOK 是什么?</h2>
           <p className="text-gray-500 text-sm leading-relaxed">
             通过深度对话，发现你不曾察觉的一面。<br />
             AI 陪伴你探索内心，记录成长轨迹，重塑自我认知。
