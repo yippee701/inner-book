@@ -182,28 +182,31 @@ export default function Chat() {
     completeReport();
   }, [completeReport]);
 
+  const handleUserMessageSent = useCallback((msgs) => {
+    updateMessages(msgs);
+  }, [updateMessages]);
+
   const { messages, isLoading, sendUserMessage, restoreMessages, retryMessage } = useChat({
     mode: chatMode,
     onReportStart: handleReportStart,
     onReportUpdate: handleReportUpdate,
     onReportComplete: handleReportComplete,
+    onUserMessageSent: handleUserMessageSent,
   });
-  
-  // 计算当前问题进度（基于 AI 回复数量）
-  const aiMessageCount = messages.filter(m => m.role === 'assistant').length;
-  const progress = Math.min(aiMessageCount, 10);
 
-  // 对话记录变化时同步到 ReportContext（只在消息完成时更新，不在流式输出过程中更新）
+  // 对话记录变化时同步到 ReportContext（AI 回复完成、流式结束等；用户最后一次输入由 onUserMessageSent 在发送时立即保存）
   useEffect(() => {
     if (!hasStarted || messages.length === 0) return;
-    // 检查最后一条消息是否还在 loading 状态
     const lastMessage = messages[messages.length - 1];
     const isLastMessageLoading = lastMessage?.status === 'loading';
-
     if (!isLastMessageLoading) {
       updateMessages(messages);
     }
   }, [hasStarted, messages, updateMessages]);
+
+  // 计算当前问题进度（基于 AI 回复数量）
+  const aiMessageCount = messages.filter(m => m.role === 'assistant').length;
+  const progress = Math.min(aiMessageCount, 10);
 
   // 恢复上次未完成的对话
   const handleResume = useCallback(() => {

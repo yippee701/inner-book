@@ -12,9 +12,10 @@ const TYPEWRITER_SPEED = 15;
  * @param {Function} options.onReportStart - 检测到 [Report] 开头时的回调
  * @param {Function} options.onReportUpdate - 报告内容更新时的回调
  * @param {Function} options.onReportComplete - 报告生成完成时的回调
+ * @param {Function} options.onUserMessageSent - 用户发送消息后立即回调（参数为包含新用户消息的 messages，用于实时落库）
  */
 export function useChat(options = {}) {
-  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete } = options;
+  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete, onUserMessageSent } = options;
   const [messages, setMessages] = useState(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const reportStartedRef = useRef(false);
@@ -202,6 +203,9 @@ export function useChat(options = {}) {
     const updatedMessages = [...messages, newUserMsg];
     setMessages(updatedMessages);
 
+    // 用户消息加入后立即通知（在 AI 占位符加入前），保证最后一次输入被实时保存到本地
+    onUserMessageSent?.(updatedMessages);
+
     // 构建发送给 API 的消息格式
     const apiMessages = updatedMessages.map(msg => ({
       role: msg.role,
@@ -209,7 +213,7 @@ export function useChat(options = {}) {
     }));
 
     await sendMessageInternal(apiMessages, newUserMsg.id);
-  }, [messages, isLoading, sendMessageInternal]);
+  }, [messages, isLoading, sendMessageInternal, onUserMessageSent]);
 
   // 清空消息
   const clearMessages = useCallback(() => {

@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useProfile } from '../../../hooks/useProfile';
 import { REPORT_STATUS } from '../../../constants/reportStatus';
-import logo from '../../../assets/2cfcc019a9c1169b9f8b00040383d02be4ab717f.png';
+import logo from '../../../assets/logo-black.png';
 
 // ========== 子组件 ==========
 
