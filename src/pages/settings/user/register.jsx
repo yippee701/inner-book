@@ -143,7 +143,7 @@ export default function RegisterPage() {
   const [showValidationHint, setShowValidationHint] = useState(false);
 
   // 验证
-  const isValidUsername = username.length >= 6 && username.length <= 25 && /"^$|^[a-z][0-9a-z_-]{5,24}$/.test(username);
+  const isValidUsername = username.length >= 6 && username.length <= 25 && /^$|^[a-z][0-9a-z_-]{5,24}$/.test(username);
   const isValidPassword = password.length >= 6;
   const isPasswordMatch = password === confirmPassword;
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
@@ -277,7 +277,7 @@ export default function RegisterPage() {
           <InputField
             label="用户名"
             value={username}
-            onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20))}
+            onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 25))}
             onBlur={onFieldBlur}
             placeholder="请输入用户名"
             disabled={loading}

@@ -44,5 +44,5 @@ export function cleanReportContent(content) {
  * @returns {string} 报告 id
  */
 export function generateReportId() {
-  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }

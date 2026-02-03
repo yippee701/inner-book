@@ -176,7 +176,7 @@ export function ReportProvider({ children }) {
 
   // 同步本地报告到远端（只同步已完成的报告，pending 状态的保留在本地）
   const syncLocalReportsToRemote = useCallback(async () => {
-    
+    // TODO: 如果同步失败，是否会删除本地数据？是否要改成同步成功后才删除本地记录
     try {
       const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
       if (localReports.length === 0) return;

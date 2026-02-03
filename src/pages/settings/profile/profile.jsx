@@ -11,7 +11,7 @@ import logo from '../../../assets/logo-black.png';
  */
 function UserCircleIcon({ className = 'w-9 h-9' }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user w-9 h-9 text-purple-600" data-fg-d3bl7="0.8:24.3615:/src/app/App.tsx:34:13:961:66:e:UserCircle::::::DndB">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-circle-user w-9 h-9 text-purple-600" data-fg-d3bl7="0.8:24.3615:/src/app/App.tsx:34:13:961:66:e:UserCircle::::::DndB">
       <circle cx="12" cy="12" r="10"></circle>
       <circle cx="12" cy="10" r="3"></circle>
       <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662">

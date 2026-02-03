@@ -41,12 +41,24 @@ export function isLoggedIn() {
     if (parsed.content?.name === 'anonymous') {
       return false;
     }
-    const credentials = localStorage.getItem(CREDENTIALS_LOCAL_STORAGE_KEY);
-    const credentialsObj = JSON.parse(credentials);
-    const token = credentialsObj?.access_token;
+    const token = getCurrentUserToken();
     if (!token) return false;
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * 获取当前用户 token
+ * @returns string
+ */
+export function getCurrentUserToken() {
+  try {
+    const credentials = localStorage.getItem(CREDENTIALS_LOCAL_STORAGE_KEY);
+    const credentialsObj = JSON.parse(credentials);
+    return credentialsObj?.access_token || null;
+  } catch {
+    return null;
   }
 }

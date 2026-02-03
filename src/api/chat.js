@@ -6,7 +6,7 @@
 
 // Mock 数据导入 - 删除 mock 功能时，删除此行和 mockData.js 文件
 import { mockSendMessage } from './mockData';
-import { CREDENTIALS_LOCAL_STORAGE_KEY } from '../constants/global';
+import { getCurrentUserToken } from '../utils/user';
 
 // 聊天模式
 export const CHAT_MODES = {
@@ -59,9 +59,7 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 }
 
 async function sendMessageViaProxy(messages, onStream = null, mode) {
-  const credentials = localStorage.getItem(CREDENTIALS_LOCAL_STORAGE_KEY);
-  const credentialsObj = JSON.parse(credentials);
-  const token = credentialsObj?.access_token;
+  const token = getCurrentUserToken();
   const response = await fetch(`https://inner-book-server-220939-8-1251129499.sh.run.tcloudbase.com/v1/cloudrun/inner-book-server/chat`, {
     method: 'POST',
     mode: 'cors',
