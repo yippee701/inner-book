@@ -3,6 +3,7 @@
  */
 
 import { getCurrentUsername } from '../utils/user';
+import { REPORT_STATUS } from '../constants/reportStatus';
 
 // 是否使用 Mock 数据
 const IS_MOCK_MODE = true;
@@ -143,9 +144,10 @@ export async function getReports(rdb) {
   try {
     const { data, error } = await rdb
       .from("report")
-      .select('title, createdAt, status, reportId, mode')
+      .select('title, createdAt, status, reportId, mode, lock')
       .order('createdAt', { ascending: false })
-      .eq('username', username);
+      .eq('username', username)
+      .eq('status', REPORT_STATUS.COMPLETED);
     
     if (error) {
       console.error('获取对话历史失败:', error);
