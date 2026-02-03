@@ -19,11 +19,11 @@ export default function WelcomeScreen({
         {/* 欢迎消息 */}
         <div className="text-left mb-8">
           <p 
-            className="text-sm text-dora leading-relaxed whitespace-pre-wrap"
+            className="text-base text-dora leading-relaxed whitespace-pre-wrap"
             style={{ 
               color: '#3A3A3A',
               letterSpacing: '0.01em',
-              lineHeight: '2',
+              lineHeight: '1.6',
             }}
           >
             {welcomeMessage}
