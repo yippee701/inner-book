@@ -250,7 +250,7 @@ function NotLoggedIn({ onLogin }) {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const auth = useAuth();
-  const { user, reports, userExtraInfo, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
+  const { user, reports, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {

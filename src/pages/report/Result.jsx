@@ -332,14 +332,16 @@ export default function Result() {
         className="flex items-center justify-between px-4 py-2 relative z-50"
         style={{ backgroundColor: ' rgba(243, 244, 246, 0.4)', borderBottom: '1px solid rgba(243, 244, 246, 1)' }}
       >
-        <Link 
-          to="/"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-      >
+          aria-label="返回上一页"
+        >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-        </Link>
+        </button>
         <h1 className="text-gray-900 font-medium">
           {generateReportTitle(mode)}
         </h1>
