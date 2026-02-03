@@ -195,7 +195,6 @@ export default function ReportLoading() {
         <p 
           className="mt-16 text-xl tracking-wide text-center"
           style={{
-            fontFamily: '"Noto Serif SC", serif',
             color: '#374151',
             fontWeight: 500,
           }}

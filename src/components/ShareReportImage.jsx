@@ -117,7 +117,6 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
           minHeight: 600,
           padding: 20,
           backgroundColor: '#F5F3FF',
-          fontFamily: '"Noto Sans SC", "PingFang SC", sans-serif',
         }}
       >
         {/* 渐变描边：外层 1px 渐变，内层白底 */}
@@ -158,7 +157,6 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
           <div style={{ marginTop: 24 }}>
             <h1
               style={{
-                fontFamily: '"Noto Serif SC", "PingFang SC", serif',
                 fontSize: 20,
                 fontWeight: 600,
                 color: '#000',

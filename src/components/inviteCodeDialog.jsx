@@ -65,7 +65,6 @@ export default function InviteCodeDialog({ isOpen, onClose, onSubmit, isLoading 
         <h3 
           className="text-lg mb-1"
           style={{
-            fontFamily: '"Noto Serif SC", serif',
             fontWeight: 'bold',
             color: '#1F2937',
           }}

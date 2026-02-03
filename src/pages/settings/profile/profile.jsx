@@ -64,7 +64,6 @@ function UserHeader({ user, userExtraInfo }) {
           <span 
             className="text-xl mr-2"
             style={{ 
-              fontFamily: '"Noto Serif SC", serif',
               fontWeight: 'bold',
               color: '#1F2937',
             }}
@@ -72,10 +71,9 @@ function UserHeader({ user, userExtraInfo }) {
             {user.username}
           </span>
           {/* <span 
-            className="text-[11px] px-2 py-0.5 rounded-full text-white"
+            className="text-xs px-2 py-0.5 rounded-full text-white"
             style={{ 
               background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
-              fontFamily: '"Noto Sans SC", sans-serif',
               fontWeight: 500,
             }}
           >
@@ -91,8 +89,8 @@ function UserHeader({ user, userExtraInfo }) {
             border: '1px solid rgba(167, 139, 250, 0.2)',
           }}
         >
-          <span className="text-[13px]" style={{ color: '#374151' }}>
-            剩余深度对话: <strong className="mx-1 text-[15px]" style={{ color: '#8B5CF6' }}>{userExtraInfo.remainingReport}</strong> 次
+          <span className="text-sm" style={{ color: '#374151' }}>
+            剩余深度对话: <strong className="mx-1 text-sm" style={{ color: '#8B5CF6' }}>{userExtraInfo.remainingReport}</strong> 次
           </span>
           <span className="text-xs flex items-center" style={{ color: '#8B5CF6' }}>
             升级 
@@ -117,7 +115,7 @@ function FissionBar({ userExtraInfo }) {
   
   return (
     <div className="py-3 my-1">
-      <p className="text-[13px] mb-2" style={{ color: '#4B5563' }}>
+      <p className="text-sm mb-2" style={{ color: '#4B5563' }}>
         再邀请 <span className="font-bold" style={{ color: '#8B5CF6' }}>{remaining} 位好友</span> 即可解锁 
       </p>
       <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(167, 139, 250, 0.15)' }}>
@@ -167,9 +165,8 @@ function ReportCard({ report, onRestart, onView }) {
       {/* 卡片头部 */}
       <div className="flex justify-between items-start mb-2">
         <h3 
-          className="flex-1 mr-2.5 text-[17px] leading-snug"
+          className="flex-1 mr-2.5 text-base leading-snug"
           style={{ 
-            fontFamily: '"Noto Serif SC", serif',
             fontWeight: 'bold',
             color: isExpired ? '#9CA3AF' : '#1F2937',
           }}
@@ -179,22 +176,22 @@ function ReportCard({ report, onRestart, onView }) {
         
         {/* 状态标签 */}
         {isGenerating && (
-          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(139, 168, 255, 0.15)', color: '#6366F1' }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(139, 168, 255, 0.15)', color: '#6366F1' }}>
             生成中
           </span>
         )}
         {storageType === 'permanent' && (
-          <span className="text-[11px] px-2 py-1 rounded-full text-white" style={{ background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)' }}>
+          <span className="text-xs px-2 py-1 rounded-full text-white" style={{ background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)' }}>
             永久存储
           </span>
         )}
         {storageType === 'validUntil' && storageInfo && (
-          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#6B7280' }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(167, 139, 250, 0.1)', color: '#6B7280' }}>
             有效期至 {storageInfo.validUntil}
           </span>
         )}
         {isExpired && (
-          <span className="text-[11px] px-2 py-1 rounded-full" style={{ backgroundColor: 'transparent', border: '1px solid #D1D5DB', color: '#9CA3AF' }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'transparent', border: '1px solid #D1D5DB', color: '#9CA3AF' }}>
             已过期
           </span>
         )}
@@ -210,7 +207,7 @@ function ReportCard({ report, onRestart, onView }) {
 
       {/* 生成中状态 */}
       {/* {isGenerating && (
-        <div className="flex items-center text-[13px] mt-2" style={{ color: '#666' }}>
+        <div className="flex items-center text-sm mt-2" style={{ color: '#666' }}>
           <svg className="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -222,7 +219,7 @@ function ReportCard({ report, onRestart, onView }) {
       {/* 倒计时存储 */}
       {/* {storageType === 'countdown' && storageInfo && (
         <>
-          <span className="inline-block text-[11px] px-2 py-1 rounded-md mb-2" style={{ backgroundColor: '#FFF3E0', color: '#FF9800' }}>
+          <span className="inline-block text-xs px-2 py-1 rounded-md mb-2" style={{ backgroundColor: '#FFF3E0', color: '#FF9800' }}>
             {storageInfo.totalHours}h 存储倒计时
           </span>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EEEEEE' }}>
@@ -245,7 +242,7 @@ function ReportCard({ report, onRestart, onView }) {
       {/* {isExpired && (
         <button
           onClick={() => onRestart(conversation.id)}
-          className="w-full mt-3 py-2 rounded-xl text-[13px] text-center transition-colors"
+          className="w-full mt-3 py-2 rounded-xl text-sm text-center transition-colors"
           style={{
             backgroundColor: 'transparent',
             border: '1px solid #BBBBBB',
@@ -348,7 +345,6 @@ function NotLoggedIn({ onLogin }) {
       <h3 
         className="text-lg mb-2"
         style={{ 
-          fontFamily: '"Noto Serif SC", serif',
           fontWeight: 'bold',
           color: '#1F2937',
         }}
@@ -362,7 +358,7 @@ function NotLoggedIn({ onLogin }) {
       {/* 登录按钮 */}
       <button
         onClick={onLogin}
-        className="px-8 py-3 rounded-full text-white text-[15px] transition-all hover:opacity-90"
+        className="px-8 py-3 rounded-full text-white text-sm transition-all hover:opacity-90"
         style={{
           backgroundColor: '#1F2937',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',

@@ -41,7 +41,6 @@ export default function ChatInput({ onSend, isLoading, disabled, suggestionToFil
         }}
         styles={{
           input: {
-            fontFamily: '"Noto Sans SC", sans-serif',
             color: '#000000',
             fontSize: '14px',
             padding: '8px 0',

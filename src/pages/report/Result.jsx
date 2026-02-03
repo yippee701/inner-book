@@ -13,7 +13,7 @@ import { useRdb } from '../../contexts/cloudbaseContext';
 import { getReportDetail as getReportDetailApi } from '../../api/report';
 import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
-
+import markdownComponents from '../../components/reportMarkdown';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
@@ -66,163 +66,7 @@ function ConversionZone({ onShareImage, onShareLink }) {
   );
 }
 
-/**
- * 自定义 Markdown 组件 - 用于结构化展示报告
- * 注意：XMarkdown 的 components prop 接收 domNode 和 streamStatus，需要用 children 获取子元素
- */
-const markdownComponents = {
-  // 一级标题 - 主标题（通常是报告标题）
-  h1: (
-    { children }) => (
-    <div className="text-center mb-2">
-      <h1>
-        {children}
-      </h1>
-    </div>
-  ),
 
-  // 二级标题 - 章节标题
-  h2: ({ children }) => (
-    <div className="mb-5 mt-10 first:mt-0">
-      <h2 
-        className="text-xl"
-          style={{ 
-            fontFamily: '"Noto Serif SC", serif',
-          fontWeight: 700,
-          color: '#1F2937',
-        }}
-      >
-        {children}
-      </h2>
-    </div>
-  ),
-
-  // 三级标题 - 副标题
-  h3: ({ children }) => (
-    <p 
-      className="text-base mb-4 -mt-3"
-      style={{ color: '#666666' }}
-        >
-      {children}
-        </p>
-  ),
-
-  // 四级标题 - 子章节
-  h4: ({ children }) => (
-    <p 
-      className="text-sm mb-3 mt-6 pl-1"
-      style={{ color: '#666666' }}
-    >
-      {children}
-    </p>
-  ),
-
-  // 引用块 - 核心洞察框
-  blockquote: ({ children }) => (
-        <div 
-      className="rounded-2xl p-5 mb-4"
-      style={{
-        background: 'linear-gradient(135deg, rgba(107, 107, 255, 0.08), rgba(139, 92, 246, 0.08))',
-        border: '1px solid rgba(139, 92, 246, 0.15)',
-        backdropFilter: 'blur(10px)',
-      }}
-        >
-      <div 
-        className="text-base leading-relaxed"
-        style={{ 
-          color: '#1F2937',
-          fontWeight: 500,
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  ),
-
-  // 段落
-  p: ({ children }) => (
-    <p 
-      className="text-[15px] leading-[1.7] mb-3"
-      style={{ color: '#1F2937' }}
-    >
-      {children}
-    </p>
-  ),
-
-  // 无序列表
-  ul: ({ children }) => (
-    <div className="mt-2 mb-4">
-      {children}
-    </div>
-  ),
-
-  // 列表项 - insight-box 包裹 + 发光圆点
-  li: ({ children }) => (
-    <div 
-      className="rounded-2xl p-4 mb-4 last:mb-0"
-      style={{
-        background: 'linear-gradient(135deg, rgba(107, 107, 255, 0.08), rgba(139, 92, 246, 0.08))',
-        border: '1px solid rgba(139, 92, 246, 0.15)',
-        backdropFilter: 'blur(10px)',
-      }}
-    >
-      <div className="flex gap-3 items-start">
-        {/* 发光圆点 */}
-        <div 
-          className="flex-shrink-0 mt-1 w-4 h-4 rounded-full relative"
-          style={{
-            background: 'linear-gradient(135deg, #6B6BFF, #8B5CF6)',
-            boxShadow: '0 0 8px rgba(107, 107, 255, 0.5)',
-          }}
-        >
-          <div 
-            className="absolute top-[3px] left-[3px] w-1 h-1 rounded-full"
-              style={{ 
-              background: 'rgba(255,255,255,0.8)',
-              filter: 'blur(1px)',
-              }}
-          />
-        </div>
-        {/* 文字 */}
-        <div 
-          className="flex-1 text-[15px] leading-[1.7]"
-          style={{ color: '#1F2937' }}
-            >
-          {children}
-        </div>
-      </div>
-    </div>
-  ),
-
-  // 有序列表
-  ol: ({ children }) => (
-    <div className="mt-2 mb-4">
-      {children}
-    </div>
-  ),
-
-  // 加粗文字
-  strong: ({ children }) => (
-    <strong style={{ fontWeight: 700, color: '#1F2937' }}>
-      {children}
-    </strong>
-  ),
-
-  // 斜体
-  em: ({ children }) => (
-    <em style={{ color: '#8B5CF6' }}>{children}</em>
-  ),
-
-  // 分割线
-  hr: () => (
-    <div 
-      className="my-8 h-px"
-      style={{
-        background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent)',
-      }}
-    />
-  ),
-};
 
 /**
  * 报告内容渲染组件
@@ -239,7 +83,7 @@ function ReportContent({ content, subTitle, modeLabel }) {
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
-          <div className="flex items-center gap-2 text-indigo-500 font-bold text-lg">
+          <div className="flex items-center gap-2 text-indigo-500 font-bold text-base">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
@@ -251,13 +95,12 @@ function ReportContent({ content, subTitle, modeLabel }) {
         </div>    
 
         {/* Quote Section */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 text-dora">
           <svg className="w-8 h-8 text-purple-200 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
           </svg>
           <h1 
             className="text-2xl leading-relaxed text-indigo-500 mb-4"
-            style={{ fontFamily: "'Noto Serif SC', serif" }}
           >
             {subTitle}
           </h1>
@@ -268,6 +111,7 @@ function ReportContent({ content, subTitle, modeLabel }) {
         </div>
 
         <XMarkdown 
+          className="text-dora"
           components={markdownComponents}
           content={content}
         />

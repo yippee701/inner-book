@@ -55,11 +55,11 @@ const aiBubbleBaseProps = {
     content: {
       maxWidth: '90%',
       background: 'transparent',
-      fontFamily: '"Noto Sans SC", sans-serif',
-      fontSize: '15px',
+      fontSize: '16px',
       color: '#000000',
       letterSpacing: '0.02em',
       padding: '0',
+      fontFamily: "Noto Serif SC, serif",
     },
   },
 };
@@ -71,8 +71,8 @@ const userBubbleProps = {
   shape: 'corner',
   styles: {
     content: {
-      fontFamily: '"Noto Sans SC", sans-serif',
       color: '#000000',
+      fontSize: '16px',
       backgroundColor: 'rgba(255, 255, 255, 0.5)',
       backdropFilter: 'blur(12px)',
       border: '1px solid rgba(255, 255, 255, 0.6)',
@@ -85,7 +85,6 @@ const userBubbleProps = {
 // 系统气泡样式（与 AI 气泡风格一致）
 const systemBubbleStyles = {
   content: {
-    fontFamily: '"Noto Sans SC", sans-serif',
     color: '#6B7280',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderColor: 'rgba(129, 128, 128, 0.3)',

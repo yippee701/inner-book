@@ -250,11 +250,7 @@ export default function Homepage() {
             {/* 了解他人按钮 */}
             <button 
               onClick={() => handleStartChat('understand-others')}
-              className="flex-1 h-14 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
-              style={{
-                backgroundColor: '#1F2937',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-              }}
+              className="btn-primary flex-1 text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
             >
               了解他人
             </button>
@@ -262,11 +258,7 @@ export default function Homepage() {
             {/* 发掘自己按钮 */}
             <button 
               onClick={() => handleStartChat('discover-self')}
-              className="flex-1 h-14 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
-              style={{
-                backgroundColor: '#1F2937',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-              }}
+              className="btn-primary flex-1 text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
             >
               发掘自己
             </button>

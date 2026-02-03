@@ -265,10 +265,7 @@ export default function Chat() {
       {/* Progress 状态栏 */}
       <div className="flex items-center justify-between px-5 py-2 relative z-10">
         <ParticleIcon />
-        <span 
-          className="text-gray-500 tracking-wide text-sm"
-          style={{ fontFamily: 'monospace, serif' }}
-        >
+        <span className="text-gray-500 tracking-wide text-sm">
           Progress: {String(progress).padStart(2, '0')}/10
         </span>
       </div>

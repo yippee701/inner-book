@@ -19,9 +19,8 @@ export default function WelcomeScreen({
         {/* 欢迎消息 */}
         <div className="text-left mb-8">
           <p 
-            className="text-sm leading-relaxed whitespace-pre-wrap"
+            className="text-sm text-dora leading-relaxed whitespace-pre-wrap"
             style={{ 
-              fontFamily: '"Noto Serif SC", serif',
               color: '#3A3A3A',
               letterSpacing: '0.01em',
               lineHeight: '2',
@@ -38,19 +37,9 @@ export default function WelcomeScreen({
               {/* 有未完成对话时显示两个按钮 */}
               <button
                 onClick={onResume}
-                className="relative px-8 py-3 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.98]"
-                style={{
-                  backgroundColor: '#1F2937',
-                  boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15)',
-                }}
+                className="btn-primary relative text-base font-medium transition-all duration-300 active:scale-[0.98]"
               >
-                <div 
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%)',
-                  }}
-                />
-                <span className="relative z-10">继续上次对话</span>
+                继续上次对话
               </button>
               <button
                 onClick={onStartNew}
@@ -63,21 +52,9 @@ export default function WelcomeScreen({
             /* 没有未完成对话时显示原始按钮 */
             <button
               onClick={onStart}
-              className="relative mt-4 px-8 py-3 rounded-full text-white text-base font-medium transition-all duration-300 active:scale-[0.98] disabled:opacity-60"
-              style={{
-                backgroundColor: '#324155',
-                boxShadow: '0 6px 16px rgba(143, 168, 155, 0.25)',
-              }}
+              className="btn-primary relative mt-4 text-base font-medium transition-all duration-300 active:scale-[0.98] disabled:opacity-60"
             >
-              <div 
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%)',
-                }}
-              />
-              <span className="relative z-10">
-                {'我知道了，开始吧'}
-              </span>
+              {'我知道了，开始吧'}
             </button>
           )}
         </div>

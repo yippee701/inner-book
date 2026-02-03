@@ -51,7 +51,7 @@ function Logo() {
           <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
         </svg>
       </div>
-      <h1 className="text-lg font-bold tracking-wide" style={{ fontFamily: '"Noto Serif SC", serif', color: '#1F2937' }}>注册账号</h1>
+      <h1 className="text-lg font-bold tracking-wide" style={{ color: '#1F2937' }}>注册账号</h1>
       <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>开启你的探索之旅</p>
     </div>
   );
@@ -73,7 +73,7 @@ function InputField({ label, type = 'text', value, onChange, onBlur, placeholder
           placeholder={placeholder}
           disabled={disabled}
           className="flex-1 outline-none bg-transparent text-base"
-          style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#1F2937' }}
+          style={{ color: '#1F2937' }}
         />
       </div>
       {hint && <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>{hint}</p>}
@@ -329,7 +329,7 @@ export default function RegisterPage() {
                 disabled={loading}
                 maxLength={6}
                 className="flex-1 outline-none bg-transparent text-base tracking-widest"
-                style={{ fontFamily: '"Noto Sans SC", sans-serif', color: '#1F2937' }}
+                style={{ color: '#1F2937' }}
               />
               <button
                 onClick={handleSendCode}
