@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useProfile } from '../../../hooks/useProfile';
 import { REPORT_STATUS } from '../../../constants/reportStatus';
 import logo from '../../../assets/logo-black.png';
+import AboutUsDialog from '../../../components/aboutUs';
 
 // ========== 子组件 ==========
 
@@ -149,8 +151,9 @@ function ReportCard({ report, onRestart, onView }) {
 
 /**
  * 底部导航组件（设计稿：白底毛玻璃、意见反馈 + 关于我们）
+ * 点击任意一项均打开「关于我们」弹窗
  */
-function BottomNav() {
+function BottomNav({ onNavClick }) {
   const navItems = [
     {
       icon: (
@@ -174,6 +177,7 @@ function BottomNav() {
             <button
               key={item.label}
               type="button"
+              onClick={onNavClick}
               className="flex flex-col items-center gap-1 text-gray-600 hover:text-purple-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -251,6 +255,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const auth = useAuth();
   const { user, reports, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
+  const [showAboutUs, setShowAboutUs] = useState(false);
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
@@ -330,8 +335,11 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* 底部导航 */}
-      <BottomNav />
+      {/* 底部导航：点击均打开关于我们弹窗 */}
+      <BottomNav onNavClick={() => setShowAboutUs(true)} />
+
+      {/* 关于我们弹窗 */}
+      <AboutUsDialog isOpen={showAboutUs} onClose={() => setShowAboutUs(false)} />
     </div>
   );
 }
