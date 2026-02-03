@@ -144,6 +144,7 @@ export async function getReports(rdb) {
     const { data, error } = await rdb
       .from("report")
       .select('title, createdAt, status, reportId, mode')
+      .order('createdAt', { ascending: false })
       .eq('username', username);
     
     if (error) {
