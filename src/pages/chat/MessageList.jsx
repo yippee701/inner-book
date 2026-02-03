@@ -208,12 +208,12 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
           const actionItems = [
             {
               key: 'retry',
-              icon: <RedoOutlined />,
+              icon: <RedoOutlined style={{ color: 'gray' }} />,
               label: '重新发送',
             },
             {
               key: 'copy',
-              icon: <CopyOutlined />,
+              icon: <CopyOutlined style={{ color: 'gray' }}  />,
               label: '复制',
             },
           ];
