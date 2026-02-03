@@ -92,16 +92,6 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
     return () => clearTimeout(timer);
   }, [isOpen, content, shareUrl, qrDataUrl, displayTitle, displayDescription, message]);
 
-  const handleSave = useCallback(() => {
-    if (!imageDataUrl) return;
-    const link = document.createElement('a');
-    const safeTitle = (title || '分享').replace(/[/\\?*:|"]/g, '-').slice(0, 50);
-    link.download = `Inner-Book-报告-${safeTitle}.png`;
-    link.href = imageDataUrl;
-    link.click();
-    message.success('图片已保存');
-  }, [imageDataUrl, title, message]);
-
   if (!isOpen) return null;
 
   return (
@@ -287,14 +277,7 @@ export default function ShareReportImage({ isOpen, onClose, title, subTitle, con
                   className="w-full max-w-[335px] rounded-xl shadow-lg"
                   style={{ maxHeight: '60vh', objectFit: 'contain' }}
                 />
-                <p className="text-xs text-gray-400 mt-3">长按图片保存到相册后分享</p>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="btn-primary mt-3 w-full max-w-[335px] h-12 font-medium hover:bg-gray-800 active:scale-[0.98]"
-                >
-                  保存图片
-                </button>
+                <p className="text-base text-black mt-5">长按图片保存到相册后分享</p>
               </>
             )}
           </div>
