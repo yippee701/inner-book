@@ -510,7 +510,7 @@ export function ReportProvider({ children }) {
         }));
         
         // 如果报告未解锁，弹出邀请码对话框（通过回调通知 Result.jsx）
-        if (reportDetail.isLocked) {
+        if (reportDetail.lock) {
           if (onShowInviteCodeDialogRef.current) {
             onShowInviteCodeDialogRef.current(reportId);
           }

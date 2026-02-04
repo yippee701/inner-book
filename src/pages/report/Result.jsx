@@ -86,6 +86,7 @@ export default function Result() {
   const [showInviteLoginDialog, setShowInviteLoginDialog] = useState(false);
   const [isVerifyingInviteCode, setIsVerifyingInviteCode] = useState(false);
   const [pendingUnlockReportId, setPendingUnlockReportId] = useState(null);
+  const [showShare, setShowShare] = useState(true);
 
   // 未登录时滚动到底部后弹出邀请登录对话框，关闭后本页不再自动弹出
   const contentScrollRef = useRef(null);
@@ -248,6 +249,7 @@ export default function Result() {
 
         if (reportDetail.lock === 1) {
           setShowInviteCodeDialog(true);
+          setShowShare(false);
         }
       } catch (err) {
         console.error('加载报告失败:', err);
@@ -326,7 +328,7 @@ export default function Result() {
       </div>
 
       {/* 底部转化区 */}
-      <ConversionZone onShareImage={handleShareImage} onShareLink={handleShareLink} />
+      {showShare && <ConversionZone onShareImage={handleShareImage} onShareLink={handleShareLink} />}
 
       {/* 分享报告长图 */}
       <ShareReportImage

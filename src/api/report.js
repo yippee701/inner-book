@@ -105,6 +105,7 @@ export async function getReportDetail(rdb, reportId, skipCache = false) {
     }
     
     const reportDetail = data[0];
+
     const result = {
       content: reportDetail.content || '',
       status: reportDetail.status,
@@ -113,8 +114,11 @@ export async function getReportDetail(rdb, reportId, skipCache = false) {
       lock: reportDetail.lock !== undefined ? reportDetail.lock : 1, // 默认锁定
       inviteCode: reportDetail.inviteCode || '',
       isCompleted: reportDetail.status === REPORT_STATUS.COMPLETED,
-      isLocked: reportDetail.lock !== undefined ? reportDetail.lock === 1 : true
     };
+
+    if(reportDetail.lock === 1) {
+      result.content = result.content.slice(0, 200);
+    }
     
     // 设置缓存
     setCachedData(cacheKey, result);
