@@ -117,7 +117,7 @@ export async function getReportDetail(rdb, reportId, skipCache = false) {
     };
 
     if(reportDetail.lock === 1) {
-      result.content = result.content.slice(0, 200);
+      result.content = result.content.slice(0, 200).concat('...(待解锁)');
     }
     
     // 设置缓存

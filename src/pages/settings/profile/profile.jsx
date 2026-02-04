@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useProfile } from '../../../hooks/useProfile';
@@ -60,22 +60,47 @@ function UserHeader({ user, onLogout }) {
 
 /**
  * 对话卡片组件（设计稿：白底圆角、顶部/底部装饰线、标题+时间）
+ * 支持点击编辑图标进入编辑标题
  */
-function ReportCard({ report, onRestart, onView }) {
-  const { status, storageType, storageInfo, title, createdAt, lock } = report;
+function ReportCard({
+  report,
+  onRestart,
+  onView,
+  onStartEditTitle,
+  onSaveTitle,
+  onCancelEditTitle,
+  editingReportId,
+  isSavingTitle,
+}) {
+  const { status, storageType, storageInfo, title, createdAt, lock, reportId } = report;
   const isExpired = status === REPORT_STATUS.EXPIRED;
   const isGenerating = status === REPORT_STATUS.GENERATING;
   const canView = status === REPORT_STATUS.COMPLETED;
   const isLocked = lock === 1;
+  const isEditing = editingReportId === reportId;
+  const titleInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditing && titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [isEditing]);
+
   const handleClick = () => {
+    if (isEditing) return;
     if (canView && onView) {
       onView(report);
     }
   };
 
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    onStartEditTitle?.(reportId);
+  };
+
   return (
     <div
-      className={`relative rounded-2xl p-6 overflow-hidden transition-all border-2 ${isExpired ? 'opacity-90' : 'hover:shadow-lg hover:scale-[1.02]'} ${canView ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+      className={`relative rounded-2xl p-6 overflow-hidden transition-all border-2 ${isExpired ? 'opacity-90' : 'hover:shadow-lg hover:scale-[1.02]'} ${canView && !isEditing ? 'cursor-pointer active:scale-[0.98]' : ''}`}
       style={{
         backgroundColor: isExpired ? 'rgba(243, 244, 246, 0.9)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(4px)',
@@ -107,10 +132,64 @@ function ReportCard({ report, onRestart, onView }) {
 
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
-          <h3 className="flex-1 text-lg font-bold text-gray-800 truncate">
-            {title}
-          </h3>
-          {isLocked && (
+          {isEditing ? (
+            <div className="flex-1 min-w-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <input
+                ref={titleInputRef}
+                type="text"
+                defaultValue={title}
+                className="flex-1 min-w-0 px-3 py-1.5 text-lg font-bold text-gray-800 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none"
+                placeholder="报告标题"
+                maxLength={50}
+                disabled={isSavingTitle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const value = e.target.value?.trim();
+                    if (value) onSaveTitle?.(reportId, value);
+                  }
+                  if (e.key === 'Escape') onCancelEditTitle?.();
+                }}
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const value = titleInputRef.current?.value?.trim();
+                  if (value) onSaveTitle?.(reportId, value);
+                }}
+                disabled={isSavingTitle}
+                className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 disabled:opacity-50"
+              >
+                {isSavingTitle ? '保存中...' : '保存'}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onCancelEditTitle?.(); }}
+                disabled={isSavingTitle}
+                className="shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+              >
+                取消
+              </button>
+            </div>
+          ) : (
+            <>
+              <h3 className="flex-1 text-lg font-bold text-gray-800 truncate">
+                {title}
+              </h3>
+              {!isLocked && <button
+                type="button"
+                onClick={handleEditClick}
+                className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                title="编辑标题"
+                aria-label="编辑标题"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                </svg>
+              </button>}
+            </>
+          )}
+          {!isEditing && isLocked && (
             <span className="shrink-0 p-1 rounded" title="已锁定">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -254,8 +333,10 @@ function NotLoggedIn({ onLogin }) {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const auth = useAuth();
-  const { user, reports, isLoading, error, isLoggedIn, restartConversation, goToLogin } = useProfile();
+  const { user, reports, isLoading, error, isLoggedIn, restartConversation, updateReportTitle, goToLogin } = useProfile();
   const [showAboutUs, setShowAboutUs] = useState(false);
+  const [editingReportId, setEditingReportId] = useState(null);
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
 
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
@@ -272,6 +353,24 @@ export default function ProfilePage() {
     const mode = report.mode || 'discover-self';
     const reportId = report.reportId;
     navigate(`/report-result?mode=${mode}&reportId=${reportId}`);
+  };
+
+  // 编辑标题：开始编辑
+  const handleStartEditTitle = (reportId) => setEditingReportId(reportId);
+  // 编辑标题：取消
+  const handleCancelEditTitle = () => setEditingReportId(null);
+  // 编辑标题：保存
+  const handleSaveTitle = async (reportId, title) => {
+    if (!title?.trim()) return;
+    setIsSavingTitle(true);
+    try {
+      await updateReportTitle(reportId, title.trim());
+      setEditingReportId(null);
+    } catch (err) {
+      console.error('更新标题失败:', err);
+    } finally {
+      setIsSavingTitle(false);
+    }
   };
 
   // 处理退出登录
@@ -328,6 +427,11 @@ export default function ProfilePage() {
                   report={report}
                   onRestart={handleRestart}
                   onView={handleViewReport}
+                  onStartEditTitle={handleStartEditTitle}
+                  onSaveTitle={handleSaveTitle}
+                  onCancelEditTitle={handleCancelEditTitle}
+                  editingReportId={editingReportId}
+                  isSavingTitle={isSavingTitle}
                 />
               ))}
             </div>

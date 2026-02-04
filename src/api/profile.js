@@ -127,12 +127,12 @@ export async function getReports(rdb) {
   if (!username) {
     return [];
   }
-  
+
   if (!rdb) {
     console.warn('rdb 未初始化，无法获取报告列表');
     return [];
   }
-  
+
   // 检查缓存
   const cacheKey = getCacheKey(rdb, 'reports', { username });
   const cached = getCachedData(cacheKey);
@@ -140,7 +140,7 @@ export async function getReports(rdb) {
     console.log('[getReports] 使用缓存数据');
     return cached;
   }
-  
+
   try {
     const { data, error } = await rdb
       .from("report")
@@ -148,20 +148,48 @@ export async function getReports(rdb) {
       .order('createdAt', { ascending: false })
       .eq('username', username)
       .eq('status', REPORT_STATUS.COMPLETED);
-    
+
     if (error) {
       console.error('获取对话历史失败:', error);
       return [];
     }
 
     const result = data || [];
-    
+
     // 设置缓存
     setCachedData(cacheKey, result);
-    
+
     return result;
   } catch (err) {
     console.error('获取报告列表失败:', err);
     return [];
   }
+}
+
+/**
+ * 更新报告标题
+ * @param {object} rdb - 数据库实例
+ * @param {string} reportId - 报告 ID
+ * @param {string} title - 新标题
+ */
+export async function updateReportTitle(rdb, reportId, title) {
+  const username = getCurrentUsername();
+  if (!username || !reportId || !title?.trim()) {
+    throw new Error('参数不完整');
+  }
+  if (!rdb) {
+    throw new Error('数据库未初始化');
+  }
+  const { error } = await rdb
+    .from('report')
+    .update({ title: title.trim() })
+    .eq('reportId', reportId)
+    .eq('username', username);
+  if (error) {
+    console.error('更新报告标题失败:', error);
+    throw new Error(error.message || '更新标题失败');
+  }
+  // 清除报告列表缓存，使下次 getReports 获取最新数据
+  const cacheKey = getCacheKey(rdb, 'reports', { username });
+  cache.delete(cacheKey);
 }

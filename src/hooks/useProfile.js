@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getReports, getUserExtraInfo, restartConversation } from '../api/profile';
+import { getReports, getUserExtraInfo, restartConversation, updateReportTitle as updateReportTitleApi } from '../api/profile';
 import { isLoggedIn, getCurrentUsername } from '../utils/user';
 import { useRdb } from '../contexts/cloudbaseContext';
 import { USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
@@ -82,6 +82,13 @@ export function useProfile() {
     navigate('/login');
   }, [navigate]);
 
+  // 更新报告标题
+  const handleUpdateReportTitle = useCallback(async (reportId, title) => {
+    if (!rdb) throw new Error('数据库未初始化');
+    await updateReportTitleApi(rdb, reportId, title);
+    await loadData();
+  }, [rdb, loadData]);
+
   return {
     reports,
     userExtraInfo,
@@ -91,6 +98,7 @@ export function useProfile() {
     isLoading: isLoading,
     error,
     restartConversation: handleRestartConversation,
+    updateReportTitle: handleUpdateReportTitle,
     isLoggedIn: isUserLoggedIn,
     goToLogin,
   };
