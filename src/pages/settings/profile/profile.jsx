@@ -100,7 +100,7 @@ function ReportCard({
 
   return (
     <div
-      className={`relative rounded-2xl p-6 overflow-hidden transition-all border-2 ${isExpired ? 'opacity-90' : 'hover:shadow-lg hover:scale-[1.02]'} ${canView && !isEditing ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+      className={`relative rounded-2xl px-6 py-3 overflow-hidden transition-all border-2 ${isExpired ? 'opacity-90' : 'hover:shadow-lg hover:scale-[1.02]'} ${canView && !isEditing ? 'cursor-pointer active:scale-[0.98]' : ''}`}
       style={{
         backgroundColor: isExpired ? 'rgba(243, 244, 246, 0.9)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(4px)',
