@@ -14,6 +14,7 @@ import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
 import ReportContentCard from '../../components/ReportContentCard';
 import { getCurrentUsername } from '../../utils/user';
+import { trackVisitEvent } from '../../utils/track';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
@@ -120,6 +121,20 @@ export default function Result() {
       setShowInviteLoginDialog(true);
     }
   }, [hasScrolledToBottom, reportIsLoggedIn, inviteLoginPromptDismissed]);
+
+  // 曝光上报：生成长图对话框
+  useEffect(() => {
+    if (isShareImageOpen) {
+      trackVisitEvent('share_report_image_expose');
+    }
+  }, [isShareImageOpen]);
+
+  // 曝光上报：分享链接对话框
+  useEffect(() => {
+    if (isShareDialogOpen) {
+      trackVisitEvent('share_link_dialog_expose');
+    }
+  }, [isShareDialogOpen]);
 
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);

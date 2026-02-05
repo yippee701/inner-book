@@ -1,3 +1,5 @@
+import { trackClickEvent } from '../../utils/track';
+
 /**
  * 欢迎界面组件 - 显示欢迎消息和开始按钮（Quiet Luxury 风格）
  * @param {Function} onStart - 开始按钮点击回调

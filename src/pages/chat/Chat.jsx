@@ -11,8 +11,10 @@ import NoQuotaDialog from '../../components/NoQuotaDialog';
 import { useChat } from '../../hooks/useChat';
 import { useReport } from '../../contexts/ReportContext';
 import { useProfile, checkCanStartChat } from '../../hooks/useProfile';
+import { useStayTime } from '../../hooks/useStayTime';
 import { getWelcomeMessage } from '../../constants/welcome-message';
 import { getModeFromSearchParams } from '../../constants/modes';
+import { trackClickEvent } from '../../utils/track';
 
 // 粒子光圈图标组件 - 玻璃态设计
 function ParticleIcon() {
@@ -78,6 +80,9 @@ export default function Chat() {
 
   // 根据 URL 参数确定聊天模式（提前计算，不使用 useMemo）
   const chatMode = getModeFromSearchParams(searchParams);
+
+  // 对话时长统计：从进入页面到离开自动上报
+  useStayTime('chat_duration', { auto: true, data: { mode: chatMode } });
 
   const [hasStarted, setHasStarted] = useState(false);
   const [pendingReport, setPendingReport] = useState(null);
@@ -220,6 +225,7 @@ export default function Chat() {
       setTimeout(() => {
         messageListRef.current?.scrollToBottom(true);
       }, 100);
+      trackClickEvent('resume_chat');
     }
   }, [pendingReport, resumeReport, restoreMessages]);
 
@@ -231,6 +237,7 @@ export default function Chat() {
     await createReport(chatMode);
     // 然后发送第一条消息
     await sendUserMessage('你好，我准备好了，请开始吧。');
+    trackClickEvent('start_new_chat', { mode: chatMode });
   }, [chatMode, createReport, sendUserMessage]);
 
   // 开始对话

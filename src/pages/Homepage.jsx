@@ -2,6 +2,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useProfile, checkCanStartChat } from '../hooks/useProfile';
 import NoQuotaDialog from '../components/NoQuotaDialog';
+import { trackClickEvent } from '../utils/track';
 
 // 轮播文字配置
 const CAROUSEL_TEXTS = [
@@ -21,6 +22,7 @@ export default function Homepage() {
 
   // 检查是否可以开始对话
   const handleStartChat = useCallback((mode) => {
+    trackVisitEvent('start_chat', { mode });
     if (!checkCanStartChat(isLoggedIn, userExtraInfo)) {
       setShowNoQuotaDialog(true);
       return;

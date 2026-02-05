@@ -1,9 +1,15 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { trackVisitEvent } from '../utils/track';
 
 /**
  * 邀请登录对话框
  */
 export default function InviteLoginDialog({ isOpen, onClose, returnUrl }) {
+  useEffect(() => {
+    if (isOpen) trackVisitEvent('invite_login_dialog_expose');
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';

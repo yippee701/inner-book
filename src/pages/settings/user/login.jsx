@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useReport } from '../../../contexts/ReportContext';
+import { trackVisitEvent } from '../../../utils/track';
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -134,7 +135,11 @@ export default function LoginPage() {
   const returnUrl = searchParams.get('returnUrl');
   const { checkLoginAndSync } = useReport();
   const auth = useAuth();
-  
+
+  useEffect(() => {
+    trackVisitEvent('login_page_expose');
+  }, []);
+
   // 登录方式：'phone' | 'password'
   const [loginMethod, setLoginMethod] = useState('password');
   

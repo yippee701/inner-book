@@ -5,6 +5,7 @@ import { useRdb, useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
 import { REPORT_STATUS } from '../constants/reportStatus';
 import { getReportDetail, verifyInviteCode, saveMessages } from '../api/report';
 import { useToast } from '../components/Toast';
+import { trackVisitEvent, trackConversationRound } from '../utils/track';
 
 /*
 1. 开始对话
@@ -97,6 +98,9 @@ export function ReportProvider({ children }) {
 
   // 防止重复保存到远端
   const isSavingRef = useRef(false);
+
+  // 对话轮次上报去重：每个 reportId 只上报比已上报轮次更大的轮次
+  const lastReportedRoundByReportIdRef = useRef({});
   
   // 防止重复提示（记录是否已经提示过未完成报告）
   const hasShownPendingReportToastRef = useRef(false);
@@ -330,6 +334,7 @@ export function ReportProvider({ children }) {
 
   // 开始生成报告（跳转到 loading 页面时）
   const startReport = useCallback(() => {
+    trackVisitEvent('start_generate_report_expose');
     setReportState(prev => ({
       ...prev,
       isGenerating: true,
@@ -340,6 +345,13 @@ export function ReportProvider({ children }) {
 
   // 更新对话记录
   const updateMessages = useCallback((messages) => {
+    const reportId = reportStateRef.current?.currentReportId;
+    const round = (messages || []).filter(m => m.role === 'user').length;
+    const lastReported = lastReportedRoundByReportIdRef.current[reportId] ?? 0;
+    if (reportId && round > lastReported) {
+      trackConversationRound(reportId, round);
+      lastReportedRoundByReportIdRef.current[reportId] = round;
+    }
     setReportState(prev => {
       const newState = { ...prev, messages };
 
@@ -473,7 +485,8 @@ export function ReportProvider({ children }) {
             localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(updatedReports));
           }
           console.log('报告已同步到远端 (completed, lock=1)');
-          
+          trackVisitEvent('complete_report_expose');
+
           // 提示输入邀请码（通过回调通知 Result.jsx）
           if (onShowInviteCodeDialogRef.current) {
             onShowInviteCodeDialogRef.current(reportId);

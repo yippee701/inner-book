@@ -46,3 +46,21 @@ export function cleanReportContent(content) {
 export function generateReportId() {
   return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
+
+/**
+ * 从当前 URL（hash 或 search）读取 mode 参数
+ * @returns {string|null}
+ */
+function getModeFromUrl() {
+  try {
+    const hash = typeof location !== 'undefined' ? location.hash : '';
+    const search = typeof location !== 'undefined' ? location.search : '';
+    const query = hash.includes('?') ? hash.split('?')[1] : search.slice(1);
+    if (!query) return null;
+    const params = new URLSearchParams(query);
+    const mode = params.get('mode');
+    return mode || null;
+  } catch {
+    return null;
+  }
+}

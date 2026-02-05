@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '../../components/Toast';
+import { trackVisitEvent, trackClickEvent } from '../../utils/track';
 
 /**
  * 分享弹窗组件
@@ -21,6 +22,7 @@ export default function ShareDialog({ isOpen, onClose, shareUrl }) {
       console.error('复制失败:', err);
       message.error('复制失败，请手动复制');
     }
+    trackClickEvent('share_link_dialog_copy');
   }, [shareUrl, message]);
 
   if (!isOpen) return null;

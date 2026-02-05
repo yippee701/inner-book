@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useToast } from '../../../components/Toast';
+import { trackVisitEvent } from '../../../utils/track';
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -129,6 +130,10 @@ export default function RegisterPage() {
   const [searchParams] = useSearchParams();
   const { message: toast } = useToast();
   const returnUrl = searchParams.get('returnUrl');
+
+  useEffect(() => {
+    trackVisitEvent('register_page_expose');
+  }, []);
 
   // 表单状态
   const [username, setUsername] = useState('');

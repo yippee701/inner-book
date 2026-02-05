@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import cloudbase from "@cloudbase/js-sdk";
 import { isLoggedIn } from '../utils/user';
+import { setCloudbaseApp as setTrackCloudbaseApp } from '../utils/track';
 
 const CloudbaseContext = createContext(null);
 
@@ -22,6 +23,7 @@ export function CloudbaseProvider({ children }) {
 
     const cloudbaseAppInstance = cloudApp;
     setCloudbaseApp(cloudbaseAppInstance);
+    setTrackCloudbaseApp(cloudbaseAppInstance);
 
     // 获取 auth 实例
     const authInstance = cloudApp.auth();
@@ -41,11 +43,11 @@ export function CloudbaseProvider({ children }) {
     }
 
     return () => {
-      // 清理（如果需要）
-      setCloudbaseApp(null);
-      setAuth(null);
-      setDb(null);
-      setRdb(null);
+      // setTrackDb(null);
+      // setCloudbaseApp(null);
+      // setAuth(null);
+      // setDb(null);
+      // setRdb(null);
     };
   }, []);
 

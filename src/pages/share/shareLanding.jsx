@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useRdb } from '../../contexts/cloudbaseContext';
 import { getModeLabel } from '../../constants/modes';
@@ -6,6 +6,7 @@ import { BackgroundBlobs } from '../../components/reportBackground';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getReportDetail } from '../../api/report';
 import ReportContentCard from '../../components/ReportContentCard';
+import { trackVisitEvent, trackClickEvent } from '../../utils/track';
 // ========== 分享者信息卡片 ==========
 function SharerCard({ username }) {
   return (
@@ -127,6 +128,14 @@ export default function ShareLanding() {
 
     fetchReport();
   }, [reportId, rdb]);
+  
+  const handleTryNow = useCallback(() => {
+    trackClickEvent('share_landing_try_now');
+  }, []);
+
+  useEffect(() => {
+    trackVisitEvent('share_landing_expose');
+  }, []);
 
   if (loading) {
     return (
@@ -235,6 +244,7 @@ export default function ShareLanding() {
           <Link
             to="/"
             className="btn-primary flex items-center justify-center gap-2 w-full font-bold transition-all hover:bg-black active:scale-[0.98]"
+            onClick={handleTryNow}
           >
             我也要探索
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
