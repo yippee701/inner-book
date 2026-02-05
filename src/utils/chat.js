@@ -51,7 +51,7 @@ export function generateReportId() {
  * 从当前 URL（hash 或 search）读取 mode 参数
  * @returns {string|null}
  */
-function getModeFromUrl() {
+export function getModeFromUrl() {
   try {
     const hash = typeof location !== 'undefined' ? location.hash : '';
     const search = typeof location !== 'undefined' ? location.search : '';
