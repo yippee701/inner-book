@@ -5,6 +5,7 @@
 
 import { getCurrentUserId, getCurrentUsername } from './user';
 import { getModeFromUrl } from './chat';
+import { initErrorTracking, trackErrorEvent } from './trackError';
 
 /** 由 cloudbase 注入的 db 实例，在 CloudbaseProvider 初始化时设置 */
 let cloudbaseApp = null;
@@ -53,6 +54,8 @@ export function trackConversationRound(reportId, round) {
   trackEvent('conversation_round', { key: 'conversation_round', reportId, round });
 }
 
+export { trackErrorEvent };
+
 /**
  * 上报用户行为埋点
  * @param {string} event - 事件名称
@@ -84,6 +87,8 @@ export function trackEvent(event, data) {
     });
   }
 }
+
+initErrorTracking(trackEvent);
 
 function getDeviceId() {
   return localStorage.getItem('device_id') || 'default_device_id';
