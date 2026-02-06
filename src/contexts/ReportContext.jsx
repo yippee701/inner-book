@@ -135,9 +135,10 @@ export function ReportProvider({ children }) {
       mode: report.mode,
       reportId: reportId,
       lock: lock,
+      createdAt: +new Date(),
     };
     if (saveUserInfo && username) insertData.username = username;
-    if (saveUserInfo && openId) insertData._openid = openId;
+    // if (saveUserInfo && openId) insertData._openid = openId;
 
     return new Promise((resolve, reject) => {
       db.collection('report').doc(reportId).set(insertData, (res, data) => {

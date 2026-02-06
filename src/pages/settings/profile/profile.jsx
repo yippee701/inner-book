@@ -72,13 +72,15 @@ function ReportCard({
   editingReportId,
   isSavingTitle,
 }) {
-  const { status, storageType, storageInfo, title, createdAt, lock, reportId } = report;
+  const { status, storageType, storageInfo, title, lock, reportId } = report;
   const isExpired = status === REPORT_STATUS.EXPIRED;
   const isGenerating = status === REPORT_STATUS.GENERATING;
   const canView = status === REPORT_STATUS.COMPLETED;
   const isLocked = lock === 1;
   const isEditing = editingReportId === reportId;
   const titleInputRef = useRef(null);
+
+  const createdAt = new Date(report.createdAt).toLocaleString();
 
   useEffect(() => {
     if (isEditing && titleInputRef.current) {
