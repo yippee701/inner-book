@@ -30,7 +30,7 @@ const cache = new Map();
 /**
  * 获取缓存键
  */
-function getCacheKey(rdb, table, params) {
+function getCacheKey(db, table, params) {
   return `${table}_${JSON.stringify(params)}`;
 }
 
@@ -62,21 +62,22 @@ function setCachedData(cacheKey, data) {
 
 /**
  * 获取报告详情
+ * @param {object} db - 数据库实例
  * @param {boolean} skipCache - 是否跳过缓存（用于解锁后重新加载）
  */
-export async function getReportDetail(rdb, reportId, skipCache = false) {
+export function getReportDetail(db, reportId, skipCache = false) {
   if (!reportId) {
     console.warn('reportId 为空，无法获取报告内容');
     return null;
   }
-  
-  if (!rdb) {
-    console.warn('rdb 未初始化，无法获取报告内容');
+
+  if (!db) {
+    console.warn('db 未初始化，无法获取报告内容');
     return null;
   }
-  
+
   // 检查缓存
-  const cacheKey = getCacheKey(rdb, 'report_detail', { reportId });
+  const cacheKey = getCacheKey(db, 'report_detail', { reportId });
   if (!skipCache) {
     const cached = getCachedData(cacheKey);
     if (cached !== null) {
@@ -84,50 +85,55 @@ export async function getReportDetail(rdb, reportId, skipCache = false) {
       return cached;
     }
   } else {
-    // 跳过缓存时，清除旧缓存
     cache.delete(cacheKey);
   }
-  
-  try {
-    const { data, error } = await rdb
-      .from('report')
-      .select('content, status, subTitle, username, lock, inviteCode, mode')
-      .eq('reportId', reportId);
-    
-    if (error) {
-      console.error('获取报告内容失败:', error);
-      throw error;
-    }
-    
-    if (!data || data.length === 0) {
-      console.warn('报告不存在:', reportId);
-      return null;
-    }
-    
-    const reportDetail = data[0];
 
-    const result = {
-      content: reportDetail.content || '',
-      status: reportDetail.status,
-      subTitle: reportDetail.subTitle || '',
-      username: reportDetail.username,
-      lock: reportDetail.lock !== undefined ? reportDetail.lock : 1, // 默认锁定
-      inviteCode: reportDetail.inviteCode || '',
-      isCompleted: reportDetail.status === REPORT_STATUS.COMPLETED,
-    };
-
-    if(reportDetail.lock === 1) {
-      result.content = result.content.slice(0, 200).concat('...(待解锁)');
-    }
-    
-    // 设置缓存
-    setCachedData(cacheKey, result);
-    
-    return result;
-  } catch (err) {
-    console.error('获取报告详情失败:', err);
-    throw err;
-  }
+  return new Promise((resolve, reject) => {
+    db.collection('report')
+      .where({ reportId })
+      .field({
+        content: true,
+        status: true,
+        subTitle: true,
+        username: true,
+        lock: true,
+        inviteCode: true,
+        mode: true,
+      })
+      .get((res, data) => {
+        if (res !== 0 || !data) {
+          console.error('获取报告内容失败:', res, data);
+          reject(new Error('获取报告内容失败'));
+          return;
+        }
+        try {
+          const list = data.data || [];
+          if (list.length === 0) {
+            console.warn('报告不存在:', reportId);
+            resolve(null);
+            return;
+          }
+          const reportDetail = list[0];
+          const result = {
+            content: reportDetail.content || '',
+            status: reportDetail.status,
+            subTitle: reportDetail.subTitle || '',
+            username: reportDetail.username,
+            lock: reportDetail.lock !== undefined ? reportDetail.lock : 1,
+            inviteCode: reportDetail.inviteCode || '',
+            isCompleted: reportDetail.status === REPORT_STATUS.COMPLETED,
+          };
+          if (reportDetail.lock === 1) {
+            result.content = result.content.slice(0, 200).concat('...(待解锁)');
+          }
+          setCachedData(cacheKey, result);
+          resolve(result);
+        } catch (err) {
+          console.error('获取报告详情失败:', err);
+          reject(err);
+        }
+      });
+  });
 }
 
 /**
@@ -174,9 +180,10 @@ export async function getMessages(db, reportId) {
     return;
   }
   return new Promise((resolve, reject) => {
-    db.collection('message').where({
-      reportId,
-    }).get((res, data) => {
+    db.collection('message')
+      .where({ reportId })
+      .field({ messages: true })
+      .get((res, data) => {
       if(res !== 0 || !data) {
         reject(new Error('获取对话记录失败'));
         return;

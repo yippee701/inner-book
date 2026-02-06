@@ -18,7 +18,7 @@ const cache = new Map();
 /**
  * 获取缓存键
  */
-function getCacheKey(rdb, table, params) {
+function getCacheKey(db, table, params) {
   return `${table}_${JSON.stringify(params)}`;
 }
 
@@ -70,46 +70,47 @@ async function fetchRestartConversation(conversationId) {
 
 // ========== 导出的 API 函数 ==========
 
-export async function getUserExtraInfo(rdb) {
+export function getUserExtraInfo(db) {
   const username = getCurrentUsername();
-  if (!username) {
+  if (!username) return {};
+
+  if (!db) {
+    console.warn('db 未初始化，无法获取用户信息');
     return {};
   }
-  
-  if (!rdb) {
-    console.warn('rdb 未初始化，无法获取用户信息');
-    return {};
-  }
-  
-  // 检查缓存
-  const cacheKey = getCacheKey(rdb, 'user_extra_info', { username });
+
+  const cacheKey = getCacheKey(db, 'user_extra_info', { username });
   const cached = getCachedData(cacheKey);
   if (cached !== null) {
     console.log('[getUserExtraInfo] 使用缓存数据');
     return cached;
   }
-  
-  try {
-    const { data, error } = await rdb
-      .from("user_info")
-      .select('level, remainingReport, currentInvites')
-      .eq('username', username);
 
-    if (error) {
-      console.error('获取用户信息失败:', error);
-      return {};
-    }
-
-    const result = data[0] || {};
-    
-    // 设置缓存
-    setCachedData(cacheKey, result);
-    
-    return result;
-  } catch (err) {
-    console.error('获取用户信息失败:', err);
-    return {};
-  }
+  return new Promise((resolve) => {
+    db.collection('user_info')
+      .where({ username })
+      .field({
+        level: true,
+        remainingReport: true,
+        currentInvites: true,
+      })
+      .get((res, data) => {
+        if (res !== 0 || !data) {
+          console.error('获取用户信息失败:', res, data);
+          resolve({});
+          return;
+        }
+        try {
+          const list = data.data || [];
+          const result = list[0] || {};
+          setCachedData(cacheKey, result);
+          resolve(result);
+        } catch (err) {
+          console.error('获取用户信息失败:', err);
+          resolve({});
+        }
+      });
+  });
 }
 
 /**
@@ -122,74 +123,78 @@ export async function restartConversation(conversationId) {
   return fetchRestartConversation(conversationId);
 }
 
-export async function getReports(rdb) {
+export function getReports(db) {
   const username = getCurrentUsername();
-  if (!username) {
+  if (!username) return [];
+
+  if (!db) {
+    console.warn('db 未初始化，无法获取报告列表');
     return [];
   }
 
-  if (!rdb) {
-    console.warn('rdb 未初始化，无法获取报告列表');
-    return [];
-  }
-
-  // 检查缓存
-  const cacheKey = getCacheKey(rdb, 'reports', { username });
+  const cacheKey = getCacheKey(db, 'reports', { username });
   const cached = getCachedData(cacheKey);
   if (cached !== null) {
     console.log('[getReports] 使用缓存数据');
     return cached;
   }
 
-  try {
-    const { data, error } = await rdb
-      .from("report")
-      .select('title, createdAt, status, reportId, mode, lock')
-      .order('createdAt', { ascending: false })
-      .eq('username', username)
-      .eq('status', REPORT_STATUS.COMPLETED);
-
-    if (error) {
-      console.error('获取对话历史失败:', error);
-      return [];
-    }
-
-    const result = data || [];
-
-    // 设置缓存
-    setCachedData(cacheKey, result);
-
-    return result;
-  } catch (err) {
-    console.error('获取报告列表失败:', err);
-    return [];
-  }
+  return new Promise((resolve) => {
+    db.collection('report')
+      .where({ username, status: REPORT_STATUS.COMPLETED })
+      .orderBy('createdAt', 'desc')
+      .field({
+        title: true,
+        createdAt: true,
+        status: true,
+        reportId: true,
+        mode: true,
+        lock: true,
+      })
+      .get((res, data) => {
+        if (res !== 0 || !data) {
+          console.error('获取对话历史失败:', res, data);
+          resolve([]);
+          return;
+        }
+        try {
+          const result = data.data || [];
+          setCachedData(cacheKey, result);
+          resolve(result);
+        } catch (err) {
+          console.error('获取报告列表失败:', err);
+          resolve([]);
+        }
+      });
+  });
 }
 
 /**
  * 更新报告标题
- * @param {object} rdb - 数据库实例
+ * @param {object} db - 数据库实例
  * @param {string} reportId - 报告 ID
  * @param {string} title - 新标题
  */
-export async function updateReportTitle(rdb, reportId, title) {
+export function updateReportTitle(db, reportId, title) {
   const username = getCurrentUsername();
   if (!username || !reportId || !title?.trim()) {
-    throw new Error('参数不完整');
+    return Promise.reject(new Error('参数不完整'));
   }
-  if (!rdb) {
-    throw new Error('数据库未初始化');
+  if (!db) {
+    return Promise.reject(new Error('数据库未初始化'));
   }
-  const { error } = await rdb
-    .from('report')
-    .update({ title: title.trim() })
-    .eq('reportId', reportId)
-    .eq('username', username);
-  if (error) {
-    console.error('更新报告标题失败:', error);
-    throw new Error(error.message || '更新标题失败');
-  }
-  // 清除报告列表缓存，使下次 getReports 获取最新数据
-  const cacheKey = getCacheKey(rdb, 'reports', { username });
-  cache.delete(cacheKey);
+  return new Promise((resolve, reject) => {
+    db.collection('report')
+      .where({ reportId, username })
+      .update({ title: title.trim() }, (res, data) => {
+        if (res !== 0) {
+          console.error('更新报告标题失败:', res, data);
+          reject(new Error(data?.message || '更新标题失败'));
+          return;
+        }
+        const cacheKey = getCacheKey(db, 'reports', { username });
+        cache.delete(cacheKey);
+        resolve();
+      });
+  });
 }

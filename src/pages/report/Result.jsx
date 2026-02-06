@@ -8,7 +8,7 @@ import ShareDialog from '../share/shareDialog';
 import ShareReportImage from '../share/ShareReportImage';
 import InviteCodeDialog from '../../components/inviteCodeDialog';
 import InviteLoginDialog from '../../components/inviteLoginDialog';
-import { useRdb } from '../../contexts/cloudbaseContext';
+import { useDb } from '../../contexts/cloudbaseContext';
 import { getReportDetail as getReportDetailApi } from '../../api/report';
 import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
@@ -74,7 +74,7 @@ export default function Result() {
     registerInviteCodeDialog,
     registerInviteLoginDialog,
   } = useReport();
-  const rdb = useRdb();
+  const db = useDb();
   const [displayContent, setDisplayContent] = useState('');
   const { message } = useToast();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -174,8 +174,8 @@ export default function Result() {
         setInviteLoginPromptDismissed(false);
       }
       // 重新加载报告内容（跳过缓存）
-      if (rdb) {
-        const reportDetail = await getReportDetailApi(rdb, unlockedReportId, true);
+      if (db) {
+        const reportDetail = await getReportDetailApi(db, unlockedReportId, true);
         if (reportDetail) {
           setDisplayContent(reportDetail.content || '');
         }
@@ -239,8 +239,8 @@ export default function Result() {
     const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
     const reportId = currentSearchParams.get('reportId');
 
-    // 等待 rdb 和 getReportDetail 初始化完成
-    if (!rdb || !getReportDetail) {
+    // 等待 db 和 getReportDetail 初始化完成
+    if (!db || !getReportDetail) {
       return;
     }
 
@@ -276,7 +276,7 @@ export default function Result() {
     };
 
     loadReport();
-  }, [navigate, getReportDetail, message, rdb, content, subTitle]);
+  }, [navigate, getReportDetail, message, db, content, subTitle]);
 
   // 没有内容时显示加载
   if (isLoadingReport || !displayContent) {

@@ -93,7 +93,6 @@ export function useDb() {
   const context = useContext(CloudbaseContext);
   return context?.db || null;
 }
-
 /**
  * 使用 RDB 的 Hook
  * @returns {object|null} cloudbase rdb 实例

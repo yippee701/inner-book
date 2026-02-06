@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { getCurrentUsername, isLoggedIn, getCurrentUserId } from '../utils/user';
 import { generateReportTitle, extractReportSubTitle, cleanReportContent, generateReportId } from '../utils/chat';
-import { useRdb, useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
+import { useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
 import { REPORT_STATUS } from '../constants/reportStatus';
 import { getReportDetail, verifyInviteCode, saveMessages } from '../api/report';
 import { useToast } from '../components/Toast';
@@ -76,7 +76,6 @@ function trimLocalReports(reports) {
 }
 
 export function ReportProvider({ children }) {
-  const rdb = useRdb();
   const db = useDb();
   const auth = useAuth();
   const cloudbaseApp = useCloudbaseApp();
@@ -111,72 +110,56 @@ export function ReportProvider({ children }) {
     reportStateRef.current = reportState;
   }, [reportState]);
 
-  // 保存报告到远端
-  const saveReportToRemote = useCallback(async (report, options = {}) => {
-    try {
-      if (!rdb) {
-        throw new Error('rdb 未初始化');
-      }
-      
-      const {
-        status = REPORT_STATUS.PENDING,
-        lock = 1,
-        saveUserInfo = false, // 是否保存用户信息
-      } = options;
-      
-      const username = saveUserInfo ? getCurrentUsername() : null;
-      const openId = saveUserInfo ? getCurrentUserId() : null;
-      
-
-      const subTitle = report.subTitle;
-      const reportId = report.reportId;
-      
-      if (!reportId) {
-        throw new Error('reportId 不能为空');
-      }
-      
-      const insertData = {
-        content: cleanReportContent(report.content) || '',
-        title: report.title,
-        subTitle: subTitle || '',
-        status: status,
-        mode: report.mode,
-        reportId: reportId,
-        lock: lock,
-      };
-      
-      // 如果已登录且需要保存用户信息，则添加 username 和 _openid
-      if (saveUserInfo && username) {
-        insertData.username = username;
-      }
-      if (saveUserInfo && openId) {
-        insertData._openid = openId;
-      }
-      
-      const { data, error } = await rdb.from('report').upsert(insertData, { onConflict: 'reportId' });
-
-      if (error) {
-        console.error('报告保存到远端失败:', error);
-        throw error;
-      }
-
-      console.log('报告保存到远端成功:', data, 'status:', status, 'lock:', lock);
-
-      // 对话记录保存到文档型数据库
-      if (report.messages && report.messages.length > 0) {
-        try {
-          await saveMessages(db, reportId, report.messages || []);
-        } catch (err) {
-          console.error('对话记录保存到文档型数据库失败:', err);
-        }
-      }
-
-      return { data, reportId };
-    } catch (err) {
-      console.error('报告保存到远端失败:', err);
-      throw err;
+  // 保存报告到远端（db 文档库：doc(reportId).set 实现更新或创建，使用 callback）
+  const saveReportToRemote = useCallback((report, options = {}) => {
+    if (!db) {
+      return Promise.reject(new Error('db 未初始化'));
     }
-  }, [rdb, db, auth]);
+    const {
+      status = REPORT_STATUS.PENDING,
+      lock = 1,
+      saveUserInfo = false,
+    } = options;
+    const username = saveUserInfo ? getCurrentUsername() : null;
+    const openId = saveUserInfo ? getCurrentUserId() : null;
+    const subTitle = report.subTitle;
+    const reportId = report.reportId;
+    if (!reportId) {
+      return Promise.reject(new Error('reportId 不能为空'));
+    }
+    const insertData = {
+      content: cleanReportContent(report.content) || '',
+      title: report.title,
+      subTitle: subTitle || '',
+      status: status,
+      mode: report.mode,
+      reportId: reportId,
+      lock: lock,
+    };
+    if (saveUserInfo && username) insertData.username = username;
+    if (saveUserInfo && openId) insertData._openid = openId;
+
+    return new Promise((resolve, reject) => {
+      db.collection('report').doc(reportId).set(insertData, (res, data) => {
+        if (res !== 0) {
+          console.error('报告保存到远端失败:', res, data);
+          reject(new Error(data?.message || '报告保存失败'));
+          return;
+        }
+        console.log('报告保存到远端成功', 'status:', status, 'lock:', lock);
+        if (report.messages && report.messages.length > 0) {
+          saveMessages(db, reportId, report.messages || [])
+            .then(() => resolve({ data: insertData, reportId }))
+            .catch((err) => {
+              console.error('对话记录保存到文档型数据库失败:', err);
+              resolve({ data: insertData, reportId });
+            });
+        } else {
+          resolve({ data: insertData, reportId });
+        }
+      });
+    });
+  }, [db, auth]);
 
   // 同步本地报告到远端（只同步已完成的报告，pending 状态的保留在本地）
   const syncLocalReportsToRemote = useCallback(async () => {
@@ -422,7 +405,7 @@ export function ReportProvider({ children }) {
       console.error('邀请码验证失败:', err);
       throw err;
     }
-  }, [rdb, auth, cloudbaseApp]);
+  }, [db, auth, cloudbaseApp]);
 
   // 完成报告生成
   const completeReport = useCallback(async () => {
@@ -505,13 +488,13 @@ export function ReportProvider({ children }) {
       console.warn('reportId 为空，无法获取报告内容');
       return null;
     }
-    if (!rdb) {
-      console.warn('rdb 未初始化，无法获取报告内容');
+    if (!db) {
+      console.warn('db 未初始化，无法获取报告内容');
       return null;
     }
-    
+
     try {
-      const reportDetail = await getReportDetail(rdb, reportId);
+      const reportDetail = await getReportDetail(db, reportId);
       
       if (reportDetail) {
         setReportState(prev => ({
@@ -535,7 +518,7 @@ export function ReportProvider({ children }) {
       console.error('获取报告内容异常:', err);
       return null;
     }
-  }, [rdb]);
+  }, [db]);
 
   // 获取 discover-self 模式下保存的前三轮用户答案（用于推荐）
   // 返回 [第2轮, 第3轮, 第4轮]，可能含 null（未填的保留上次或空）

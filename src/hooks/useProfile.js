@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getReports, getUserExtraInfo, restartConversation, updateReportTitle as updateReportTitleApi } from '../api/profile';
 import { isLoggedIn, getCurrentUsername } from '../utils/user';
-import { useRdb } from '../contexts/cloudbaseContext';
+import { useDb } from '../contexts/cloudbaseContext';
 import { USER_INFO_LOCAL_STORAGE_KEY } from '../constants/global';
 
 /**
@@ -24,7 +24,7 @@ export function checkCanStartChat(isUserLoggedIn, userExtraInfo) {
  */
 export function useProfile() {
   const navigate = useNavigate();
-  const rdb = useRdb();
+  const db = useDb();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +35,7 @@ export function useProfile() {
   const loadData = useCallback(async () => {
     setError(null);
     
-    if (!rdb) return;
+    if (!db) return;
     if (!isUserLoggedIn) {
       setIsLoading(false);
       return;
@@ -43,8 +43,8 @@ export function useProfile() {
     try {
       // 获取对话历史和裂变进度
       const [convData, userExtraInfo] = await Promise.all([
-        getReports(rdb),
-        getUserExtraInfo(rdb),
+        getReports(db),
+        // getUserExtraInfo(db),
       ]);
       
       setReports(convData);
@@ -55,7 +55,7 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  }, [isUserLoggedIn, rdb]);
+  }, [isUserLoggedIn, db]);
 
   // 初始加载
   useEffect(() => {
@@ -84,10 +84,10 @@ export function useProfile() {
 
   // 更新报告标题
   const handleUpdateReportTitle = useCallback(async (reportId, title) => {
-    if (!rdb) throw new Error('数据库未初始化');
-    await updateReportTitleApi(rdb, reportId, title);
+    if (!db) throw new Error('数据库未初始化');
+    await updateReportTitleApi(db, reportId, title);
     await loadData();
-  }, [rdb, loadData]);
+  }, [db, loadData]);
 
   return {
     reports,

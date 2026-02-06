@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useRdb } from '../../contexts/cloudbaseContext';
+import { useDb } from '../../contexts/cloudbaseContext';
 import { getModeLabel } from '../../constants/modes';
 import { BackgroundBlobs } from '../../components/reportBackground';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
@@ -81,7 +81,7 @@ function Footer() {
 
 // ========== 主组件 ==========
 export default function ShareLanding() {
-  const rdb = useRdb();
+  const db = useDb();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') || 'discover-self';
   const reportId = searchParams.get('reportId');
@@ -98,14 +98,14 @@ export default function ShareLanding() {
       setLoading(false);
       return;
     }
-    if (!rdb) {
+    if (!db) {
       setLoading(false);
       return;
     }
 
     const fetchReport = async () => {
       try {
-        const reportDetail = await getReportDetail(rdb, reportId, true);
+        const reportDetail = await getReportDetail(db, reportId, true);
         if (!reportDetail) {
           setError('报告不存在或已被删除');
           setLoading(false);
@@ -127,7 +127,7 @@ export default function ShareLanding() {
     };
 
     fetchReport();
-  }, [reportId, rdb]);
+  }, [reportId, db]);
   
   const handleTryNow = useCallback(() => {
     trackClickEvent('share_landing_try_now');
