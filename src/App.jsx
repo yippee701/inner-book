@@ -26,17 +26,14 @@ function VisitAppTracker({ children }) {
 
 const LOCAL_REPORTS_KEY = 'pendingReports'
 
-const MAX_REDIRECT_COUNT = 3
 
-/** 未登录时若本地有未解锁报告，则跳转到该报告页（最多跳 2 次，防止死循环） */
+/** 未登录时若本地有未解锁报告，则跳转到该报告页*/
 function RedirectToUnlockedReport() {
   const navigate = useNavigate()
   const location = useLocation()
-  const redirectCountRef = useRef(0)
 
   useEffect(() => {
     if (isLoggedIn()) return
-    if (redirectCountRef.current >= MAX_REDIRECT_COUNT) return
     // 仅在首页或 chat 页才跳转到未解锁报告页
     const path = location.pathname || '/'
     if (path !== '/' && path !== '/chat') return
@@ -48,7 +45,6 @@ function RedirectToUnlockedReport() {
         (r) => r.status === 'completed' && (r.lock === 1 || r.lock === true)
       )
       if (!locked?.reportId) return
-      redirectCountRef.current += 1
       const mode = locked.mode || 'discover-self'
       navigate(`/report-result?reportId=${locked.reportId}&mode=${mode}`, { replace: true })
     } catch {

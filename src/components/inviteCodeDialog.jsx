@@ -32,7 +32,6 @@ export default function InviteCodeDialog({ isOpen, onClose, onSubmit, isLoading 
     setInviteCode('');
     setError('');
     onClose();
-    navigate('/');
   };
 
   return (
