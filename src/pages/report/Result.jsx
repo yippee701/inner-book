@@ -262,7 +262,7 @@ export default function Result() {
         // 从数据库获取的 content 已经移除了 h1 标题，直接使用
         setDisplayContent(reportDetail.content || '');
 
-        if (reportDetail.lock === 1) {
+        if (reportDetail.lock === true) {
           setShowInviteCodeDialog(true);
           setShowShare(false);
         }

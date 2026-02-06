@@ -119,11 +119,11 @@ export function getReportDetail(db, reportId, skipCache = false) {
             status: reportDetail.status,
             subTitle: reportDetail.subTitle || '',
             username: reportDetail.username,
-            lock: reportDetail.lock !== undefined ? reportDetail.lock : 1,
+            lock: reportDetail.lock !== undefined ? reportDetail.lock : true,
             inviteCode: reportDetail.inviteCode || '',
             isCompleted: reportDetail.status === REPORT_STATUS.COMPLETED,
           };
-          if (reportDetail.lock === 1) {
+          if (reportDetail.lock === true) {
             result.content = result.content.slice(0, 200).concat('...(待解锁)');
           }
           setCachedData(cacheKey, result);

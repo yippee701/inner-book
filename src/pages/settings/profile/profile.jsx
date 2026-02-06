@@ -76,7 +76,7 @@ function ReportCard({
   const isExpired = status === REPORT_STATUS.EXPIRED;
   const isGenerating = status === REPORT_STATUS.GENERATING;
   const canView = status === REPORT_STATUS.COMPLETED;
-  const isLocked = lock === 1;
+  const isLocked = lock === true;
   const isEditing = editingReportId === reportId;
   const titleInputRef = useRef(null);
 
@@ -339,7 +339,8 @@ export default function ProfilePage() {
   const [showAboutUs, setShowAboutUs] = useState(false);
   const [editingReportId, setEditingReportId] = useState(null);
   const [isSavingTitle, setIsSavingTitle] = useState(false);
-
+  // 过滤出已解锁的报告数量
+  const unlockedReportsCount = reports.filter((report) => report.lock === false).length;
   // 处理重新开启对话
   const handleRestart = async (conversationId) => {
     try {
@@ -416,7 +417,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-center gap-3 mb-6">
               <div className="w-5 h-px bg-gray-300" />
               <p className="text-sm text-gray-500 whitespace-nowrap">
-                {reports.length > 0 ? `你已解锁 ${reports.length} 份INNER BOOK报告` : '尚未解锁任何报告'}
+                {unlockedReportsCount > 0 ? `你已解锁 ${unlockedReportsCount} 份INNER BOOK报告` : '尚未解锁任何报告'}
               </p>
               <div className="w-5 h-px bg-gray-300" />
             </div>

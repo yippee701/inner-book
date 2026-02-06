@@ -117,7 +117,7 @@ export function ReportProvider({ children }) {
     }
     const {
       status = REPORT_STATUS.PENDING,
-      lock = 1,
+      lock = true,
       saveUserInfo = false,
     } = options;
     const username = saveUserInfo ? getCurrentUsername() : null;
@@ -201,7 +201,7 @@ export function ReportProvider({ children }) {
       for (const report of completedReports) {
         await saveReportToRemote(report, {
           status: REPORT_STATUS.COMPLETED,
-          lock: 1,
+          lock: true,
           saveUserInfo: true, // 登录后同步，保存 username 和 _openid
         });
         console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
@@ -305,7 +305,7 @@ export function ReportProvider({ children }) {
       const loggedIn = isLoggedIn();
       await saveReportToRemote(report, {
         status: REPORT_STATUS.PENDING,
-        lock: 1,
+        lock: true,
         saveUserInfo: loggedIn, // 如果已登录，保存 username 和 _openid
       });
       console.log('报告已同步到远端 (pending, lock=1)');
@@ -459,7 +459,7 @@ export function ReportProvider({ children }) {
             ...reportUpdate,
           }, {
             status: REPORT_STATUS.COMPLETED,
-            lock: 1,
+            lock: true,
             saveUserInfo: loggedIn, // 如果已登录，保存 username 和 _openid
           });
           

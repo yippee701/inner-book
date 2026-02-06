@@ -111,7 +111,7 @@ export default function ShareLanding() {
           setLoading(false);
           return;
         }
-        if (reportDetail.lock === 1) {
+        if (reportDetail.lock === true) {
           setError('报告未解锁');
           setLoading(false);
           return;
