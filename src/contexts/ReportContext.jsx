@@ -101,9 +101,6 @@ export function ReportProvider({ children }) {
   // 对话轮次上报去重：每个 reportId 只上报比已上报轮次更大的轮次
   const lastReportedRoundByReportIdRef = useRef({});
   
-  // 防止重复提示（记录是否已经提示过未完成报告）
-  const hasShownPendingReportToastRef = useRef(false);
-  
   // 追踪最新的状态（解决闭包捕获旧值问题）
   const reportStateRef = useRef(reportState);
   useEffect(() => {
@@ -172,21 +169,7 @@ export function ReportProvider({ children }) {
       // 区分已完成和未完成的报告
       const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
       const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
-      
-      // 如果有未完成的报告，但用户未登录，提示登录（只提示一次）
-      if (completedReports.length > 0 && !isLoggedIn()) {
-        if (!hasShownPendingReportToastRef.current) {
-          toastMessage.info('检测到你本地有仍未完成的报告，建议登录后自动保存到个人档案', 6000);
-          hasShownPendingReportToastRef.current = true;
-        }
-        return;
-      }
-      
-      // 如果已登录，重置提示标记（下次未登录时可以再次提示）
-      if (isLoggedIn()) {
-        hasShownPendingReportToastRef.current = false;
-      }
-      
+
       if (completedReports.length === 0) {
         console.log('没有需要同步的已完成报告');
         return;
@@ -283,6 +266,7 @@ export function ReportProvider({ children }) {
       mode,
       createdAt: new Date().toISOString(),
       synced: false,
+      lock: true,
     };
 
     // 更新状态
@@ -393,20 +377,19 @@ export function ReportProvider({ children }) {
   // 处理邀请码验证（由 Result.jsx 调用）
   const handleInviteCodeSubmit = useCallback(async (reportId, inviteCode) => {
     try {
-      // 验证邀请码
       const response = await verifyInviteCode(cloudbaseApp, inviteCode, reportId);
       const result = response.result;
       if (result.retcode !== 0) {
         throw new Error(result.message);
       }
-
-      // 解锁后未登录不在此处弹窗，由报告页「滚动到底部」时再弹出邀请登录
+      // 解锁成功后更新本地报告状态
+      updateLocalReport(reportId, { lock: 0 });
       return true;
     } catch (err) {
       console.error('邀请码验证失败:', err);
       throw err;
     }
-  }, [db, auth, cloudbaseApp]);
+  }, [cloudbaseApp, updateLocalReport]);
 
   // 完成报告生成
   const completeReport = useCallback(async () => {
