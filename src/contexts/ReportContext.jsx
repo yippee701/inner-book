@@ -107,7 +107,7 @@ export function ReportProvider({ children }) {
     reportStateRef.current = reportState;
   }, [reportState]);
 
-  // 保存报告到远端（db 文档库：doc(reportId).set 实现更新或创建，使用 callback）
+  // 保存报告到远端：先查询，没有则 add，有则 update
   const saveReportToRemote = useCallback((report, options = {}) => {
     if (!db) {
       return Promise.reject(new Error('db 未初始化'));
@@ -137,23 +137,46 @@ export function ReportProvider({ children }) {
     if (saveUserInfo && username) insertData.username = username;
     // if (saveUserInfo && openId) insertData._openid = openId;
 
+    const finish = (resolve, reject) => {
+      if (report.messages && report.messages.length > 0) {
+        saveMessages(db, reportId, report.messages || [])
+          .then(() => resolve({ data: insertData, reportId }))
+          .catch((err) => {
+            console.error('对话记录保存到文档型数据库失败:', err);
+            resolve({ data: insertData, reportId });
+          });
+      } else {
+        resolve({ data: insertData, reportId });
+      }
+    };
+
     return new Promise((resolve, reject) => {
-      db.collection('report').doc(reportId).set(insertData, (res, data) => {
+      db.collection('report').where({ reportId }).get((res, data) => {
         if (res !== 0) {
-          console.error('报告保存到远端失败:', res, data);
-          reject(new Error(data?.message || '报告保存失败'));
+          console.error('查询报告失败:', res, data);
+          reject(new Error(data?.message || '查询报告失败'));
           return;
         }
-        console.log('报告保存到远端成功', 'status:', status, 'lock:', lock);
-        if (report.messages && report.messages.length > 0) {
-          saveMessages(db, reportId, report.messages || [])
-            .then(() => resolve({ data: insertData, reportId }))
-            .catch((err) => {
-              console.error('对话记录保存到文档型数据库失败:', err);
-              resolve({ data: insertData, reportId });
-            });
+        const exists = data?.data?.length > 0;
+
+        const onDone = (res2, data2, action) => {
+          if (res2 !== 0) {
+            console.error(`报告${action}到远端失败:`, res2, data2);
+            reject(new Error(data2?.message || `报告${action}失败`));
+            return;
+          }
+          console.log(`报告${action}到远端成功`, 'status:', status, 'lock:', lock);
+          finish(resolve, reject);
+        };
+
+        if (exists) {
+          db.collection('report').where({ reportId }).update(insertData, (res2, data2) => {
+            onDone(res2, data2, '更新');
+          });
         } else {
-          resolve({ data: insertData, reportId });
+          db.collection('report').add(insertData, (res2, data2) => {
+            onDone(res2, data2, '保存');
+          });
         }
       });
     });

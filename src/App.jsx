@@ -26,7 +26,7 @@ function VisitAppTracker({ children }) {
 
 const LOCAL_REPORTS_KEY = 'pendingReports'
 
-const MAX_REDIRECT_COUNT = 2
+const MAX_REDIRECT_COUNT = 3
 
 /** 未登录时若本地有未解锁报告，则跳转到该报告页（最多跳 2 次，防止死循环） */
 function RedirectToUnlockedReport() {

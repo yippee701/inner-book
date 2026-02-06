@@ -384,6 +384,7 @@ export default function ProfilePage() {
       
       // 跳转到首页
       navigate('/');
+      location.reload();
     } catch (err) {
       console.error('退出登录失败:', err);
     }
