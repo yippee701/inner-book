@@ -45,8 +45,9 @@ function LoadingSteps({ isFirstRound }) {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
+    if (stepIndex >= steps.length - 1) return;
     const t = setTimeout(() => {
-      setStepIndex(prev => (prev + 1) % steps.length);
+      setStepIndex(prev => Math.min(prev + 1, steps.length - 1));
     }, STEP_DURATION_MS);
     return () => clearTimeout(t);
   }, [stepIndex, steps.length]);

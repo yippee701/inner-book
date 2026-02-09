@@ -97,6 +97,8 @@ export function ReportProvider({ children }) {
 
   // 防止重复保存到远端
   const isSavingRef = useRef(false);
+  // 未登录且本地有已解锁未同步报告时，toast 只提示一次
+  const hasShownUnsyncedToastRef = useRef(false);
 
   // 对话轮次上报去重：每个 reportId 只上报比已上报轮次更大的轮次
   const lastReportedRoundByReportIdRef = useRef({});
@@ -199,8 +201,17 @@ export function ReportProvider({ children }) {
       }
 
       if (!isLoggedIn()) {
+        const unlockedUnsynced = completedReports.filter(
+          r => r.lock === 0 || r.lock === false
+        );
+        if (unlockedUnsynced.length > 0 && !hasShownUnsyncedToastRef.current) {
+          toastMessage.info('本地有报告尚未同步到账号，登录后将自动保存，否则报告可能丢失', 5000);
+          hasShownUnsyncedToastRef.current = true;
+        }
         return;
       }
+
+      hasShownUnsyncedToastRef.current = false;
 
       console.log('正在同步已完成的报告到远端...', completedReports.length);
       
