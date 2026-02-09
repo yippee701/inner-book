@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo, createContext, useContext } from 'react';
+import { useState, useCallback, useMemo, createContext, useContext, useEffect } from 'react';
+import { setToastRef } from '../utils/toastRef';
 
 // Toast Context
 const ToastContext = createContext(null);
@@ -102,6 +103,11 @@ export function ToastProvider({ children }) {
     msg.error = (text, duration) => addToast(text, 'error', duration);
     return msg;
   }, [addToast]);
+
+  useEffect(() => {
+    setToastRef(message);
+    return () => setToastRef(null);
+  }, [message]);
 
   return (
     <ToastContext.Provider value={{ message, addToast, removeToast }}>

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import cloudbase from "@cloudbase/js-sdk";
 import { isLoggedIn } from '../utils/user';
 import { setCloudbaseApp as setTrackCloudbaseApp } from '../utils/track';
+import { setAuthRef } from '../utils/authRef';
 
 const CloudbaseContext = createContext(null);
 
@@ -28,6 +29,7 @@ export function CloudbaseProvider({ children }) {
     // 获取 auth 实例
     const authInstance = cloudApp.auth();
     setAuth(authInstance);
+    setAuthRef(authInstance);
 
     // 获取 mongo db 实例
     const dbInstance = cloudApp.database();

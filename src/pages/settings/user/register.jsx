@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../contexts/cloudbaseContext';
 import { useToast } from '../../../components/Toast';
 import { trackVisitEvent } from '../../../utils/track';
+import { BackToHomeButton } from '../../../components/BackToHomeButton';
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -262,16 +263,18 @@ export default function RegisterPage() {
     <div className="h-screen-safe w-full bg-white relative flex flex-col">
       <BackgroundDecoration />
       
-      {/* 顶部返回 */}
-      <header className="flex-shrink-0 relative z-10 h-12 flex items-center px-4">
-        <Link 
-          to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
+      {/* 顶部：左侧返回登录，右侧返回首页 */}
+      <header className="flex-shrink-0 relative z-10 h-12 flex items-center justify-between px-4">
+        <Link
+          to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'}
           className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+          title="返回登录"
         >
           <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
+        <BackToHomeButton />
       </header>
       
       {/* 主内容 - 可滚动 */}

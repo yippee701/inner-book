@@ -7,6 +7,7 @@
 // Mock 数据导入 - 删除 mock 功能时，删除此行和 mockData.js 文件
 import { mockSendMessage } from './mockData';
 import { getCurrentUserToken } from '../utils/user';
+import { request } from '../utils/request';
 
 // 聊天模式
 export const CHAT_MODES = {
@@ -46,7 +47,7 @@ const DIRECT_CONFIG = {
 export function chatWarmup() {
   const token = getCurrentUserToken();
 
-  return fetch('https://inner-book.top/chat/health', { 
+  return request('https://inner-book.top/chat/health', {
     method: 'GET',
     mode: 'cors',
     headers: {
@@ -78,7 +79,7 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 
 async function sendMessageViaProxy(messages, onStream = null, mode) {
   const token = getCurrentUserToken();
-  const response = await fetch(`https://inner-book.top/chat`, {
+  const response = await request(`https://inner-book.top/chat`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -216,7 +217,7 @@ export async function sendMessageWithTypewriter(messages, onUpdate, typingSpeed 
   try {
     let content;
 
-    const response = await fetch(`${PROXY_CONFIG.serverUrl}/chat`, {
+    const response = await request(`${PROXY_CONFIG.serverUrl}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -224,7 +225,7 @@ export async function sendMessageWithTypewriter(messages, onUpdate, typingSpeed 
         stream: false,
       }),
     });
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.detail || `API 请求失败: ${response.status}`);

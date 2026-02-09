@@ -3,6 +3,7 @@
  */
 
 import { getCurrentUsername } from '../utils/user';
+import { request } from '../utils/request';
 import { REPORT_STATUS } from '../constants/reportStatus';
 
 // 是否使用 Mock 数据
@@ -60,7 +61,7 @@ async function mockRestartConversation(_conversationId) {
  * 真实 API: 重新开启对话
  */
 async function fetchRestartConversation(conversationId) {
-  const response = await fetch(`${API_BASE_URL}/api/conversations/${conversationId}/restart`, {
+  const response = await request(`${API_BASE_URL}/api/conversations/${conversationId}/restart`, {
     method: 'POST',
   });
   if (!response.ok) throw new Error('重新开启对话失败');
