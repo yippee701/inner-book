@@ -25,10 +25,10 @@ const reportRender = content => {
 // 动态省略号组件
 function AnimatedDots() {
   const [dots, setDots] = useState('');
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.');
+      setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
     }, 400);
     return () => clearInterval(interval);
   }, []);
@@ -36,16 +36,32 @@ function AnimatedDots() {
   return <span className="inline-block w-4 text-left">{dots}</span>;
 }
 
-const loadingRender = () => {
+const STEP_DURATION_MS = 3000;
+const STEPS_DEFAULT = ['Dora 正在思考', 'Dora 正在记笔记', 'Dora 正在组织语言'];
+const STEPS_FIRST_ROUND = ['初次沟通，Dora 正在为您开启档案', ...STEPS_DEFAULT];
+
+function LoadingSteps({ isFirstRound }) {
+  const steps = isFirstRound ? STEPS_FIRST_ROUND : STEPS_DEFAULT;
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setStepIndex(prev => (prev + 1) % steps.length);
+    }, STEP_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [stepIndex, steps.length]);
+
+  const text = steps[stepIndex];
   return (
     <div className="flex items-center">
-      <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse mr-2"></div>
+      <div className="mr-2 h-3 w-3 rounded-full bg-purple-400 animate-pulse" />
       <p style={{ color: '#6B7280' }}>
-        Dora 正在思考<AnimatedDots />
+        {text}
+        <AnimatedDots />
       </p>
     </div>
   );
-};
+}
 
 // AI 消息样式配置
 const aiBubbleBaseProps = {
@@ -265,7 +281,7 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
             typing={{ effect: 'typing', step: 2, interval: 30 }}
             onTyping={throttledScroll}
             contentRender={reportRender}
-            loadingRender={loadingRender}
+            loadingRender={() => <LoadingSteps isFirstRound={userMessageCount === 1} />}
             {...aiBubbleBaseProps}
           />
         );
