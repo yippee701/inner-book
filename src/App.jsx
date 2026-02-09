@@ -14,11 +14,13 @@ import { ToastProvider } from './components/Toast'
 import { ReportProvider } from './contexts/ReportContext'
 import { CloudbaseProvider } from './contexts/cloudbaseContext'
 import { trackVisitEvent } from './utils/track'
+import { chatWarmup } from './api/chat'
 import './index.css'
 
-/** 进入应用时上报一次全局访问 */
+/** 进入应用时上报一次全局访问，并请求聊天预热接口 */
 function VisitAppTracker({ children }) {
   useEffect(() => {
+    chatWarmup().catch(() => {})
     trackVisitEvent('visit_app')
   }, [])
   return children

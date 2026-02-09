@@ -39,6 +39,24 @@ const DIRECT_CONFIG = {
   maxTokens: parseInt(import.meta.env.VITE_MAX_TOKENS),
 };
 
+/**
+ * 聊天预热：请求聊天服务健康检查接口，用于冷启动预热
+ * @returns {Promise<void>}
+ */
+export function chatWarmup() {
+  const token = getCurrentUserToken();
+
+  return fetch('https://inner-book.top/chat/health', { 
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    credentials: 'include',
+  }).then(() => {});
+}
+
 // ========== 工具函数 ==========
 
 /**
@@ -60,7 +78,7 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 
 async function sendMessageViaProxy(messages, onStream = null, mode) {
   const token = getCurrentUserToken();
-  const response = await fetch(`https://inner-book-server-220939-8-1251129499.sh.run.tcloudbase.com/v1/cloudrun/inner-book-server/chat`, {
+  const response = await fetch(`https://inner-book.top/chat`, {
     method: 'POST',
     mode: 'cors',
     headers: {
