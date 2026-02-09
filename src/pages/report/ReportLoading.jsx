@@ -158,10 +158,11 @@ export default function ReportLoading() {
   const totalChars = Math.max(REPORT_TOTAL_CHARS, currentChars);
 
   // 报告生成完成后跳转到结果页
-  // TODO 有时序问题
   useEffect(() => {
     if (isComplete && content) {
-      navigate(`/report-result?mode=${mode}&reportId=${currentReportId}`);
+      setTimeout(() => { // 等待 1 秒后跳转，避免有时序问题，后端还没保存好
+        navigate(`/report-result?mode=${mode}&reportId=${currentReportId}`);
+      }, 1000);
     }
   }, [isComplete, content, navigate, mode, currentReportId]);
 
