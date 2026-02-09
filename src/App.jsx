@@ -11,6 +11,7 @@ import ReportLoading from './pages/report/ReportLoading'
 import ReportResult from './pages/report/Result'
 import ShareLanding from './pages/share/shareLanding'
 import { ToastProvider } from './components/Toast'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { ReportProvider } from './contexts/ReportContext'
 import { CloudbaseProvider } from './contexts/cloudbaseContext'
 import { trackVisitEvent } from './utils/track'
@@ -60,12 +61,13 @@ function RedirectToUnlockedReport() {
 function App() {
   return (
     <CloudbaseProvider>
-      <VisitAppTracker>
-        <ToastProvider>
-          <ReportProvider>
-            <Router>
-              <RedirectToUnlockedReport />
-              <Routes>
+      <ErrorBoundary>
+        <VisitAppTracker>
+          <ToastProvider>
+            <ReportProvider>
+              <Router>
+                <RedirectToUnlockedReport />
+                <Routes>
                 <Route path="/" element={<Homepage />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/chat-history" element={<ChatHistory />} />
@@ -75,11 +77,12 @@ function App() {
                 <Route path="/report-loading" element={<ReportLoading />} />
                 <Route path="/report-result" element={<ReportResult />} />
                 <Route path="/share" element={<ShareLanding />} />
-              </Routes>
-            </Router>
-          </ReportProvider>
-        </ToastProvider>
-      </VisitAppTracker>
+                </Routes>
+              </Router>
+            </ReportProvider>
+          </ToastProvider>
+        </VisitAppTracker>
+      </ErrorBoundary>
     </CloudbaseProvider>
   )
 }
