@@ -15,6 +15,7 @@ import { useStayTime } from '../../hooks/useStayTime';
 import { getWelcomeMessage } from '../../constants/welcome-message';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { trackClickEvent } from '../../utils/track';
+import { startChatPrefetch, getChatPrefetchResult, clearChatPrefetch } from '../../utils/chatPrefetch';
 
 // 粒子光圈图标组件 - 玻璃态设计
 function ParticleIcon() {
@@ -156,6 +157,13 @@ export default function Chat() {
       setPendingReport(pending);
     }
   }, [chatMode]);
+
+  // 进入 welcome 页面时，预热首轮对话（提前向大模型发消息并缓存响应）
+  useEffect(() => {
+    if (hasStarted) return;
+    startChatPrefetch(chatMode);
+    return () => clearChatPrefetch();
+  }, [chatMode, hasStarted]);
   
   const { 
     startReport, 
@@ -213,8 +221,9 @@ export default function Chat() {
   const aiMessageCount = messages.filter(m => m.role === 'assistant').length;
   const progress = Math.min(aiMessageCount, 10);
 
-  // 恢复上次未完成的对话
+  // 恢复上次未完成的对话（不使用预热缓存）
   const handleResume = useCallback(() => {
+    clearChatPrefetch();
     if (pendingReport) {
       resumeReport(pendingReport);
       restoreMessages(pendingReport.messages);
@@ -230,13 +239,13 @@ export default function Chat() {
   }, [pendingReport, resumeReport, restoreMessages]);
 
   // 开始新对话（放弃上次的）
+  // 先创建报告，再立刻展示用户首句 + loading，由 useChat 内异步用 prefetch 结果或失败时发真实请求
   const handleStartNew = useCallback(async () => {
     setPendingReport(null);
     setHasStarted(true);
-    // 先创建报告记录
     await createReport(chatMode);
-    // 然后发送第一条消息
-    await sendUserMessage('你好，我准备好了，请开始吧。');
+    // 传入 prefetch Promise：进入 message list 后立刻显示「你好，我准备好了，请开始吧」+ loading，不阻塞
+    sendUserMessage('你好，我准备好了，请开始吧。', getChatPrefetchResult(chatMode));
     trackClickEvent('start_new_chat', { mode: chatMode });
   }, [chatMode, createReport, sendUserMessage]);
 

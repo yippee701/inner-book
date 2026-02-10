@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { sendMessage, CHAT_MODES, IS_MOCK_MODE } from '../api/chat';
+import { clearChatPrefetch } from '../utils/chatPrefetch';
 
 // 打字机速度配置（毫秒/字符）
 const TYPEWRITER_SPEED = 15;
@@ -80,7 +81,8 @@ export function useChat(options = {}) {
   }, [clearTypewriterTimer, onReportStart, onReportUpdate]);
 
   // 内部方法：发送消息给大模型（不添加用户消息）
-  const sendMessageInternal = useCallback(async (apiMessages, userMsgId = null) => {
+  // cachedContentOrPromise: 可选。string 用缓存；Promise<string|null> 先展示 loading，resolve 后用缓存或发真实请求；null 发真实请求
+  const sendMessageInternal = useCallback(async (apiMessages, userMsgId = null, cachedContentOrPromise = null) => {
     if (isLoading) return;
 
     setIsLoading(true);
@@ -89,14 +91,12 @@ export function useChat(options = {}) {
     // 重置打字机缓冲区
     bufferRef.current = '';
     displayedRef.current = '';
-    isStreamingRef.current = true;
     clearTypewriterTimer();
 
-    // 添加 AI 消息占位符
+    // 先同步添加 AI 消息占位符，再 resolve 缓存（这样进入 message list 时立刻能看到用户消息 + loading）
     const aiMsgId = Date.now() + 1;
     aiMsgIdRef.current = aiMsgId;
     setMessages(prev => {
-      // 如果提供了 userMsgId，更新该消息的状态为 local
       const updated = userMsgId 
         ? prev.map(msg => msg.id === userMsgId ? { ...msg, status: 'local' } : msg)
         : prev;
@@ -108,37 +108,73 @@ export function useChat(options = {}) {
       }];
     });
 
+    // 若传入的是 Promise（首轮 prefetch），先不阻塞，等 resolve 后再用缓存或发请求
+    const isPromise = typeof cachedContentOrPromise?.then === 'function';
+    let cachedContent = isPromise ? null : (cachedContentOrPromise ?? null);
+    if (isPromise) {
+      try {
+        cachedContent = await cachedContentOrPromise;
+        clearChatPrefetch();
+      } catch {
+        cachedContent = null;
+        clearChatPrefetch();
+      }
+    }
+
+    isStreamingRef.current = !cachedContent;
+
     try {
 
       // 判断是否使用打字机缓冲（mock 模式已有打字机效果，不需要缓冲）
       const useTypewriterBuffer = !IS_MOCK_MODE;
 
-      // 调用 sendMessage，使用流式回调更新内容，传递聊天模式
-      await sendMessage(apiMessages, (streamContent) => {
+      if (cachedContent) {
+        // 使用预热缓存的响应内容
         if (useTypewriterBuffer) {
-          // 真实 API：将内容放入缓冲区，启动打字机
-          bufferRef.current = streamContent;
+          bufferRef.current = cachedContent;
           startTypewriter();
         } else {
-          // Mock 模式：直接更新（mock 已有打字机效果）
-          // 检测是否是报告开始（[Report] 可能出现在开头或中间）
-          if (!reportStartedRef.current && streamContent.includes('[Report]')) {
+          if (!reportStartedRef.current && cachedContent.includes('[Report]')) {
             reportStartedRef.current = true;
             onReportStart?.();
           }
-
-          // 如果是报告，调用报告更新回调
           if (reportStartedRef.current) {
-            onReportUpdate?.(streamContent);
+            onReportUpdate?.(cachedContent);
           }
-
-          setMessages(prev => prev.map(msg => 
-            msg.id === aiMsgId 
-              ? { ...msg, content: streamContent, status: 'loading' }
+          setMessages(prev => prev.map(msg =>
+            msg.id === aiMsgId
+              ? { ...msg, content: cachedContent, status: 'loading' }
               : msg
           ));
         }
-      }, mode);
+      } else {
+        // 调用 sendMessage，使用流式回调更新内容，传递聊天模式
+        await sendMessage(apiMessages, (streamContent) => {
+          if (useTypewriterBuffer) {
+            // 真实 API：将内容放入缓冲区，启动打字机
+            bufferRef.current = streamContent;
+            startTypewriter();
+          } else {
+            // Mock 模式：直接更新（mock 已有打字机效果）
+            // 检测是否是报告开始（[Report] 可能出现在开头或中间）
+            if (!reportStartedRef.current && streamContent.includes('[Report]')) {
+              reportStartedRef.current = true;
+              onReportStart?.();
+            }
+
+            // 如果是报告，调用报告更新回调
+            if (reportStartedRef.current) {
+              onReportUpdate?.(streamContent);
+            }
+
+            setMessages(prev => prev.map(msg => 
+              msg.id === aiMsgId 
+                ? { ...msg, content: streamContent, status: 'loading' }
+                : msg
+            ));
+          }
+        }, mode);
+      }
 
       // 标记流式输出结束
       isStreamingRef.current = false;
@@ -189,7 +225,8 @@ export function useChat(options = {}) {
   }, [isLoading, mode, onReportStart, onReportUpdate, onReportComplete, clearTypewriterTimer, startTypewriter]);
 
   // 发送消息给大模型
-  const sendUserMessage = useCallback(async (userMessage) => {
+  // cachedResponse: 可选，预热缓存的 AI 回复内容；传入时跳过 API 调用
+  const sendUserMessage = useCallback(async (userMessage, cachedResponse = null) => {
     if (!userMessage.trim() || isLoading) return;
 
     // 添加用户消息
@@ -212,7 +249,7 @@ export function useChat(options = {}) {
       content: msg.content
     }));
 
-    await sendMessageInternal(apiMessages, newUserMsg.id);
+    await sendMessageInternal(apiMessages, newUserMsg.id, cachedResponse);
   }, [messages, isLoading, sendMessageInternal, onUserMessageSent]);
 
   // 清空消息

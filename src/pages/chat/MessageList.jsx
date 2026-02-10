@@ -38,7 +38,7 @@ function AnimatedDots() {
 
 const STEP_DURATION_MS = 3000;
 const STEPS_DEFAULT = ['Dora 正在思考', 'Dora 正在记笔记', 'Dora 正在组织语言'];
-const STEPS_FIRST_ROUND = ['初次沟通，Dora 正在为您开启档案', ...STEPS_DEFAULT];
+const STEPS_FIRST_ROUND = ['初次沟通，Dora 正在为您开启档案', 'Dora 正在思考', 'Dora 正在组织语言'];
 
 function LoadingSteps({ isFirstRound }) {
   const steps = isFirstRound ? STEPS_FIRST_ROUND : STEPS_DEFAULT;
