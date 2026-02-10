@@ -201,7 +201,7 @@ export default function ReportLoading() {
             fontWeight: 500,
           }}
         >
-          Dora 正在解析你的内心档案<LoadingDots />
+          {mode === 'understand-others' ? 'Dora正在分析TA的人格档案' : 'Dora 正在解析你的内心档案'}<LoadingDots />
         </p>
         <p className="mt-3 text-sm text-gray-400">
           请稍候，这需要一些时间...
