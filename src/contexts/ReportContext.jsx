@@ -132,8 +132,6 @@ export function ReportProvider({ children }) {
       status: status,
       mode: report.mode,
       reportId: reportId,
-      lock: lock,
-      createdAt: +new Date(),
     };
     if (saveUserInfo && username) insertData.username = username;
     // if (saveUserInfo && openId) insertData._openid = openId;
@@ -171,10 +169,13 @@ export function ReportProvider({ children }) {
         };
 
         if (exists) {
+          insertData.updatedAt = +new Date();
           db.collection('report').where({ reportId }).update(insertData, (res2, data2) => {
             onDone(res2, data2, '更新');
           });
         } else {
+          insertData.lock = true;
+          insertData.createdAt = +new Date();
           db.collection('report').add(insertData, (res2, data2) => {
             onDone(res2, data2, '保存');
           });
