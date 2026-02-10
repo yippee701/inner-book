@@ -155,6 +155,7 @@ export async function saveMessages(db, reportId, messages) {
   return new Promise((resolve, reject) => db.collection('message').add({
     reportId,
     messages,
+    createdAt: +new Date(),
   }, (res, data) => {
     if(res !== 0 || !data) {
       reject(new Error('保存对话记录失败'));

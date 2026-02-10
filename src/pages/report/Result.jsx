@@ -15,6 +15,7 @@ import { BackgroundBlobs } from '../../components/reportBackground';
 import ReportContentCard from '../../components/ReportContentCard';
 import { getCurrentUsername } from '../../utils/user';
 import { trackVisitEvent } from '../../utils/track';
+import { BackToHomeButton } from '../../components/BackToHomeButton';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
@@ -81,7 +82,9 @@ export default function Result() {
   const [isShareImageOpen, setIsShareImageOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [isLoadingReport, setIsLoadingReport] = useState(true);
-  
+  /** 加载失败时的错误信息，有值时展示错误页（含返回首页按钮） */
+  const [loadError, setLoadError] = useState(null);
+
   // 对话框状态
   const [showInviteCodeDialog, setShowInviteCodeDialog] = useState(false);
   const [showInviteLoginDialog, setShowInviteLoginDialog] = useState(false);
@@ -245,18 +248,18 @@ export default function Result() {
     }
 
     if (!reportId) {
-      message.warning('报告 ID 不存在，无法查看');
-      navigate('/');
+      setLoadError('报告 ID 不存在，无法查看');
+      setIsLoadingReport(false);
       return;
     }
 
     const loadReport = async () => {
       setIsLoadingReport(true);
+      setLoadError(null);
       try {
         const reportDetail = await getReportDetail(reportId);
         if (!reportDetail) {
-          message.warning('报告内容不存在');
-          navigate('/');
+          setLoadError('报告内容不存在');
           return;
         }
         // 从数据库获取的 content 已经移除了 h1 标题，直接使用
@@ -268,14 +271,34 @@ export default function Result() {
         }
       } catch (err) {
         console.error('加载报告失败:', err);
-        message.error('加载报告失败，请稍后重试');
+        setLoadError('加载报告失败，请稍后重试');
       } finally {
         setIsLoadingReport(false);
       }
     };
 
     loadReport();
-  }, [navigate, getReportDetail, message, db, content, subTitle]);
+  }, [getReportDetail, db, content, subTitle]);
+
+  // 加载失败：展示错误页，支持点击返回首页
+  if (loadError) {
+    return (
+      <div className="h-screen-safe w-full bg-white flex flex-col">
+        <header className="flex-shrink-0 flex items-center justify-end px-4 py-3 relative z-10">
+          <BackToHomeButton />
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <p className="text-center text-gray-600 mb-6">{loadError}</p>
+          <Link
+            to="/"
+            className="rounded-lg bg-stone-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-stone-700"
+          >
+            返回首页
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // 没有内容时显示加载
   if (isLoadingReport || !displayContent) {
