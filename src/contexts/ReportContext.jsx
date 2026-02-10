@@ -32,7 +32,9 @@ import { trackVisitEvent, trackConversationRound } from '../utils/track';
 
 4. 登录后自动同步
    └─ syncLocalReportsToRemote()
-       ├─ 只同步 status === 'completed' 的报告 (包含 messages)，保存 username 和 _openid
+       ├─ 场景 A: remoteSynced=false（真未同步到远端），无论是否登录都重新完整同步
+       ├─ 场景 B: remoteSynced=true & userBound=false（已同步但未绑定用户），登录后仅 update userInfo
+       ├─ 已登录且 remoteSynced=true & userBound=true 的 completed 报告从本地移除
        └─ 保留 status === 'pending' 的报告在本地
 
 5. 报告详情页
@@ -109,6 +111,41 @@ export function ReportProvider({ children }) {
     reportStateRef.current = reportState;
   }, [reportState]);
 
+  // 保存报告到本地 localStorage（写入前按 LRU 裁剪）
+  const saveReportToLocal = useCallback((report) => {
+    try {
+      const existingReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+      const index = existingReports.findIndex(r => r.reportId === report.reportId);
+      if (index >= 0) {
+        existingReports[index] = report;
+      } else {
+        existingReports.push(report);
+      }
+      const trimmed = trimLocalReports(existingReports);
+      localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
+      console.log('报告已保存到本地:', report.title);
+    } catch (err) {
+      console.error('保存到本地失败:', err);
+    }
+  }, []);
+
+  // 更新本地报告（写入前按 LRU 裁剪）
+  const updateLocalReport = useCallback((reportId, updates) => {
+    try {
+      const existingReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+      const index = existingReports.findIndex(r => r.reportId === reportId);
+      if (index >= 0) {
+        existingReports[index] = { ...existingReports[index], ...updates };
+        const trimmed = trimLocalReports(existingReports);
+        localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
+      } else {
+        console.warn('未找到本地报告:', reportId);
+      }
+    } catch (err) {
+      console.error('更新本地报告失败:', err);
+    }
+  }, []);
+
   // 保存报告到远端：先查询，没有则 add，有则 update
   const saveReportToRemote = useCallback((report, options = {}) => {
     if (!db) {
@@ -164,7 +201,7 @@ export function ReportProvider({ children }) {
             reject(new Error(data2?.message || `报告${action}失败`));
             return;
           }
-          console.log(`报告${action}到远端成功`, 'status:', status, 'lock:', lock);
+          console.log(`报告${action}到远端成功`);
           finish(resolve, reject);
         };
 
@@ -177,60 +214,90 @@ export function ReportProvider({ children }) {
           insertData.lock = true;
           insertData.createdAt = +new Date();
           db.collection('report').add(insertData, (res2, data2) => {
-            onDone(res2, data2, '保存');
+            onDone(res2, data2, '新增');
           });
         }
       });
     });
   }, [db, auth]);
 
-  // 同步本地报告到远端（只同步已完成的报告，pending 状态的保留在本地）
-  // TODO： 确认，仅当所有 completed 报告都同步成功后才会用 trimmed 覆盖本地；任一次 saveReportToRemote 失败会进 catch，不写 localStorage，本地数据不删
+  // 同步本地报告到远端
+  // 区分两种情况：
+  //   A. remoteSynced=false：从未同步到远端（如请求失败），无论是否登录都重新完整同步
+  //   B. remoteSynced=true & userBound=false：已同步到远端但未绑定用户信息，登录后仅 update userInfo
   const syncLocalReportsToRemote = useCallback(async () => {
     try {
-      const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+      let localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
       if (localReports.length === 0) return;
-      
-      // 区分已完成和未完成的报告
-      const completedReports = localReports.filter(r => r.status === 'completed' && !r.synced);
-      const pendingReports = localReports.filter(r => r.status !== 'completed' || r.synced);
 
-      if (completedReports.length === 0) {
-        console.log('没有需要同步的已完成报告');
-        return;
+      const completedReports = localReports.filter(r => r.status === 'completed');
+      if (completedReports.length === 0) return;
+
+      // ---- A. 从未同步到远端的报告：无论登录与否，重新完整同步（兼容旧字段 synced） ----
+      const neverSynced = completedReports.filter(
+        r => r.remoteSynced === false || r.synced === false
+      );
+      for (const report of neverSynced) {
+        try {
+          const loggedIn = isLoggedIn();
+          await saveReportToRemote(report, {
+            status: REPORT_STATUS.COMPLETED,
+            saveUserInfo: loggedIn,
+          });
+          updateLocalReport(report.reportId, {
+            remoteSynced: true,
+            userBound: loggedIn,
+          });
+          console.log('[Sync-A] 重新同步成功:', report.title);
+        } catch (err) {
+          console.error('[Sync-A] 重新同步失败，保留本地:', report.title, err);
+        }
       }
 
-      if (!isLoggedIn()) {
-        const unlockedUnsynced = completedReports.filter(
-          r => r.lock === 0 || r.lock === false
-        );
-        if (unlockedUnsynced.length > 0 && !hasShownUnsyncedToastRef.current) {
-          toastMessage.info('本地有报告尚未同步到账号，登录后将自动保存，否则报告可能丢失', 5000);
+      // ---- B. 已同步到远端但未绑定用户的报告：需要登录后 update userInfo ----
+      const syncedButUnbound = completedReports.filter(r => r.remoteSynced === true && r.userBound === false);
+
+      if (syncedButUnbound.length > 0 && !isLoggedIn()) {
+        if (!hasShownUnsyncedToastRef.current) {
+          toastMessage.info('您有报告尚未绑定账号，登录后将自动关联', 5000);
           hasShownUnsyncedToastRef.current = true;
         }
         return;
       }
 
-      hasShownUnsyncedToastRef.current = false;
-
-      console.log('正在同步已完成的报告到远端...', completedReports.length);
-      
-      for (const report of completedReports) {
-        await saveReportToRemote(report, {
-          status: REPORT_STATUS.COMPLETED,
-          saveUserInfo: true, // 登录后同步，保存 username 和 _openid
-        });
-        console.log('已同步报告:', report.title, '消息数:', report.messages?.length || 0);
+      if (syncedButUnbound.length > 0 && isLoggedIn()) {
+        hasShownUnsyncedToastRef.current = false;
+        for (const report of syncedButUnbound) {
+          try {
+            await saveReportToRemote(report, {
+              status: REPORT_STATUS.COMPLETED,
+              saveUserInfo: true,
+            });
+            console.log('[Sync-B] 绑定用户信息成功:', report.title);
+          } catch (err) {
+            console.error('[Sync-B] 绑定用户信息失败:', report.title, err);
+          }
+        }
       }
-      
-      // 只保留未完成的报告在本地（按 LRU 裁剪）
-      const trimmed = trimLocalReports(pendingReports);
-      localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
-      console.log('已完成报告同步完成，本地保留未完成报告数:', trimmed.length);
+
+      // ---- 清理：已登录 & 同步+绑定均完成的报告从本地移除 ----
+      if (isLoggedIn()) {
+        // 重新读取本地最新状态（上面可能已 updateLocalReport）
+        localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
+        const remaining = localReports.filter(r => {
+          if (r.status === 'completed' && r.remoteSynced === true && r.userBound === true) {
+            return false; // 移除
+          }
+          return true;
+        });
+        const trimmed = trimLocalReports(remaining);
+        localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
+        console.log('同步完成，本地保留报告数:', trimmed.length);
+      }
     } catch (err) {
       console.error('同步本地报告失败:', err);
     }
-  }, [saveReportToRemote, toastMessage]);
+  }, [saveReportToRemote, updateLocalReport, toastMessage]);
     
   // 检查登录状态并同步报告（供登录/注册成功后调用）
   const checkLoginAndSync = useCallback(async () => {
@@ -241,41 +308,6 @@ export function ReportProvider({ children }) {
       await syncLocalReportsToRemote();
     }
   }, [syncLocalReportsToRemote]);
-
-  // 保存报告到本地 localStorage（写入前按 LRU 裁剪）
-  const saveReportToLocal = useCallback((report) => {
-    try {
-      const existingReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
-      const index = existingReports.findIndex(r => r.reportId === report.reportId);
-      if (index >= 0) {
-        existingReports[index] = report;
-      } else {
-        existingReports.push(report);
-      }
-      const trimmed = trimLocalReports(existingReports);
-      localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
-      console.log('报告已保存到本地:', report.title);
-    } catch (err) {
-      console.error('保存到本地失败:', err);
-    }
-  }, []);
-
-  // 更新本地报告（写入前按 LRU 裁剪）
-  const updateLocalReport = useCallback((reportId, updates) => {
-    try {
-      const existingReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
-      const index = existingReports.findIndex(r => r.reportId === reportId);
-      if (index >= 0) {
-        existingReports[index] = { ...existingReports[index], ...updates };
-        const trimmed = trimLocalReports(existingReports);
-        localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(trimmed));
-      } else {
-        console.warn('未找到本地报告:', reportId);
-      }
-    } catch (err) {
-      console.error('更新本地报告失败:', err);
-    }
-  }, []);
 
   // 登录后自动同步本地报告
   useEffect(() => {
@@ -298,7 +330,8 @@ export function ReportProvider({ children }) {
       status: 'pending',
       mode,
       createdAt: new Date().toISOString(),
-      synced: false,
+      remoteSynced: false, // 是否已同步到远端
+      userBound: false,    // 是否已绑定用户信息（username/_openid）
       lock: true,
     };
 
@@ -324,13 +357,19 @@ export function ReportProvider({ children }) {
         status: REPORT_STATUS.PENDING,
         saveUserInfo: loggedIn, // 如果已登录，保存 username 和 _openid
       });
+      // 同步成功后更新本地标记
+      updateLocalReport(reportId, {
+        remoteSynced: true,
+        userBound: loggedIn,
+      });
       console.log('报告已同步到远端 (pending, lock=1)');
     } catch (err) {
       console.error('同步报告到远端失败，保留本地记录:', err);
+      // remoteSynced 保持 false，后续可重试
     }
 
     return reportId;
-  }, [saveReportToLocal, saveReportToRemote]);
+  }, [saveReportToLocal, saveReportToRemote, updateLocalReport]);
 
   // 开始生成报告（跳转到 loading 页面时）
   const startReport = useCallback(() => {
@@ -477,12 +516,19 @@ export function ReportProvider({ children }) {
             saveUserInfo: loggedIn, // 如果已登录，保存 username 和 _openid
           });
           
-          // 同步成功后，如果已登录，则从本地删除这条记录，如果未登录则暂时保存在本地
+          // 同步成功后更新本地标记
           if(loggedIn) {
+            // 已登录：同步成功后从本地删除
             const updatedReports = trimLocalReports(localReports.filter(r => r.reportId !== reportId));
             localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(updatedReports));
+          } else {
+            // 未登录：标记已同步到远端但未绑定用户
+            updateLocalReport(reportId, {
+              remoteSynced: true,
+              userBound: false,
+            });
           }
-          console.log('报告已同步到远端 (completed, lock=1)');
+          console.log('报告已同步到远端 (completed)');
           trackVisitEvent('complete_report_expose');
 
           // 提示输入邀请码（通过回调通知 Result.jsx）
