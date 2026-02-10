@@ -269,7 +269,6 @@ export default function Result() {
       } catch (err) {
         console.error('加载报告失败:', err);
         message.error('加载报告失败，请稍后重试');
-        navigate('/');
       } finally {
         setIsLoadingReport(false);
       }
