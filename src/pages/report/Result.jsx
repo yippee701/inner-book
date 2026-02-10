@@ -15,7 +15,6 @@ import { BackgroundBlobs } from '../../components/reportBackground';
 import ReportContentCard from '../../components/ReportContentCard';
 import { getCurrentUsername } from '../../utils/user';
 import { trackVisitEvent } from '../../utils/track';
-import { BackToHomeButton } from '../../components/BackToHomeButton';
 /**
  * 底部转化区组件 - 分享报告长图（主）+ 分享链接（次），并排展示，强化长图、弱化链接
  */
@@ -280,17 +279,22 @@ export default function Result() {
     loadReport();
   }, [getReportDetail, db, content, subTitle]);
 
-  // 加载失败：展示错误页，支持点击返回首页
+  // 加载失败：展示错误页，支持点击返回首页（带标识，避免首页再次自动跳回报告页）
+  const homeUrlWithFlag = { pathname: '/', search: '?fromReportError=1' };
   if (loadError) {
     return (
       <div className="h-screen-safe w-full bg-white flex flex-col">
         <header className="flex-shrink-0 flex items-center justify-end px-4 py-3 relative z-10">
-          <BackToHomeButton />
+          <Link to={homeUrlWithFlag} className="p-2 rounded-full transition-colors hover:bg-white/50" title="返回首页">
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <p className="text-center text-gray-600 mb-6">{loadError}</p>
           <Link
-            to="/"
+            to={homeUrlWithFlag}
             className="rounded-lg bg-stone-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-stone-700"
           >
             返回首页

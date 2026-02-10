@@ -37,6 +37,9 @@ function RedirectToUnlockedReport() {
 
   useEffect(() => {
     if (isLoggedIn()) return
+    // 从报告错误页点击返回首页时带 fromReportError=1，不再自动跳回报告页
+    const search = new URLSearchParams(location.search || '')
+    if (search.get('fromReportError') === '1') return
     // 仅在首页或 chat 页才跳转到未解锁报告页
     const path = location.pathname || '/'
     if (path !== '/' && path !== '/chat') return
@@ -53,7 +56,7 @@ function RedirectToUnlockedReport() {
     } catch {
       // ignore
     }
-  }, [navigate, location.pathname])
+  }, [navigate, location.pathname, location.search])
 
   return null
 }

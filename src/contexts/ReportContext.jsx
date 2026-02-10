@@ -184,8 +184,8 @@ export function ReportProvider({ children }) {
   }, [db, auth]);
 
   // 同步本地报告到远端（只同步已完成的报告，pending 状态的保留在本地）
+  // TODO： 确认，仅当所有 completed 报告都同步成功后才会用 trimmed 覆盖本地；任一次 saveReportToRemote 失败会进 catch，不写 localStorage，本地数据不删
   const syncLocalReportsToRemote = useCallback(async () => {
-    // TODO: 如果同步失败，是否会删除本地数据？是否要改成同步成功后才删除本地记录
     try {
       const localReports = JSON.parse(localStorage.getItem(LOCAL_REPORTS_KEY) || '[]');
       if (localReports.length === 0) return;
