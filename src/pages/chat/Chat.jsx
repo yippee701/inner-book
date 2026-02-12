@@ -173,6 +173,7 @@ export default function Chat() {
     updateMessages,
     resumeReport,
     getDiscoverSelfFirst3Answers,
+    setReportError,
   } = useReport();
 
   // discover-self 模式下用于推荐的前三轮答案（每次渲染从 localStorage 读取，保证推荐为最新）
@@ -195,6 +196,10 @@ export default function Chat() {
     completeReport();
   }, [completeReport]);
 
+  const handleReportError = useCallback((error) => {
+    setReportError(error?.message || '报告生成失败');
+  }, [setReportError]);
+
   const handleUserMessageSent = useCallback((msgs) => {
     updateMessages(msgs);
   }, [updateMessages]);
@@ -204,6 +209,7 @@ export default function Chat() {
     onReportStart: handleReportStart,
     onReportUpdate: handleReportUpdate,
     onReportComplete: handleReportComplete,
+    onReportError: handleReportError,
     onUserMessageSent: handleUserMessageSent,
   });
 

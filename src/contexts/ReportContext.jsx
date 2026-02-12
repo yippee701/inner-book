@@ -4,6 +4,7 @@ import { generateReportTitle, extractReportSubTitle, cleanReportContent, generat
 import { useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
 import { REPORT_STATUS } from '../constants/reportStatus';
 import { getReportDetail, verifyInviteCode, saveMessages } from '../api/report';
+import { sendMessage } from '../api/chat';
 import { useToast } from '../components/Toast';
 import { trackVisitEvent, trackConversationRound } from '../utils/track';
 
@@ -91,6 +92,7 @@ export function ReportProvider({ children }) {
     isFromHistory: false, // 是否来自历史报告
     currentReportId: null, // 当前报告的 ID（统一使用 reportId）
     currentMode: null,   // 当前报告的模式
+    reportError: null,   // 报告生成过程中的错误（非 null 时 ReportLoading 显示重试按钮）
   });
   
   // 对话框回调（由 Result.jsx 注册）
@@ -104,6 +106,8 @@ export function ReportProvider({ children }) {
 
   // 对话轮次上报去重：每个 reportId 只上报比已上报轮次更大的轮次
   const lastReportedRoundByReportIdRef = useRef({});
+  // 每个 reportId 只触发一次 start_generate_report_expose 事件
+  const hasTrackedStartReportByReportIdRef = useRef(new Set());
   
   // 追踪最新的状态（解决闭包捕获旧值问题）
   const reportStateRef = useRef(reportState);
@@ -371,14 +375,77 @@ export function ReportProvider({ children }) {
     return reportId;
   }, [saveReportToLocal, saveReportToRemote, updateLocalReport]);
 
+  // 设置报告生成错误状态
+  const setReportError = useCallback((error) => {
+    setReportState(prev => ({ ...prev, reportError: error }));
+  }, []);
+
+  // completeReport ref（因为 retryReport 声明在 completeReport 之前，通过 ref 引用避免声明顺序问题）
+  const completeReportRef = useRef(null);
+
+  // 重试报告生成（由 ReportLoading 调用）
+  // 直接在 ReportContext 中使用存储的 messages 和 mode 重新调用 sendMessage API
+  const retryReport = useCallback(async () => {
+    const currentState = reportStateRef.current;
+    const msgs = currentState.messages;
+    const mode = currentState.currentMode;
+
+    if (!msgs || msgs.length === 0) {
+      console.warn('retryReport: 没有可重试的消息');
+      return;
+    }
+
+    // 清除错误，恢复生成中状态
+    setReportState(prev => ({ ...prev, reportError: null, isGenerating: true, isComplete: false }));
+
+    const apiMessages = msgs.map(m => ({ role: m.role, content: m.content }));
+
+    try {
+      let reportContent = '';
+      await sendMessage(apiMessages, (streamContent) => {
+        // 检测报告内容并实时更新
+        if (streamContent.includes('[Report]')) {
+          reportContent = streamContent;
+          setReportState(prev => ({
+            ...prev,
+            subTitle: extractReportSubTitle(streamContent),
+            content: cleanReportContent(streamContent),
+          }));
+        }
+      }, mode);
+
+      // 流式完成，调用 completeReport
+      if (reportContent) {
+        // 先更新最终内容到 state
+        setReportState(prev => ({
+          ...prev,
+          subTitle: extractReportSubTitle(reportContent),
+          content: cleanReportContent(reportContent),
+        }));
+        // 等 state 更新后再调用 completeReport（使用 setTimeout 确保 ref 已同步）
+        setTimeout(() => {
+          completeReportRef.current?.();
+        }, 100);
+      }
+    } catch (error) {
+      console.error('报告重试失败:', error);
+      setReportState(prev => ({ ...prev, reportError: error?.message || '重试失败，请稍后再试' }));
+    }
+  }, []);
+
   // 开始生成报告（跳转到 loading 页面时）
   const startReport = useCallback(() => {
-    trackVisitEvent('start_generate_report_expose');
+    const reportId = reportStateRef.current?.currentReportId;
+    if (reportId && !hasTrackedStartReportByReportIdRef.current.has(reportId)) {
+      hasTrackedStartReportByReportIdRef.current.add(reportId);
+      trackVisitEvent('start_generate_report_expose');
+    }
     setReportState(prev => ({
       ...prev,
       isGenerating: true,
       isPending: true,
       isComplete: false,
+      reportError: null,
     }));
   }, []);
 
@@ -544,6 +611,11 @@ export function ReportProvider({ children }) {
     }
   }, [saveReportToRemote, updateLocalReport]);
 
+  // 保持 completeReportRef 始终指向最新的 completeReport（供 retryReport 调用）
+  useEffect(() => {
+    completeReportRef.current = completeReport;
+  }, [completeReport]);
+
   const getReportDetailWrapper = useCallback(async (reportId) => {
     if (!reportId) {
       console.warn('reportId 为空，无法获取报告内容');
@@ -648,6 +720,8 @@ export function ReportProvider({ children }) {
       syncLocalReportsToRemote,
       checkLoginAndSync, // 供登录/注册成功后调用
       handleInviteCodeSubmit, // 邀请码验证处理函数
+      setReportError,    // 设置报告生成错误
+      retryReport,       // 重试报告生成
       // 注册对话框显示回调（由 Result.jsx 调用）
       registerInviteCodeDialog: (callback) => {
         onShowInviteCodeDialogRef.current = callback;

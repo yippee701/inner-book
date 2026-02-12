@@ -13,10 +13,11 @@ const TYPEWRITER_SPEED = 15;
  * @param {Function} options.onReportStart - 检测到 [Report] 开头时的回调
  * @param {Function} options.onReportUpdate - 报告内容更新时的回调
  * @param {Function} options.onReportComplete - 报告生成完成时的回调
+ * @param {Function} options.onReportError - 报告生成过程中请求失败时的回调
  * @param {Function} options.onUserMessageSent - 用户发送消息后立即回调（参数为包含新用户消息的 messages，用于实时落库）
  */
 export function useChat(options = {}) {
-  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete, onUserMessageSent } = options;
+  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete, onReportError, onUserMessageSent } = options;
   const [messages, setMessages] = useState(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const reportStartedRef = useRef(false);
@@ -207,22 +208,28 @@ export function useChat(options = {}) {
       console.error('发送消息失败:', error);
       isStreamingRef.current = false;
       clearTypewriterTimer();
-      // 删除 AI 消息占位符，标记用户消息为失败状态
-      setMessages(prev => {
-        const filtered = prev.filter(msg => msg.id !== aiMsgId);
-        if (userMsgId) {
-          return filtered.map(msg => 
-            msg.id === userMsgId 
-              ? { ...msg, status: 'error' }
-              : msg
-          );
-        }
-        return filtered;
-      });
+
+      if (reportStartedRef.current) {
+        // 报告生成过程中失败：通知上层，保留当前消息以便重试
+        onReportError?.(error);
+      } else {
+        // 普通消息失败：删除 AI 消息占位符，标记用户消息为失败状态
+        setMessages(prev => {
+          const filtered = prev.filter(msg => msg.id !== aiMsgId);
+          if (userMsgId) {
+            return filtered.map(msg =>
+              msg.id === userMsgId
+                ? { ...msg, status: 'error' }
+                : msg
+            );
+          }
+          return filtered;
+        });
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, mode, onReportStart, onReportUpdate, onReportComplete, clearTypewriterTimer, startTypewriter]);
+  }, [isLoading, mode, onReportStart, onReportUpdate, onReportComplete, onReportError, clearTypewriterTimer, startTypewriter]);
 
   // 发送消息给大模型
   // cachedResponse: 可选，预热缓存的 AI 回复内容；传入时跳过 API 调用

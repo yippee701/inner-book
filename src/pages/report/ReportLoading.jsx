@@ -148,7 +148,7 @@ export default function ReportLoading() {
   const REPORT_TOTAL_CHARS = 3000;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isComplete, content, currentReportId } = useReport();
+  const { isComplete, content, currentReportId, reportError, retryReport } = useReport();
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
@@ -193,19 +193,42 @@ export default function ReportLoading() {
         {/* 玻璃态球体 */}
         <GlassOrb />
 
-        {/* 加载文字 */}
-        <p 
-          className="mt-16 text-xl tracking-wide text-center"
-          style={{
-            color: '#374151',
-            fontWeight: 500,
-          }}
-        >
-          {mode === 'understand-others' ? 'Dora正在分析TA的人格档案' : 'Dora 正在解析你的内心档案'}<LoadingDots />
-        </p>
-        <p className="mt-3 text-sm text-gray-400">
-          请稍候，这需要一些时间...
-        </p>
+        {/* 加载文字 / 错误提示 */}
+        {reportError ? (
+          <>
+            <p
+              className="mt-16 text-xl tracking-wide text-center"
+              style={{ color: '#374151', fontWeight: 500 }}
+            >
+              报告生成失败
+            </p>
+            <p className="mt-3 text-sm text-gray-400 text-center px-6">
+              {typeof reportError === 'string' ? reportError : '请求出现异常，请重试'}
+            </p>
+            <button
+              onClick={retryReport}
+              className="mt-8 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)' }}
+            >
+              重新生成
+            </button>
+          </>
+        ) : (
+          <>
+            <p 
+              className="mt-16 text-xl tracking-wide text-center"
+              style={{
+                color: '#374151',
+                fontWeight: 500,
+              }}
+            >
+              {mode === 'understand-others' ? 'Dora正在分析TA的人格档案' : 'Dora 正在解析你的内心档案'}<LoadingDots />
+            </p>
+            <p className="mt-3 text-sm text-gray-400">
+              请稍候，这需要一些时间...
+            </p>
+          </>
+        )}
         
         {/* 进度条 */}
         <ProgressBar current={currentChars} total={totalChars} />
