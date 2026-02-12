@@ -37,11 +37,45 @@ function AnimatedDots() {
 }
 
 const STEP_DURATION_MS = 3000;
-const STEPS_DEFAULT = ['Dora 正在思考', 'Dora 正在记笔记', 'Dora 正在组织语言'];
-const STEPS_FIRST_ROUND = ['初次沟通，Dora 正在为您开启档案', 'Dora 正在思考', 'Dora 正在组织语言'];
+
+// 非首轮：从池子里随机抽 3 条，每次加载都不一样
+const STEPS_POOL_DEFAULT = [
+  'Dora 正在思考',
+  'Dora 正在记笔记',
+  'Dora 正在组织语言',
+  'Dora 正在梳理思路',
+  'Dora 正在回忆对话内容',
+  'Dora 正在分析你的回答',
+  'Dora 正在组织表达',
+  'Dora 在脑海里翻资料',
+  'Dora 正在斟酌用词',
+  'Dora 正在整理要点',
+  'Dora 在认真倾听后的回应',
+  'Dora 正在连接你的故事',
+];
+
+// 首轮：从池子里随机抽 3 条
+const STEPS_POOL_FIRST_ROUND = [
+  '初次沟通，Dora 正在为您开启档案',
+  'Dora 正在认识你',
+  'Dora 正在准备第一次对话',
+  'Dora 正在思考',
+  'Dora 正在组织语言',
+  'Dora 正在打开你的专属档案',
+  'Dora 正在准备开场',
+  'Dora 正在为这次对话热身',
+];
+
+/** 从池子里随机取 n 条，不重复 */
+function pickRandomSteps(pool, n = 3) {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(n, pool.length));
+}
 
 function LoadingSteps({ isFirstRound }) {
-  const steps = isFirstRound ? STEPS_FIRST_ROUND : STEPS_DEFAULT;
+  const [steps] = useState(() =>
+    isFirstRound ? pickRandomSteps(STEPS_POOL_FIRST_ROUND, 3) : pickRandomSteps(STEPS_POOL_DEFAULT, 3)
+  );
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
