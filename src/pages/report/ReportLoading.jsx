@@ -161,7 +161,8 @@ export default function ReportLoading() {
   useEffect(() => {
     if (isComplete && content) {
       setTimeout(() => { // 等待 1 秒后跳转，避免有时序问题，后端还没保存好
-        navigate(`/report-result?mode=${mode}&reportId=${currentReportId}`);
+        // 使用 replace 进行跳转，避免历史记录中多了一步
+        navigate(`/report-result?mode=${mode}&reportId=${currentReportId}`, { replace: true });
       }, 1000);
     }
   }, [isComplete, content, navigate, mode, currentReportId]);
