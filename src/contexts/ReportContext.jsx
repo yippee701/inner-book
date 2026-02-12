@@ -400,36 +400,56 @@ export function ReportProvider({ children }) {
 
     const apiMessages = msgs.map(m => ({ role: m.role, content: m.content }));
 
-    try {
-      let reportContent = '';
-      await sendMessage(apiMessages, (streamContent) => {
-        // 检测报告内容并实时更新
-        if (streamContent.includes('[Report]')) {
-          reportContent = streamContent;
+    // 自动重试：首次失败后静默重试一次，全部失败再展示错误
+    const MAX_AUTO_RETRIES = 1;
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= MAX_AUTO_RETRIES; attempt++) {
+      if (attempt > 0) {
+        console.warn(`报告重试失败，正在自动重试 (${attempt}/${MAX_AUTO_RETRIES})...`);
+      }
+
+      try {
+        let reportContent = '';
+        await sendMessage(apiMessages, (streamContent) => {
+          // 检测报告内容并实时更新
+          if (streamContent.includes('[Report]')) {
+            reportContent = streamContent;
+            setReportState(prev => ({
+              ...prev,
+              subTitle: extractReportSubTitle(streamContent),
+              content: cleanReportContent(streamContent),
+            }));
+          }
+        }, mode);
+
+        // 流式完成，调用 completeReport
+        if (reportContent) {
           setReportState(prev => ({
             ...prev,
-            subTitle: extractReportSubTitle(streamContent),
-            content: cleanReportContent(streamContent),
+            subTitle: extractReportSubTitle(reportContent),
+            content: cleanReportContent(reportContent),
           }));
+          setTimeout(() => {
+            completeReportRef.current?.();
+          }, 100);
         }
-      }, mode);
 
-      // 流式完成，调用 completeReport
-      if (reportContent) {
-        // 先更新最终内容到 state
-        setReportState(prev => ({
-          ...prev,
-          subTitle: extractReportSubTitle(reportContent),
-          content: cleanReportContent(reportContent),
-        }));
-        // 等 state 更新后再调用 completeReport（使用 setTimeout 确保 ref 已同步）
-        setTimeout(() => {
-          completeReportRef.current?.();
-        }, 100);
+        lastError = null;
+        break; // 成功，跳出重试循环
+      } catch (error) {
+        lastError = error;
+        console.error(`报告重试失败 (第${attempt + 1}次):`, error);
+        // 如果还有重试机会，重置内容状态后继续
+        if (attempt < MAX_AUTO_RETRIES) {
+          setReportState(prev => ({ ...prev, content: '', subTitle: '' }));
+        }
       }
-    } catch (error) {
-      console.error('报告重试失败:', error);
-      setReportState(prev => ({ ...prev, reportError: error?.message || '重试失败，请稍后再试' }));
+    }
+
+    // 所有重试都失败
+    if (lastError) {
+      setReportState(prev => ({ ...prev, reportError: lastError?.message || '重试失败，请稍后再试' }));
     }
   }, []);
 

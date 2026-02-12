@@ -124,94 +124,115 @@ export function useChat(options = {}) {
 
     isStreamingRef.current = !cachedContent;
 
-    try {
+    // 自动重试：首次失败后静默重试一次，全部失败再走错误逻辑
+    const MAX_AUTO_RETRIES = 1;
+    let lastError = null;
 
-      // 判断是否使用打字机缓冲（mock 模式已有打字机效果，不需要缓冲）
-      const useTypewriterBuffer = !IS_MOCK_MODE;
+    for (let attempt = 0; attempt <= MAX_AUTO_RETRIES; attempt++) {
+      // 重试前重置打字机 & AI 占位符
+      if (attempt > 0) {
+        console.warn(`发送消息失败，正在自动重试 (${attempt}/${MAX_AUTO_RETRIES})...`);
+        bufferRef.current = '';
+        displayedRef.current = '';
+        clearTypewriterTimer();
+        isStreamingRef.current = true;
+        setMessages(prev => prev.map(msg =>
+          msg.id === aiMsgId ? { ...msg, content: '', status: 'loading' } : msg
+        ));
+      }
 
-      if (cachedContent) {
-        // 使用预热缓存的响应内容
-        if (useTypewriterBuffer) {
-          bufferRef.current = cachedContent;
-          startTypewriter();
-        } else {
-          if (!reportStartedRef.current && cachedContent.includes('[Report]')) {
-            reportStartedRef.current = true;
-            onReportStart?.();
-          }
-          if (reportStartedRef.current) {
-            onReportUpdate?.(cachedContent);
-          }
-          setMessages(prev => prev.map(msg =>
-            msg.id === aiMsgId
-              ? { ...msg, content: cachedContent, status: 'loading' }
-              : msg
-          ));
-        }
-      } else {
-        // 调用 sendMessage，使用流式回调更新内容，传递聊天模式
-        await sendMessage(apiMessages, (streamContent) => {
+      try {
+        // 判断是否使用打字机缓冲（mock 模式已有打字机效果，不需要缓冲）
+        const useTypewriterBuffer = !IS_MOCK_MODE;
+
+        if (cachedContent) {
+          // 使用预热缓存的响应内容
           if (useTypewriterBuffer) {
-            // 真实 API：将内容放入缓冲区，启动打字机
-            bufferRef.current = streamContent;
+            bufferRef.current = cachedContent;
             startTypewriter();
           } else {
-            // Mock 模式：直接更新（mock 已有打字机效果）
-            // 检测是否是报告开始（[Report] 可能出现在开头或中间）
-            if (!reportStartedRef.current && streamContent.includes('[Report]')) {
+            if (!reportStartedRef.current && cachedContent.includes('[Report]')) {
               reportStartedRef.current = true;
               onReportStart?.();
             }
-
-            // 如果是报告，调用报告更新回调
             if (reportStartedRef.current) {
-              onReportUpdate?.(streamContent);
+              onReportUpdate?.(cachedContent);
             }
-
-            setMessages(prev => prev.map(msg => 
-              msg.id === aiMsgId 
-                ? { ...msg, content: streamContent, status: 'loading' }
+            setMessages(prev => prev.map(msg =>
+              msg.id === aiMsgId
+                ? { ...msg, content: cachedContent, status: 'loading' }
                 : msg
             ));
           }
-        }, mode);
-      }
-
-      // 标记流式输出结束
-      isStreamingRef.current = false;
-
-      // 如果使用打字机缓冲，等待所有内容显示完成
-      if (useTypewriterBuffer) {
-        await new Promise(resolve => {
-          const checkComplete = setInterval(() => {
-            if (displayedRef.current.length >= bufferRef.current.length) {
-              clearInterval(checkComplete);
-              resolve();
+        } else {
+          // 调用 sendMessage，使用流式回调更新内容，传递聊天模式
+          await sendMessage(apiMessages, (streamContent) => {
+            if (useTypewriterBuffer) {
+              // 真实 API：将内容放入缓冲区，启动打字机
+              bufferRef.current = streamContent;
+              startTypewriter();
+            } else {
+              // Mock 模式：直接更新（mock 已有打字机效果）
+              if (!reportStartedRef.current && streamContent.includes('[Report]')) {
+                reportStartedRef.current = true;
+                onReportStart?.();
+              }
+              if (reportStartedRef.current) {
+                onReportUpdate?.(streamContent);
+              }
+              setMessages(prev => prev.map(msg => 
+                msg.id === aiMsgId 
+                  ? { ...msg, content: streamContent, status: 'loading' }
+                  : msg
+              ));
             }
-          }, 50);
-        });
+          }, mode);
+        }
+
+        // 标记流式输出结束
+        isStreamingRef.current = false;
+
+        // 如果使用打字机缓冲，等待所有内容显示完成
+        if (useTypewriterBuffer) {
+          await new Promise(resolve => {
+            const checkComplete = setInterval(() => {
+              if (displayedRef.current.length >= bufferRef.current.length) {
+                clearInterval(checkComplete);
+                resolve();
+              }
+            }, 50);
+          });
+        }
+
+        // 完成后只更新状态
+        setMessages(prev => prev.map(msg => 
+          msg.id === aiMsgId 
+            ? { ...msg, status: 'success' }
+            : msg
+        ));
+
+        // 如果是报告，调用完成回调
+        if (reportStartedRef.current) {
+          onReportComplete?.();
+        }
+
+        lastError = null;
+        break; // 成功，跳出重试循环
+
+      } catch (error) {
+        lastError = error;
+        console.error(`发送消息失败 (第${attempt + 1}次):`, error);
+        isStreamingRef.current = false;
+        clearTypewriterTimer();
+        // 如果还有重试机会，继续循环
       }
+    }
 
-      // 完成后只更新状态
-      setMessages(prev => prev.map(msg => 
-        msg.id === aiMsgId 
-          ? { ...msg, status: 'success' }
-          : msg
-      ));
-
-      // 如果是报告，调用完成回调
+    // 所有重试都失败
+    if (lastError) {
       if (reportStartedRef.current) {
-        onReportComplete?.();
-      }
-
-    } catch (error) {
-      console.error('发送消息失败:', error);
-      isStreamingRef.current = false;
-      clearTypewriterTimer();
-
-      if (reportStartedRef.current) {
-        // 报告生成过程中失败：通知上层，保留当前消息以便重试
-        onReportError?.(error);
+        // 报告生成过程中失败：通知上层
+        onReportError?.(lastError);
       } else {
         // 普通消息失败：删除 AI 消息占位符，标记用户消息为失败状态
         setMessages(prev => {
@@ -226,9 +247,9 @@ export function useChat(options = {}) {
           return filtered;
         });
       }
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   }, [isLoading, mode, onReportStart, onReportUpdate, onReportComplete, onReportError, clearTypewriterTimer, startTypewriter]);
 
   // 发送消息给大模型
