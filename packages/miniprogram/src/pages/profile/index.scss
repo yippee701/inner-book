@@ -1,0 +1,164 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #fff;
+  position: relative;
+}
+
+/* 背景 */
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.bg-glow-1 {
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 400px;
+  background: rgba(196, 181, 253, 0.12);
+  filter: blur(80px);
+}
+.bg-glow-2 {
+  bottom: 20%;
+  left: 0;
+  width: 300px;
+  height: 300px;
+  background: rgba(221, 214, 254, 0.1);
+  filter: blur(60px);
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 100px 32px 40px;
+  position: relative;
+  z-index: 10;
+}
+.profile-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-avatar-icon { font-size: 36px; }
+.profile-username {
+  font-size: 40px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.profile-login-btn {
+  padding: 16px 32px;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.1);
+}
+.profile-login-text {
+  font-size: 30px;
+  color: #8b5cf6;
+  font-weight: 500;
+}
+.profile-header-home {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.profile-home-icon { font-size: 36px; }
+
+/* Content */
+.profile-scroll {
+  flex: 1;
+  position: relative;
+  z-index: 10;
+}
+.profile-content {
+  padding: 0 32px 40px;
+}
+.profile-section-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 24px;
+}
+
+/* Report Card */
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.report-card {
+  padding: 28px 32px;
+  border-radius: 24px;
+  border-left: 6px solid #a78bfa;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.report-card-clickable {
+  &:active { transform: scale(0.98); }
+}
+.report-card-expired {
+  opacity: 0.6;
+}
+.report-card-title {
+  font-size: 30px;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 12px;
+  display: block;
+}
+.report-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.report-card-time {
+  font-size: 22px;
+  color: #9ca3af;
+}
+.report-card-status {
+  font-size: 22px;
+  padding: 4px 16px;
+  border-radius: 999px;
+}
+.status-done {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+}
+.status-expired {
+  color: #9ca3af;
+  background: rgba(156, 163, 175, 0.1);
+}
+.status-pending {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.1);
+}
+
+/* Empty */
+.profile-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 0;
+}
+.profile-empty-text {
+  font-size: 28px;
+  color: #9ca3af;
+  margin-bottom: 32px;
+}
+.profile-login-action {
+  width: 300px;
+}
