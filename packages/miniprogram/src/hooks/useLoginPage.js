@@ -40,6 +40,7 @@ export function useLoginPage() {
     try {
       const { code } = await Taro.login();
       const { result } = await Taro.cloud.callFunction({ name: 'login', data: { code } });
+
       if (result?.success) {
         await checkLoginAndSync();
         Taro.showToast({ title: '登录成功', icon: 'success' });

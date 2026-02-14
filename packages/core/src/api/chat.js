@@ -90,7 +90,13 @@ async function sendMessageViaProxy(messages, onStream = null, mode) {
   }
 
   if (onStream) {
-    return handleStreamResponse(response, onStream);
+    if (response.body) {
+      return handleStreamResponse(response, onStream);
+    }
+    const data = await response.json();
+    const content = data.content || '抱歉，我暂时无法回应。';
+    onStream(content);
+    return content;
   }
 
   const data = await response.json();

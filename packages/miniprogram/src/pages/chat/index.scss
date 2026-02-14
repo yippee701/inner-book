@@ -81,9 +81,10 @@
   letter-spacing: 2px;
 }
 
-/* Content */
+/* Content：min-height: 0 让 flex 子项可被约束，ScrollView 才能获得有限高度并滚动 */
 .chat-content {
   flex: 1;
+  min-height: 0;
   position: relative;
   z-index: 10;
   overflow: hidden;
@@ -129,10 +130,13 @@
   color: #6b7280;
 }
 
-/* Message List */
+/* Message List：ScrollView 需有明确高度，flex:1 + min-height:0 在父级约束下生效 */
 .message-list-scroll {
   flex: 1;
-  padding: 0 24px;
+  min-height: 0;
+  height: 0;
+  padding: 0 24px; 
+  width: 95%;
 }
 .message-list {
   padding-top: 20px;

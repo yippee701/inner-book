@@ -55,6 +55,8 @@ export { trackErrorEvent };
  * @param {object} data - 事件数据
  */
 export function trackEvent(event, data) {
+  // TODO: 临时禁用埋点，调试小程序中
+  return; 
   console.log('trackEvent', event, data);
   const platform = getAdapter('platform');
   const storage = getAdapter('storage');

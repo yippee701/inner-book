@@ -3,6 +3,8 @@ import Taro from '@tarojs/taro';
 import { isLoggedIn } from '@know-yourself/core';
 import { setCloudbaseApp as setTrackCloudbaseApp } from '@know-yourself/core';
 import { setAuthRef } from '@know-yourself/core';
+import { mpRequestAdapter } from '../adapters/mpRequest';
+import { wrapMpDb } from '../adapters/mpDb';
 
 const CloudbaseContext = createContext(null);
 
@@ -26,9 +28,10 @@ export function CloudbaseProvider({ children }) {
       const cloudApp = Taro.cloud;
       setCloudbaseApp(cloudApp);
       setTrackCloudbaseApp(cloudApp);
+      mpRequestAdapter.setCloudApp(cloudApp);
 
-      // 小程序端 db 实例
-      const dbInstance = Taro.cloud.database();
+      // 小程序端 db：包装为与 H5 一致的 (res, data) 回调，便于 ReportContext 等跨端复用
+      const dbInstance = wrapMpDb(Taro.cloud.database());
       setDb(dbInstance);
 
       // 小程序端不需要显式的 auth 对象，微信自带登录态

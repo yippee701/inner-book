@@ -62,6 +62,7 @@ const MessageList = forwardRef(function MessageList({
       scrollY
       scrollIntoView={scrollIntoView}
       scrollWithAnimation
+      padding={[0, 24, 0, 24]}
       className='message-list-scroll'
       enhanced
       showScrollbar={false}
