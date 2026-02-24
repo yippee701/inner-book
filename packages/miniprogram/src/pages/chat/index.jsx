@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import MessageList from '../../components/MessageList';
 import WelcomeScreen from '../../components/WelcomeScreen';
 import ChatInput from '../../components/ChatInput';
@@ -27,6 +27,13 @@ export default function ChatPage() {
     retryMessage,
     closeNoQuotaDialog,
   } = useChatPage(router?.params);
+
+  useShareAppMessage(() => {
+    return {
+      title: 'Inner Book',
+      path: '/pages/index/index',
+    };
+  }, []);
 
   return (
     <View className='chat-page'>

@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components';
 import { useHomePage } from '../../hooks/useHomePage';
+import { useShareAppMessage } from '@tarojs/taro';
 import './index.scss';
 
 export default function Homepage() {
@@ -11,6 +12,13 @@ export default function Homepage() {
     goToProfile,
     closeNoQuotaDialog,
   } = useHomePage();
+
+  useShareAppMessage(() => {
+    return {
+      title: 'Inner Book',
+      path: '/pages/index/index',
+    };
+  }, []);
 
   return (
     <View className='homepage'>

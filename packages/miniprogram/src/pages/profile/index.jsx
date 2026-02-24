@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from '@tarojs/components';
 import { REPORT_STATUS } from '@know-yourself/core';
 import { useProfilePage } from '../../hooks/useProfilePage';
+import { useShareAppMessage } from '@tarojs/taro';
 import './index.scss';
 
 function ReportCard({ report, onView }) {
@@ -13,6 +14,13 @@ function ReportCard({ report, onView }) {
     'understand-others': { border: '#60a5fa', bg: 'rgba(96, 165, 250, 0.08)' },
   };
   const colors = modeColors[mode] || modeColors['discover-self'];
+
+  useShareAppMessage(() => {
+    return {
+      title: 'Inner Book',
+      path: `/pages/index/index`,
+    };
+  }, []);
 
   return (
     <View
@@ -37,7 +45,6 @@ export default function ProfilePage() {
     user,
     isLoading,
     error,
-    userLoggedIn,
     handleViewReport,
     handleGoHome,
   } = useProfilePage();

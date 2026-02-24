@@ -18,5 +18,5 @@ export default defineAppConfig({
   },
   usingComponents: {
     'mp-icon': 'weui-miniprogram/icon/icon',
-  },
+  }
 });

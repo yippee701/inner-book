@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components';
 import { useEffect, useState } from 'react';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
 import './index.scss';
 
@@ -48,6 +48,13 @@ export default function ReportLoading() {
       }, 1000);
     }
   }, [isComplete, content, mode, currentReportId]);
+
+  useShareAppMessage(() => {
+    return {
+      title: 'Inner Book',
+      path: '/pages/index/index',
+    };
+  }, []);
 
   return (
     <View className='report-loading'>

@@ -1,6 +1,6 @@
-import { View, Text, ScrollView, RichText, Input } from '@tarojs/components';
+import { View, Text, ScrollView, RichText, Input, Button } from '@tarojs/components';
 import { useEffect, useCallback, useState } from 'react';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
 import { generateReportTitle, getModeLabel, markdownToHtml, getReportDetail as getReportDetailApi } from '@know-yourself/core';
 import { useDb } from '../../contexts/cloudbaseContext';
@@ -54,6 +54,13 @@ export default function ReportResult() {
     loadReport();
   }, [getReportDetail, db, reportId]);
 
+  useShareAppMessage(() => {
+    return {
+      title: 'Inner Book',
+      path: `/pages/report-result/index?mode=${mode}&reportId=${reportId}`,
+    };
+  });  
+
   // 邀请码提交
   const handleSubmitInviteCode = useCallback(async () => {
     if (!inviteCode.trim() || !reportId) return;
@@ -73,11 +80,6 @@ export default function ReportResult() {
       setIsVerifying(false);
     }
   }, [inviteCode, reportId, handleInviteCodeSubmit, db]);
-
-  // 分享
-  const handleShare = useCallback(() => {
-    // 小程序使用 onShareAppMessage 分享
-  }, []);
 
   // 加载失败
   if (loadError) {
@@ -141,9 +143,7 @@ export default function ReportResult() {
 
       {/* 底部分享区 */}
       <View className='rr-bottom safe-area-bottom'>
-        <View className='btn-primary rr-share-btn' onClick={handleShare}>
-          <Text>分享报告</Text>
-        </View>
+        <Button className='btn-primary rr-share-btn' open-type="share">分享报告</Button>
         <View className='rr-signature'>
           <View className='rr-signature-line' />
           <Text className='rr-signature-text'>INNER BOOK</Text>
