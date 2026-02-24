@@ -30,7 +30,7 @@ export { getPendingReports, getPendingReportByMode, PENDING_REPORTS_KEY } from '
 // ===== API =====
 export { sendMessage, sendMessageWithTypewriter, chatWarmup, typewriterEffect, isMockMode } from './api/chat.js';
 export { verifyInviteCode, getReportDetail, saveMessages, getMessages } from './api/report.js';
-export { getUserExtraInfo, restartConversation, getReports, updateReportTitle, checkCanStartChat } from './api/profile.js';
+export { getUserExtraInfo, restartConversation, getReports, updateReportTitle, updateUserNickname, checkCanStartChat } from './api/profile.js';
 
 // ===== Hooks =====
 export { useChat } from './hooks/useChat.js';

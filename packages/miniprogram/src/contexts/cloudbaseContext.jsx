@@ -108,6 +108,11 @@ export function useDb() {
   return context?.db || null;
 }
 
+export function useRdb() {
+  const context = useContext(CloudbaseContext);
+  return context?.rdb || null;
+}
+
 export function useOpenidReady() {
   const context = useContext(CloudbaseContext);
   return context?.openidReady ?? false;

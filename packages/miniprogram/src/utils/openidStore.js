@@ -29,3 +29,16 @@ export function setOpenid(value) {
 export function getOpenid() {
   return openid;
 }
+
+export function setUserDisplayName(name) {
+  if (!name || typeof name !== 'string') return;
+  try {
+    const raw = Taro.getStorageSync(USER_INFO_LOCAL_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : { content: {} };
+    parsed.content = parsed.content || {};
+    parsed.content.name = name.trim();
+    Taro.setStorageSync(USER_INFO_LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+  } catch (e) {
+    console.error('[openidStore] setUserDisplayName failed:', e);
+  }
+}

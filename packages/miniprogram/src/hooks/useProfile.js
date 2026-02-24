@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import Taro from '@tarojs/taro';
-import { getReports, getUserExtraInfo, updateReportTitle as updateReportTitleApi, isLoggedIn, getCurrentUsername } from '@know-yourself/core';
-import { useDb, useOpenidReady } from '../contexts/cloudbaseContext';
+import { getReports, updateReportTitle as updateReportTitleApi, updateUserNickname as updateUserNicknameApi, isLoggedIn, getCurrentUsername } from '@know-yourself/core';
+import { useDb, useRdb, useOpenidReady } from '../contexts/cloudbaseContext';
+import { setUserDisplayName } from '../utils/openidStore';
 
 // 次数校验已迁移到 core，需要时从 @know-yourself/core 引入 checkCanStartChat
 
@@ -10,9 +10,11 @@ import { useDb, useOpenidReady } from '../contexts/cloudbaseContext';
  */
 export function useProfile() {
   const db = useDb();
+  const rdb = useRdb();
   const openidReady = useOpenidReady();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
+  const [displayName, setDisplayName] = useState(() => getCurrentUsername() || '');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const isUserLoggedIn = isLoggedIn();
@@ -47,13 +49,21 @@ export function useProfile() {
     await loadData();
   }, [db, loadData]);
 
+  const handleUpdateUserNickname = useCallback(async (nickname) => {
+    if (!rdb) throw new Error('数据库未初始化');
+    await updateUserNicknameApi(rdb, nickname);
+    setUserDisplayName(nickname);
+    setDisplayName(nickname.trim());
+  }, [rdb]);
+
   return {
     reports,
     userExtraInfo,
-    user: { username: getCurrentUsername() },
+    user: { username: displayName || getCurrentUsername() || '微信用户' },
     isLoading,
     error,
     updateReportTitle: handleUpdateReportTitle,
+    updateUserNickname: handleUpdateUserNickname,
     isLoggedIn: isUserLoggedIn,
   };
 }

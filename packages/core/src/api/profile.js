@@ -195,6 +195,30 @@ export function updateReportTitle(db, reportId, title) {
 }
 
 /**
+ * 更新用户昵称（写入云数据库 user_info，小程序用 openid 定位）
+ * @param {object} rdb - 数据库实例
+ * @param {string} nickname - 新昵称
+ */
+export function updateUserNickname(rdb, nickname) {
+  if (!rdb) {
+    return Promise.reject(new Error('数据库未初始化'));
+  }
+  const name = nickname.trim();
+  // TODO: 确认微信用户好像没有新增到表里？
+  const { error } = rdb.from('sys_user')
+      .update({ nick_name: name })
+      .eq('_id', getCurrentUserId());
+
+  if (error) {
+    return Promise.reject(new Error(error.message || '更新用户昵称失败'));
+  }
+
+  const cacheKey = getCacheKey(db, 'user_extra_info', userIdent);
+  cache.delete(cacheKey);  
+  return Promise.resolve();
+}
+
+/**
  * 检查用户是否有剩余对话次数（未登录视为可开始）
  * @param {boolean} isUserLoggedIn
  * @param {object} userExtraInfo - 如 { remainingReport }
