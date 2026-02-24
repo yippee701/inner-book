@@ -40,7 +40,6 @@ export default function ProfilePage() {
     userLoggedIn,
     handleViewReport,
     handleGoHome,
-    handleGoLogin,
   } = useProfilePage();
 
   return (
@@ -50,21 +49,13 @@ export default function ProfilePage() {
 
       <View className='profile-header'>
         <View className='profile-header-left'>
-          {userLoggedIn ? (
-            <>
-              <View className='profile-avatar'>
-                <Text className='profile-avatar-icon'>👤</Text>
-              </View>
-              <Text className='profile-username'>{user?.username || '用户'}</Text>
-            </>
-          ) : (
-            <View className='profile-login-btn' onClick={handleGoLogin}>
-              <Text className='profile-login-text'>点击登录</Text>
-            </View>
-          )}
+          <View className='profile-avatar'>
+          <mp-icon icon="me" color="#1F2937" size="28"></mp-icon>
+          </View>
+          <Text className='profile-username'>{user?.username || '微信用户'}</Text>
         </View>
         <View className='profile-header-home' onClick={handleGoHome}>
-          <Text className='profile-home-icon'>🏠</Text>
+          <mp-icon icon="home" color="#1F2937" size="28"></mp-icon>
         </View>
       </View>
 
@@ -79,13 +70,6 @@ export default function ProfilePage() {
           ) : error ? (
             <View className='profile-empty'>
               <Text className='profile-empty-text'>{error}</Text>
-            </View>
-          ) : !userLoggedIn ? (
-            <View className='profile-empty'>
-              <Text className='profile-empty-text'>登录后查看历史对话记录</Text>
-              <View className='btn-primary profile-login-action' onClick={handleGoLogin}>
-                <Text>去登录</Text>
-              </View>
             </View>
           ) : reports.length === 0 ? (
             <View className='profile-empty'>

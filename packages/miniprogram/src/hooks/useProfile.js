@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Taro from '@tarojs/taro';
 import { getReports, getUserExtraInfo, updateReportTitle as updateReportTitleApi, isLoggedIn, getCurrentUsername } from '@know-yourself/core';
-import { useDb } from '../contexts/cloudbaseContext';
+import { useDb, useOpenidReady } from '../contexts/cloudbaseContext';
 
 // 次数校验已迁移到 core，需要时从 @know-yourself/core 引入 checkCanStartChat
 
@@ -10,6 +10,7 @@ import { useDb } from '../contexts/cloudbaseContext';
  */
 export function useProfile() {
   const db = useDb();
+  const openidReady = useOpenidReady();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +27,7 @@ export function useProfile() {
     try {
       const [convData, extraInfo] = await Promise.all([
         getReports(db),
-        getUserExtraInfo(db),
+        // getUserExtraInfo(db),
       ]);
       setReports(convData);
       setUserExtraInfo(extraInfo || {});
@@ -38,11 +39,7 @@ export function useProfile() {
     }
   }, [isUserLoggedIn, db]);
 
-  useEffect(() => { loadData(); }, [loadData]);
-
-  const goToLogin = useCallback(() => {
-    Taro.navigateTo({ url: '/pages/login/index' });
-  }, []);
+  useEffect(() => { loadData(); }, [loadData, openidReady]);
 
   const handleUpdateReportTitle = useCallback(async (reportId, title) => {
     if (!db) throw new Error('数据库未初始化');
@@ -58,6 +55,5 @@ export function useProfile() {
     error,
     updateReportTitle: handleUpdateReportTitle,
     isLoggedIn: isUserLoggedIn,
-    goToLogin,
   };
 }

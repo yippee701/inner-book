@@ -23,14 +23,11 @@
 
 ---
 
-## 3. 实现云函数 `login`（微信一键登录）
+## 3. 云函数 `get-openid`
 
 - **位置**：微信云开发控制台 / 云函数目录
-- **操作**：
-  - 新增云函数 `login`，接收前端 `Taro.login()` 得到的 `code`
-  - 在云函数内用 `code` 换取 openid/session_key，并与业务用户体系关联
-  - 返回 `{ success: true }` 或 `{ success: false, message: '...' }`
-- **说明**：`packages/miniprogram/src/pages/login/index.jsx` 中已预留 `handleWechatLogin` 调用 `Taro.cloud.callFunction({ name: 'login', data: { code } })`
+- **操作**：确保存在云函数 `get-openid`，返回 `{ openid }`（或等价结构）
+- **说明**：一进 app 会在 `cloudbaseContext` 中调用 `Taro.cloud.callFunction({ name: 'get-openid' })`，并将 openid 用于后续所有请求（见 `utils/openidStore.js`、`adapters/mpRequest.js`）
 
 ---
 

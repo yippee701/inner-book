@@ -5,7 +5,6 @@ export default defineAppConfig({
     'pages/report-loading/index',
     'pages/report-result/index',
     'pages/profile/index',
-    'pages/login/index',
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -13,5 +12,11 @@ export default defineAppConfig({
     navigationBarTitleText: 'Inner Book',
     navigationBarTextStyle: 'black',
     navigationStyle: 'custom',
+  },
+  useExtendedLib: {
+    weui: true,
+  },
+  usingComponents: {
+    'mp-icon': 'weui-miniprogram/icon/icon',
   },
 });

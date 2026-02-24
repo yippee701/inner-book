@@ -5,6 +5,7 @@ import { setCloudbaseApp as setTrackCloudbaseApp } from '@know-yourself/core';
 import { setAuthRef } from '@know-yourself/core';
 import { mpRequestAdapter } from '../adapters/mpRequest';
 import { wrapMpDb } from '../adapters/mpDb';
+import { setOpenid } from '../utils/openidStore';
 
 const CloudbaseContext = createContext(null);
 
@@ -16,6 +17,7 @@ export function CloudbaseProvider({ children }) {
   const [cloudbaseApp, setCloudbaseApp] = useState(null);
   const [auth, setAuth] = useState(null);
   const [db, setDb] = useState(null);
+  const [openidReady, setOpenidReady] = useState(false);
 
   useEffect(() => {
     // 初始化微信云开发
@@ -29,6 +31,21 @@ export function CloudbaseProvider({ children }) {
       setCloudbaseApp(cloudApp);
       setTrackCloudbaseApp(cloudApp);
       mpRequestAdapter.setCloudApp(cloudApp);
+
+      // 一进 app 即获取 openid，用于后续所有请求
+      
+      Taro.cloud.callFunction({
+        name: 'get-openid',
+        complete: (res) => {
+          console.log('callFunction result: ', res);
+          const result = res?.result;
+          const id = typeof result === 'object' && result !== null ? result.openid : result;
+          if (id) {
+            setOpenid(id);
+            setOpenidReady(true);
+          }
+        },
+      });
 
       // 小程序端 db：包装为与 H5 一致的 (res, data) 回调，便于 ReportContext 等跨端复用
       const dbInstance = wrapMpDb(Taro.cloud.database());
@@ -66,7 +83,7 @@ export function CloudbaseProvider({ children }) {
   }, []);
 
   return (
-    <CloudbaseContext.Provider value={{ cloudbaseApp, auth, db }}>
+    <CloudbaseContext.Provider value={{ cloudbaseApp, auth, db, openidReady }}>
       {children}
     </CloudbaseContext.Provider>
   );
@@ -89,4 +106,9 @@ export function useAuth() {
 export function useDb() {
   const context = useContext(CloudbaseContext);
   return context?.db || null;
+}
+
+export function useOpenidReady() {
+  const context = useContext(CloudbaseContext);
+  return context?.openidReady ?? false;
 }

@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro';
+import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
 
@@ -86,14 +87,18 @@ export const mpRequestAdapter = {
     const method = (options.method || 'POST').toUpperCase();
     const path = getPathFromUrl(url);
 
+    const openid = getOpenid();
+    const header = {
+      'X-WX-SERVICE': CHAT_SERVICE_NAME,
+      ...(options.headers || {}),
+    };
+    if (openid) header['X-WX-Openid'] = openid;
+
     try {
       const result = await cloudApp.callContainer({
         path,
         method,
-        header: {
-          'X-WX-SERVICE': CHAT_SERVICE_NAME,
-          ...(options.headers || {}),
-        },
+        header,
         data: body,
       });
       const res = result;
@@ -124,6 +129,8 @@ export const mpRequestAdapter = {
   _wxRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
       const header = { ...(options.headers || {}) };
+      const openid = getOpenid();
+      if (openid) header['X-WX-Openid'] = openid;
       let data = options.body;
       if (typeof data === 'string') {
         try {

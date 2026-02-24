@@ -21,7 +21,7 @@ export default function Homepage() {
       <View className='header'>
         <View className='header-placeholder' />
         <View className='header-profile' onClick={goToProfile}>
-          <Text className='iconfont'>👤</Text>
+          <mp-icon icon="me" color="#1F2937" size="28"></mp-icon>
         </View>
       </View>
 

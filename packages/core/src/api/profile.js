@@ -2,10 +2,22 @@
  * Profile API - 用户资料和报告历史相关接口
  */
 
-import { getCurrentUsername } from '../utils/user.js';
+import { getCurrentUsername, getCurrentUserId } from '../utils/user.js';
 import { request } from '../utils/request.js';
 import { REPORT_STATUS } from '../constants/reportStatus.js';
 import { getAdapter } from '../adapters/index.js';
+
+/** 微信小程序用 openid 查，其他端用 username */
+function getReportQueryUser(db) {
+  const platform = getAdapter('platform');
+  const isMp = platform?.getPlatformName?.() === 'miniprogram';
+  if (isMp) {
+    const openid = getCurrentUserId();
+    return openid ? { key: '_openid', value: openid } : null;
+  }
+  const username = getCurrentUsername();
+  return username ? { key: 'username', value: username } : null;
+}
 
 // 是否使用 Mock 数据
 const IS_MOCK_MODE = true;
@@ -57,15 +69,19 @@ async function fetchRestartConversation(conversationId) {
 }
 
 export function getUserExtraInfo(db) {
-  const username = getCurrentUsername();
-  if (!username) return {};
+  const platform = getAdapter('platform');
+  const isMp = platform?.getPlatformName?.() === 'miniprogram';
+  const userIdent = isMp
+    ? (getCurrentUserId() ? { key: 'openid', value: getCurrentUserId() } : null)
+    : (getCurrentUsername() ? { key: 'username', value: getCurrentUsername() } : null);
+  if (!userIdent) return {};
 
   if (!db) {
     console.warn('db 未初始化，无法获取用户信息');
     return {};
   }
 
-  const cacheKey = getCacheKey(db, 'user_extra_info', { username });
+  const cacheKey = getCacheKey(db, 'user_extra_info', userIdent);
   const cached = getCachedData(cacheKey);
   if (cached !== null) {
     console.log('[getUserExtraInfo] 使用缓存数据');
@@ -74,7 +90,7 @@ export function getUserExtraInfo(db) {
 
   return new Promise((resolve) => {
     db.collection('user_info')
-      .where({ username })
+      .where({ [userIdent.key]: userIdent.value })
       .field({
         level: true,
         remainingReport: true,
@@ -107,24 +123,25 @@ export async function restartConversation(conversationId) {
 }
 
 export function getReports(db) {
-  const username = getCurrentUsername();
-  if (!username) return [];
+  const userIdent = getReportQueryUser(db);
+  if (!userIdent) return [];
 
   if (!db) {
     console.warn('db 未初始化，无法获取报告列表');
     return [];
   }
 
-  const cacheKey = getCacheKey(db, 'reports', { username });
+  const cacheKey = getCacheKey(db, 'reports', userIdent);
   const cached = getCachedData(cacheKey);
   if (cached !== null) {
     console.log('[getReports] 使用缓存数据');
     return cached;
   }
 
+  const whereClause = { [userIdent.key]: userIdent.value, status: REPORT_STATUS.COMPLETED };
   return new Promise((resolve) => {
     db.collection('report')
-      .where({ username, status: REPORT_STATUS.COMPLETED })
+      .where(whereClause)
       .orderBy('createdAt', 'desc')
       .field({
         title: true,
@@ -153,23 +170,24 @@ export function getReports(db) {
 }
 
 export function updateReportTitle(db, reportId, title) {
-  const username = getCurrentUsername();
-  if (!username || !reportId || !title?.trim()) {
+  const userIdent = getReportQueryUser(db);
+  if (!userIdent || !reportId || !title?.trim()) {
     return Promise.reject(new Error('参数不完整'));
   }
   if (!db) {
     return Promise.reject(new Error('数据库未初始化'));
   }
+  const whereClause = { reportId, [userIdent.key]: userIdent.value };
   return new Promise((resolve, reject) => {
     db.collection('report')
-      .where({ reportId, username })
+      .where(whereClause)
       .update({ title: title.trim() }, (res, data) => {
         if (res !== 0) {
           console.error('更新报告标题失败:', res, data);
           reject(new Error(data?.message || '更新标题失败'));
           return;
         }
-        const cacheKey = getCacheKey(db, 'reports', { username });
+        const cacheKey = getCacheKey(db, 'reports', userIdent);
         cache.delete(cacheKey);
         resolve();
       });

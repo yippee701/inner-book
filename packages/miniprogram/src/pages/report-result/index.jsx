@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, RichText } from '@tarojs/components';
+import { View, Text, ScrollView, RichText, Input } from '@tarojs/components';
 import { useEffect, useCallback, useState } from 'react';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
@@ -158,9 +158,10 @@ export default function ReportResult() {
             <Text className='dialog-title'>输入邀请码</Text>
             <Text className='dialog-desc'>请输入邀请码解锁报告</Text>
             <View className='invite-input-row'>
-              <input
-                className='invite-input'
+              <Input
+                type='text'
                 value={inviteCode}
+                className='invite-input'
                 placeholder='请输入邀请码'
                 onInput={(e) => setInviteCode(e.detail.value)}
               />

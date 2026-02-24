@@ -7,7 +7,7 @@ const ENV_CONFIG = {
   // 生产环境 API 地址
   SERVER_URL: 'https://inner-book.top',
   // mock 模式
-  MOCK_MODE: 'false',
+  MOCK_MODE: 'true',
   // API 模式
   API_MODE: 'proxy',
 };

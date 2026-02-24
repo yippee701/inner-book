@@ -16,13 +16,11 @@ export function useProfilePage() {
   };
 
   const handleGoHome = () => Taro.reLaunch({ url: '/pages/index/index' });
-  const handleGoLogin = () => Taro.navigateTo({ url: '/pages/login/index' });
 
   return {
     ...profile,
     userLoggedIn,
     handleViewReport,
     handleGoHome,
-    handleGoLogin,
   };
 }
