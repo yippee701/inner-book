@@ -92,8 +92,12 @@ function ReportCard({
         ) : (
           <>
             <Text className='report-card-title'>{title || '未命名报告'}</Text>
-            {!isLocked && (
-              <View className='report-card-edit' catchClick={handleEditClick}>
+            {isLocked ? (
+              <View className='report-card-edit'>
+                <mp-icon icon="lock" color="#1F2937" size="20" />
+              </View>
+            ) : (
+              <View className='report-card-edit' onClick={handleEditClick}>
                 <mp-icon icon="pencil" color="#1F2937" size="20" />
               </View>
             )}
