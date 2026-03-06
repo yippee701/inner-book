@@ -33,7 +33,6 @@ export function CloudbaseProvider({ children }) {
       mpRequestAdapter.setCloudApp(cloudApp);
 
       // 一进 app 即获取 openid，用于后续所有请求
-      
       Taro.cloud.callFunction({
         name: 'get-openid',
         complete: (res) => {
@@ -106,11 +105,6 @@ export function useAuth() {
 export function useDb() {
   const context = useContext(CloudbaseContext);
   return context?.db || null;
-}
-
-export function useRdb() {
-  const context = useContext(CloudbaseContext);
-  return context?.rdb || null;
 }
 
 export function useOpenidReady() {

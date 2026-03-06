@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getReports, updateReportTitle as updateReportTitleApi, updateUserNickname as updateUserNicknameApi, isLoggedIn, getCurrentUsername } from '@know-yourself/core';
-import { useDb, useRdb, useOpenidReady } from '../contexts/cloudbaseContext';
+import { useDb, useOpenidReady, useCloudbaseApp } from '../contexts/cloudbaseContext';
 import { setUserDisplayName } from '../utils/openidStore';
 
 // 次数校验已迁移到 core，需要时从 @know-yourself/core 引入 checkCanStartChat
@@ -10,7 +10,7 @@ import { setUserDisplayName } from '../utils/openidStore';
  */
 export function useProfile() {
   const db = useDb();
-  const rdb = useRdb();
+  const cloudbaseApp = useCloudbaseApp();
   const openidReady = useOpenidReady();
   const [reports, setReports] = useState([]);
   const [userExtraInfo, setUserExtraInfo] = useState({});
@@ -50,11 +50,10 @@ export function useProfile() {
   }, [db, loadData]);
 
   const handleUpdateUserNickname = useCallback(async (nickname) => {
-    if (!rdb) throw new Error('数据库未初始化');
-    await updateUserNicknameApi(rdb, nickname);
+    await updateUserNicknameApi(cloudbaseApp, nickname);
     setUserDisplayName(nickname);
     setDisplayName(nickname.trim());
-  }, [rdb]);
+  }, []);
 
   return {
     reports,

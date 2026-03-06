@@ -196,23 +196,30 @@ export function updateReportTitle(db, reportId, title) {
 
 /**
  * 更新用户昵称（写入云数据库 user_info，小程序用 openid 定位）
- * @param {object} rdb - 数据库实例
+ * @param {object} cloudbaseApp - cloudbaseApp 实例
  * @param {string} nickname - 新昵称
  */
-export function updateUserNickname(rdb, nickname) {
-  if (!rdb) {
-    return Promise.reject(new Error('数据库未初始化'));
+export function updateUserNickname(cloudbaseApp, nickname) {
+  if (!cloudbaseApp) {
+    return Promise.reject(new Error('cloudbaseApp 未初始化'));
   }
   const name = nickname.trim();
-  // TODO: 确认微信用户好像没有新增到表里？
-  const { error } = rdb.from('sys_user')
-      .update({ nick_name: name })
-      .eq('_id', getCurrentUserId());
+  
+  // TODO 云函数未完整实现
+  const result = cloudbaseApp.callFunction({
+    name: 'mp-user-management',
+    data: {
+      action: 'updateUsername',
+      username: name,
+      userid: getCurrentUserId(),
+    },    
+  });
 
-  if (error) {
-    return Promise.reject(new Error(error.message || '更新用户昵称失败'));
+  if (result.retcode !== 0) {
+    return Promise.reject(new Error(result.message || '更新用户昵称失败'));
   }
-
+  // 这两行暂时没什么用，更新数据后用户清除缓存，但是这个缓存目前没用上
+  // 没删掉的原因是，如果以后用上了缓存，防止这里忘记清除
   const cacheKey = getCacheKey(db, 'user_extra_info', userIdent);
   cache.delete(cacheKey);  
   return Promise.resolve();
