@@ -16,6 +16,8 @@ import { getWelcomeMessage } from '../../constants/welcome-message';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { trackClickEvent } from '../../utils/track';
 import { startChatPrefetch, getChatPrefetchResult, clearChatPrefetch } from '../../utils/chatPrefetch';
+import { useDb } from '../../contexts/cloudbaseContext';
+import { saveMessages } from '../../api/report';
 
 // 粒子光圈图标组件 - 玻璃态设计
 function ParticleIcon() {
@@ -174,7 +176,9 @@ export default function Chat() {
     resumeReport,
     getDiscoverSelfFirst3Answers,
     setReportError,
+    currentReportId,
   } = useReport();
+  const db = useDb();
 
   // discover-self 模式下用于推荐的前三轮答案（每次渲染从 localStorage 读取，保证推荐为最新）
   const recommendedAnswers = chatMode === 'discover-self' ? getDiscoverSelfFirst3Answers() : [];
@@ -226,6 +230,21 @@ export default function Chat() {
   // 计算当前问题进度（基于 AI 回复数量）
   const aiMessageCount = messages.filter(m => m.role === 'assistant').length;
   const progress = Math.min(aiMessageCount, 10);
+
+  // 对话轮次多于 11 轮时，将对话过程保存到云端 message 集合
+  const lastSavedRoundRef = useRef(0);
+  useEffect(() => {
+    if (!hasStarted || !db || !currentReportId || messages.length === 0) return;
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.status === 'loading') return;
+    if (aiMessageCount <= 11) return;
+    if (aiMessageCount <= lastSavedRoundRef.current) return;
+    lastSavedRoundRef.current = aiMessageCount;
+    saveMessages(db, currentReportId, messages).catch((err) => {
+      console.warn('保存对话记录失败:', err);
+      lastSavedRoundRef.current = Math.max(0, lastSavedRoundRef.current - 1);
+    });
+  }, [hasStarted, db, currentReportId, messages, aiMessageCount]);
 
   // 恢复上次未完成的对话（不使用预热缓存）
   const handleResume = useCallback(() => {
