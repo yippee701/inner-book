@@ -6,15 +6,15 @@ import { getToastRef } from './toastRef.js';
 import { getAdapter } from '../adapters/index.js';
 
 /**
- * 触发重新登录（匿名）
+ * 触发重新登录（匿名），等待登录完成后再 reload
  */
-function triggerReLogin() {
+async function triggerReLogin() {
   const auth = getAuthRef();
-  if (auth) {
-    auth.signInAnonymously();
-    const platform = getAdapter('platform');
-    platform?.reloadPage();
+  if (auth?.signInAnonymously) {
+    await Promise.resolve(auth.signInAnonymously());
   }
+  const platform = getAdapter('platform');
+  platform?.reloadPage?.();
 }
 
 /**
@@ -32,7 +32,7 @@ export async function request(url, options = {}) {
     if (toast?.info) {
       toast.info('用户信息失效，正在为您重新获取', 5000);
     }
-    triggerReLogin();
+    await triggerReLogin();
     const err = new Error('登录已过期，请稍后重试');
     err.status = 401;
     throw err;
