@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../inner-book-server"
+		},
+		{
+			"path": "../inner-book-skill"
 		}
 	],
 	"settings": {}
