@@ -156,6 +156,16 @@ export default function ReportResult() {
     });
   }, [mode, reportId]);
 
+  /** 有上一页则返回，否则（如分享直达）回首页 */
+  const handleHeaderBack = useCallback(() => {
+    const pages = Taro.getCurrentPages();
+    if (pages.length > 1) {
+      Taro.navigateBack();
+    } else {
+      Taro.reLaunch({ url: '/pages/index/index' });
+    }
+  }, []);
+
   // 加载失败页 - 与 H5 一致
   if (loadError) {
     return (
@@ -195,13 +205,10 @@ export default function ReportResult() {
 
       {/* 顶部栏 - 与 H5 header 一致 */}
       <View className='rr-header'>
-        <View className='rr-header-back' onTouchEnd={() => Taro.navigateBack()}>
+        <View className='rr-header-back' onTouchEnd={handleHeaderBack}>
           <Text className='rr-header-back-icon'>←</Text>
         </View>
         <Text className='rr-header-title'>{generateReportTitle(mode)}</Text>
-        <View className='rr-header-action' onTouchEnd={() => Taro.navigateTo({ url: '/pages/profile/index' })}>
-          <mp-icon icon='me' color='#1F2937' size='28'></mp-icon>
-        </View>
       </View>
 
       {/* 内容区 - 卡片 + 可选「查看完整对话过程」 */}
