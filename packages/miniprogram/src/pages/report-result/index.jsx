@@ -9,6 +9,7 @@ import {
   getReportDetail as getReportDetailApi,
 } from '@know-yourself/core';
 import { useDb } from '../../contexts/cloudbaseContext';
+import { OFFICIAL_ACCOUNT_ARTICLE_URL } from '../../config/brand';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -166,6 +167,26 @@ export default function ReportResult() {
     }
   }, []);
 
+  /** 打开公众号图文（需在 brand.js 配置 OFFICIAL_ACCOUNT_ARTICLE_URL） */
+  const handleOpenOfficialAccount = useCallback(() => {
+    const articleUrl = OFFICIAL_ACCOUNT_ARTICLE_URL?.trim();
+    if (!articleUrl) {
+      Taro.showToast({ title: '请配置公众号文章链接', icon: 'none' });
+      return;
+    }
+    const wxApi = typeof globalThis !== 'undefined' ? globalThis.wx : undefined;
+    if (!wxApi?.openOfficialAccountArticle) return;
+    wxApi.openOfficialAccountArticle({
+      url: articleUrl,
+      fail: (err) => {
+        const msg = err?.errMsg || '';
+        if (msg.includes('cancel') || msg.includes('取消')) return;
+        console.error(err);
+        Taro.showToast({ title: msg || '无法打开文章', icon: 'none' });
+      },
+    });
+  }, []);
+
   // 加载失败页 - 与 H5 一致
   if (loadError) {
     return (
@@ -209,6 +230,7 @@ export default function ReportResult() {
           <Text className='rr-header-back-icon'>←</Text>
         </View>
         <Text className='rr-header-title'>{generateReportTitle(mode)}</Text>
+        <View className='rr-header-placeholder' />
       </View>
 
       {/* 内容区 - 卡片 + 可选「查看完整对话过程」 */}
@@ -238,7 +260,9 @@ export default function ReportResult() {
         <View className='rr-dialog-mask'>
           <View className='rr-dialog-content'>
             <Text className='rr-dialog-title'>输入邀请码</Text>
-            <Text className='rr-dialog-desc'>请输入邀请码解锁报告</Text>
+            <Text className='rr-dialog-desc rr-dialog-desc-link' onClick={handleOpenOfficialAccount}>
+              关注 Inner Book 公众号，获取邀请码
+            </Text>
             <View className='rr-invite-input-row'>
               <Input
                 type='text'

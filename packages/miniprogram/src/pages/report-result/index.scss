@@ -48,17 +48,19 @@
 .rr-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 100px 24px 16px;
   position: relative;
   z-index: 50;
   background: rgba(243, 244, 246, 0.4);
   border-bottom: 1px solid rgba(243, 244, 246, 1);
 }
+/* 左右各 60px，中间标题 flex 居中（占位与返回同宽） */
 .rr-header-back,
-.rr-header-action {
+.rr-header-action,
+.rr-header-placeholder {
   width: 60px;
   height: 60px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,9 +73,15 @@
   color: #374151;
 }
 .rr-header-title {
+  flex: 1;
+  min-width: 0;
   font-size: 30px;
   font-weight: 500;
   color: #1f2937;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ========== 滚动内容区 ========== */
@@ -367,6 +375,11 @@
   color: #6b7280;
   margin-bottom: 32px;
 }
+.rr-dialog-desc-link {
+  color: #6366f1;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .rr-invite-input-row {
   width: 100%;
   margin-bottom: 32px;
@@ -382,6 +395,7 @@
   text-align: center;
   letter-spacing: 4px;
   box-sizing: border-box;
+  height: 88px;
 }
 .rr-invite-placeholder {
   color: #9ca3af;
