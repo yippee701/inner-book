@@ -89,7 +89,8 @@ export default function Result() {
   const [showInviteLoginDialog, setShowInviteLoginDialog] = useState(false);
   const [isVerifyingInviteCode, setIsVerifyingInviteCode] = useState(false);
   const [pendingUnlockReportId, setPendingUnlockReportId] = useState(null);
-  const [showShare, setShowShare] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   // 未登录时滚动到底部后弹出邀请登录对话框，关闭后本页不再自动弹出
   const contentScrollRef = useRef(null);
@@ -170,6 +171,8 @@ export default function Result() {
       setShowInviteCodeDialog(false);
       const unlockedReportId = pendingUnlockReportId;
       setPendingUnlockReportId(null);
+      setIsUnlocked(true);
+      setShowShare(true);
       message.success('邀请码验证成功，报告已解锁');
       // 未登录时重置「已关闭」标记，使滚动到底部时再弹出邀请登录
       if (!reportIsLoggedIn) {
@@ -265,8 +268,13 @@ export default function Result() {
         setDisplayContent(reportDetail.content || '');
 
         if (reportDetail.lock === true) {
+          setIsUnlocked(false);
           setShowInviteCodeDialog(true);
           setShowShare(false);
+        } else {
+          setIsUnlocked(true);
+          setShowInviteCodeDialog(false);
+          setShowShare(true);
         }
       } catch (err) {
         console.error('加载报告失败:', err);
@@ -354,8 +362,8 @@ export default function Result() {
       >
         <div className="max-w-md mx-auto py-3">
           <ReportContentCard content={displayContent} subTitle={subTitle} modeLabel={modeLabel} />
-          {/* 查看完整对话过程 */}
-          {(
+          {/* 查看完整对话过程（仅解锁后显示） */}
+          {isUnlocked && (
             <div className="mt-4 mb-2 flex items-center gap-2 w-full justify-center">
               <Link
                 to={`/chat-history?reportId=${searchParams.get('reportId')}`}
@@ -364,7 +372,7 @@ export default function Result() {
                 查看完整对话过程
               </Link>
             </div>
-          )}          
+          )}
         </div>
       </div>
 

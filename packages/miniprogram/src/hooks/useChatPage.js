@@ -11,9 +11,11 @@ import {
   getModeFromParams,
   getPendingReportByMode,
   checkCanStartChat,
+  getMessages,
 } from '@know-yourself/core';
 import { useReport } from '../contexts/ReportContext';
 import { useProfile } from '../hooks/useProfile';
+import { useDb } from '../contexts/cloudbaseContext';
 
 /**
  * 聊天页业务逻辑：模式、状态、与报告/对话的联动，全部收敛在此
@@ -21,6 +23,7 @@ import { useProfile } from '../hooks/useProfile';
  */
 export function useChatPage(routerParams) {
   const chatMode = getModeFromParams(routerParams || {});
+  const historyReportId = routerParams?.reportId;
   useStayTime('chat_duration', { auto: true, data: { mode: chatMode } });
 
   const [hasStarted, setHasStarted] = useState(false);
@@ -28,6 +31,8 @@ export function useChatPage(routerParams) {
   const [suggestionToFill, setSuggestionToFill] = useState(null);
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
   const messageListRef = useRef(null);
+  const hasRestoredHistoryRef = useRef(false);
+  const db = useDb();
 
   const { isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
   const {
@@ -75,6 +80,33 @@ export function useChatPage(routerParams) {
     onReportError: handleReportError,
     onUserMessageSent: handleUserMessageSent,
   });
+
+  // 从报告结果页进入时，按 reportId 回放历史对话
+  useEffect(() => {
+    if (!historyReportId || !db || hasRestoredHistoryRef.current) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const historyMessages = await getMessages(db, historyReportId);
+        if (cancelled) return;
+        const normalizedMessages = Array.isArray(historyMessages) ? historyMessages : [];
+        resumeReport({
+          reportId: historyReportId,
+          mode: chatMode,
+          messages: normalizedMessages,
+          content: '',
+        });
+        restoreMessages(normalizedMessages);
+        setPendingReport(null);
+        setHasStarted(true);
+        hasRestoredHistoryRef.current = true;
+        setTimeout(() => messageListRef.current?.scrollToBottom(), 100);
+      } catch {
+        if (!cancelled) Taro.showToast({ title: '加载对话记录失败', icon: 'none' });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [historyReportId, db, chatMode, resumeReport, restoreMessages]);
 
   useEffect(() => {
     if (!hasStarted || messages.length === 0) return;

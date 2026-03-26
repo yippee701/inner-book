@@ -88,7 +88,8 @@ export default function ReportResult() {
   const [showInviteCodeDialog, setShowInviteCodeDialog] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  const [showShare, setShowShare] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   // 加载报告
   useEffect(() => {
@@ -109,8 +110,13 @@ export default function ReportResult() {
         }
         setDisplayContent(detail.content || '');
         if (detail.lock === true) {
+          setIsUnlocked(false);
           setShowInviteCodeDialog(true);
           setShowShare(false);
+        } else {
+          setIsUnlocked(true);
+          setShowInviteCodeDialog(false);
+          setShowShare(true);
         }
       } catch {
         setLoadError('加载报告失败，请稍后重试');
@@ -135,6 +141,7 @@ export default function ReportResult() {
     try {
       await handleInviteCodeSubmit(reportId, inviteCode.trim());
       setShowInviteCodeDialog(false);
+      setIsUnlocked(true);
       setShowShare(true);
       Taro.showToast({ title: '邀请码验证成功', icon: 'success' });
       if (db) {
@@ -147,6 +154,14 @@ export default function ReportResult() {
       setIsVerifying(false);
     }
   }, [inviteCode, reportId, handleInviteCodeSubmit, db]);
+
+  useEffect(() => {
+    if (isUnlocked) {
+      Taro.showShareMenu({ showShareItems: ['shareAppMessage', 'shareTimeline'] });
+    } else {
+      Taro.hideShareMenu();
+    }
+  }, [isUnlocked]);
 
   // 复制链接（小程序内 path，便于转发）
   const handleCopyLink = useCallback(() => {
@@ -237,14 +252,16 @@ export default function ReportResult() {
       <ScrollView scrollY className='rr-scroll' enhanced showScrollbar={false}>
         <View className='rr-content-wrap'>
           <ReportCard modeLabel={modeLabel} subTitle={subTitle} contentHtml={contentHtml} />
-          <View className='rr-history-link-wrap'>
-            <Text
-              className='rr-history-link'
-              onTouchEnd={() => Taro.navigateTo({ url: `/pages/chat/index?mode=${mode}` })}
-            >
-              查看完整对话过程
-            </Text>
-          </View>
+          {isUnlocked && (
+            <View className='rr-history-link-wrap'>
+              <Text
+                className='rr-history-link'
+                onClick={() => Taro.navigateTo({ url: `/pages/chat/index?mode=${mode}&reportId=${reportId}` })}
+              >
+                查看完整对话过程
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
