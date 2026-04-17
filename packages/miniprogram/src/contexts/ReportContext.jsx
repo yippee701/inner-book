@@ -5,10 +5,11 @@ import {
   generateReportTitle, extractReportSubTitle, cleanReportContent, generateReportId,
   REPORT_STATUS,
   sendMessage,
-  getReportDetail, verifyInviteCode, saveMessages,
+  getReportDetail, createVirtualPaymentOrder, confirmVirtualPayment, saveMessages,
   trackVisitEvent, trackConversationRound,
 } from '@know-yourself/core';
 import { useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
+import { REPORT_UNLOCK_PAYMENT_CONFIG } from '../config/payment';
 
 const ReportContext = createContext(null);
 const LOCAL_REPORTS_KEY = 'pendingReports';
@@ -283,14 +284,39 @@ export function ReportProvider({ children }) {
     }));
   }, []);
 
-  const handleInviteCodeSubmit = useCallback(async (reportId, inviteCode) => {
-    try {
-      const response = await verifyInviteCode(cloudbaseApp, inviteCode, reportId);
-      const result = response.result;
-      if (result.retcode !== 0) throw new Error(result.message);
-      updateLocalReport(reportId, { lock: 0 });
-      return true;
-    } catch (err) { throw err; }
+  const createReportUnlockOrder = useCallback(async (reportId) => {
+    const response = await createVirtualPaymentOrder(
+      cloudbaseApp,
+      {
+        action: 'wxpay_virtual_goods',
+        productId: REPORT_UNLOCK_PAYMENT_CONFIG.productId,
+        productName: REPORT_UNLOCK_PAYMENT_CONFIG.productName,
+        price: String(REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice),
+      },
+      REPORT_UNLOCK_PAYMENT_CONFIG.functionName
+    );
+    const result = response?.result;
+    if (!result || result.code !== 0) {
+      throw new Error(result?.message || '创建支付订单失败');
+    }
+    return result.data || result;
+  }, [cloudbaseApp]);
+
+  const confirmReportUnlockPayment = useCallback(async (reportId, paymentPayload) => {
+    const response = await confirmVirtualPayment(
+      cloudbaseApp,
+      {
+        reportId,
+        ...paymentPayload,
+      },
+      REPORT_UNLOCK_PAYMENT_CONFIG.functionName
+    );
+    const result = response?.result;
+    if (!result || result.retcode !== 0) {
+      throw new Error(result?.message || '支付确认失败');
+    }
+    updateLocalReport(reportId, { lock: 0 });
+    return result.data || result;
   }, [cloudbaseApp, updateLocalReport]);
 
   const completeReport = useCallback(async () => {
@@ -372,7 +398,7 @@ export function ReportProvider({ children }) {
       createReport, startReport, updateMessages, updateReportContent, completeReport,
       getPendingReport, getDiscoverSelfFirst3Answers, getReportDetail: getReportDetailWrapper,
       resumeReport, saveReportToLocal, saveReportToRemote, syncLocalReportsToRemote,
-      checkLoginAndSync, handleInviteCodeSubmit, setReportError, retryReport,
+      checkLoginAndSync, createReportUnlockOrder, confirmReportUnlockPayment, setReportError, retryReport,
       registerInviteCodeDialog: (cb) => { onShowInviteCodeDialogRef.current = cb; },
       registerInviteLoginDialog: (cb) => { onShowInviteLoginDialogRef.current = cb; },
     }}>

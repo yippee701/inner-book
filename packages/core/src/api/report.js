@@ -23,6 +23,38 @@ export async function verifyInviteCode(cloudbaseApp, inviteCode, reportId) {
   return result;
 }
 
+/**
+ * 小程序：创建报告解锁虚拟支付订单
+ */
+export async function createVirtualPaymentOrder(cloudbaseApp, payload, functionName = 'report-unlock-payment') {
+  if (!cloudbaseApp) {
+    throw new Error('cloudbaseApp 未初始化');
+  }
+  const result = await cloudbaseApp.callFunction({
+    name: functionName,
+    data: payload,
+  });
+  
+  return result;
+}
+
+/**
+ * 小程序：确认虚拟支付结果并解锁报告
+ */
+export async function confirmVirtualPayment(cloudbaseApp, payload, functionName = 'report-unlock-payment') {
+  if (!cloudbaseApp) {
+    throw new Error('cloudbaseApp 未初始化');
+  }
+  const result = await cloudbaseApp.callFunction({
+    name: functionName,
+    data: {
+      action: 'confirmOrder',
+      ...payload,
+    },
+  });
+  return result;
+}
+
 // 缓存配置
 const CACHE_DURATION = 5 * 1000; // 5s
 const cache = new Map();

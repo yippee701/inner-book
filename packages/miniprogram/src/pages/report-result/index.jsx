@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, RichText, Input, Button } from '@tarojs/components';
+import { View, Text, Image, ScrollView, RichText, Button } from '@tarojs/components';
 import { useEffect, useCallback, useState } from 'react';
 import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
@@ -9,7 +9,7 @@ import {
   getReportDetail as getReportDetailApi,
 } from '@know-yourself/core';
 import { useDb } from '../../contexts/cloudbaseContext';
-import { OFFICIAL_ACCOUNT_ARTICLE_URL } from '../../config/brand';
+import { REPORT_UNLOCK_PAYMENT_CONFIG, formatPriceFen } from '../../config/payment';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -17,12 +17,9 @@ const INNER_BOOK_ICON_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABB0lEQVR4AeyS0Q3CMBBDT12GbgMjIIYARgCGQIwA25RpoP44NYouaYQl2g9XskqSs3ly031W/nS28keA7AdSg2qQbYD1z97B92Dmej3NUmG/BoBzV+rDb+zXvH5WBETA7WJ2TYTgVDg77CdoD2W8nuHvENDBhrE9H6y9HRo+COC/eKP/CAFbw/NA+KB8v2Vd8oWALYH/mhEg27QaVINsA6xfd1ANsg2wft3BlTTIYpT9+sTlbtpO1GBbT+Wp2Qb73ux0nnR/mEHY2+7MoFI84/XMENCDAXIc4TYjpMuNWAMOwhzeOGO88OcKAR0qH66tAQhQxhvlh4DR4FJ7AmSbV4NqkG2A9X8BAAD//5ftfh4AAAAGSURBVAMA9wUTwFGTBLkAAAAASUVORK5CYII=';
 const QUOTE_ICON_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACk0lEQVR4AeyaP2/CQAzFT5FYKAtDmdu53/+jdG5nOrBQpIqhzS+pEZT8OfvIKT2MZA4S+5793jtEK6rvO39U4c4fTsCdGyC4A9wBd86AH4EpDHA8hLB7b4PXU2Bo96SPw7btid6k/mYOAICNt681yFsIx8829jWogOVe//a0/2h7ojfpJYkAAGD1fGjZWFbAyJP3OVbwEGP3K0QXJn1z3UyAAMAqGw1FLhcwlPQF8YM91W7gvpoA2EXxMQA2lyCXOnl/65W9GRwxwIrdnzoVAYBgq1iAHHmN6gNWH+oBZ0YRAFNa1QV48RDC+jmExVKu3G5FEFS37Lh6rPt6CuNfhRneqrqATDW8xu5CEoJsXkJYbtorVbt0P6cMj+oC0r27/SrKW4YXQc6RewmQs3WeHPua4adQHfyU4bsE6SXAeramHB5RrMp3DQ+hnQQAxE1tYLGplKcniyic+b7hme+KACsQww8BAZYSluHBW9ef9Kx9cUWAFWix6oNIv44oll0QZazugoAUoLlZn8FjHHlBgFV9wOYWMerT84kAq/psEsM0edqgJ6sosUfyRIAVKJZp7fCp+bFHsiEAplMBp6jPIUpDQErzsVbTYuQSpSHAyjRDxVqN3DlGxR88KY3x3TwmtDhf9T9WrX1RG9MTOdVxb4Vp6/huHhVKHPZsEfTP1MZGcwT0ENNWaN0y1M3YvQq7jCWVfH+eDlAelxSBZklAykDa2ooPC21RSfnugJLUtMziDrCwVlKNO6AkNS2zuAMsrJVU4w4oSU3LLO4AC2tzrtH25g7QMlZavjugNEW187gDtIyVlu8OKE1R7TwVPxrMEZrfEJCboycw/AhoLVNavjugNEW187gDtIyVlv/vHZAqyA8AAAD//3GD8NkAAAAGSURBVAMAUXAtn9G4v8MAAAAASUVORK5CYII=';
+const VIRTUAL_PAYMENT_MIN_SDK_VERSION = '2.19.2';
 
-/**
- * 底部转化区 - 与 H5 一致：分享报告（主）+ 复制链接（次），签名 INNER BOOK
- * 分享使用 Button open-type="share" 触发
- */
-function ConversionZone({ onCopyLink }) {
+function ConversionZone() {
   return (
     <View className='rr-conversion'>
       <View className='rr-conversion-btns'>
@@ -39,13 +36,9 @@ function ConversionZone({ onCopyLink }) {
   );
 }
 
-/**
- * 报告内容卡片 - 与 H5 ReportContentCard 一致：白卡 + 头部 + 引用区 + 正文
- */
 function ReportCard({ modeLabel, subTitle, contentHtml }) {
   return (
     <View className='rr-card'>
-      {/* Header: INNER BOOK + 模式标签 */}
       <View className='rr-card-header'>
         <View className='rr-card-brand'>
           <Image className='rr-card-brand-icon' src={INNER_BOOK_ICON_DATA_URI} mode='aspectFit' />
@@ -55,18 +48,74 @@ function ReportCard({ modeLabel, subTitle, contentHtml }) {
           <Text className='rr-card-badge-text'>{modeLabel}</Text>
         </View>
       </View>
-      {/* 引用区：引号图标 + 副标题 + 渐变线 */}
       <View className='rr-card-quote'>
         <Image className='rr-card-quote-icon' src={QUOTE_ICON_DATA_URI} mode='aspectFit' />
         <Text className='rr-card-quote-title'>{subTitle || ''}</Text>
         <View className='rr-card-quote-line' />
       </View>
-      {/* 正文 */}
       <View className='rr-card-body'>
         <RichText nodes={contentHtml} className='rr-rich' />
       </View>
     </View>
   );
+}
+
+function compareVersion(versionA, versionB) {
+  const first = String(versionA || '').split('.');
+  const second = String(versionB || '').split('.');
+  const length = Math.max(first.length, second.length);
+
+  while (first.length < length) first.push('0');
+  while (second.length < length) second.push('0');
+
+  for (let index = 0; index < length; index += 1) {
+    const current = Number(first[index] || 0);
+    const target = Number(second[index] || 0);
+    if (current > target) return 1;
+    if (current < target) return -1;
+  }
+
+  return 0;
+}
+
+function canUseVirtualPayment(wxApi) {
+  if (!wxApi?.requestVirtualPayment) return false;
+
+  try {
+    const sdkVersion = wxApi.getSystemInfoSync?.().SDKVersion;
+    if (sdkVersion && compareVersion(sdkVersion, VIRTUAL_PAYMENT_MIN_SDK_VERSION) >= 0) {
+      return true;
+    }
+  } catch {}
+
+  return Boolean(wxApi.canIUse?.('requestVirtualPayment'));
+}
+
+function requestVirtualPayment(wxApi, paymentArgs) {
+  return new Promise((resolve, reject) => {
+    wxApi.requestVirtualPayment({
+      ...paymentArgs,
+      success: resolve,
+      fail: reject,
+    });
+  });
+}
+
+function parseSignData(signData) {
+  if (!signData) return {};
+  if (typeof signData === 'string') {
+    try {
+      return JSON.parse(signData);
+    } catch {
+      return {};
+    }
+  }
+  return signData;
+}
+
+function isUserCancelledPayment(error) {
+  const message = error?.errMsg || '';
+  return error?.errCode === -2 || message.includes('cancel') || message.includes('取消');
 }
 
 export default function ReportResult() {
@@ -78,20 +127,18 @@ export default function ReportResult() {
   const {
     getReportDetail,
     subTitle,
-    isLoggedIn: reportIsLoggedIn,
-    handleInviteCodeSubmit,
+    createReportUnlockOrder,
+    confirmReportUnlockPayment,
   } = useReport();
 
   const [displayContent, setDisplayContent] = useState('');
   const [isLoadingReport, setIsLoadingReport] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [showInviteCodeDialog, setShowInviteCodeDialog] = useState(false);
-  const [inviteCode, setInviteCode] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [showUnlockDialog, setShowUnlockDialog] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showShare, setShowShare] = useState(false);
 
-  // 加载报告
   useEffect(() => {
     if (!db || !getReportDetail || !reportId) {
       if (!reportId) setLoadError('报告 ID 不存在');
@@ -111,11 +158,11 @@ export default function ReportResult() {
         setDisplayContent(detail.content || '');
         if (detail.lock === true) {
           setIsUnlocked(false);
-          setShowInviteCodeDialog(true);
+          setShowUnlockDialog(true);
           setShowShare(false);
         } else {
           setIsUnlocked(true);
-          setShowInviteCodeDialog(false);
+          setShowUnlockDialog(false);
           setShowShare(true);
         }
       } catch {
@@ -125,7 +172,7 @@ export default function ReportResult() {
       }
     };
     loadReport();
-  }, [getReportDetail, db, reportId]);
+  }, [db, getReportDetail, reportId]);
 
   useShareAppMessage(() => {
     return {
@@ -134,26 +181,69 @@ export default function ReportResult() {
     };
   });
 
-  // 邀请码提交
-  const handleSubmitInviteCode = useCallback(async () => {
-    if (!inviteCode.trim() || !reportId) return;
-    setIsVerifying(true);
+  const handleUnlockReport = useCallback(async () => {
+    if (!reportId || isPaying) return;
+
+    const wxApi = typeof globalThis !== 'undefined' ? globalThis.wx : undefined;
+    if (!canUseVirtualPayment(wxApi)) {
+      Taro.showToast({ title: '当前微信版本不支持虚拟支付', icon: 'none' });
+      return;
+    }
+
+    setIsPaying(true);
     try {
-      await handleInviteCodeSubmit(reportId, inviteCode.trim());
-      setShowInviteCodeDialog(false);
+      const order = await createReportUnlockOrder(reportId);
+      const signData = {
+        offerId: order?.offerId || REPORT_UNLOCK_PAYMENT_CONFIG.offerId,
+        buyQuantity: order?.buyQuantity ?? REPORT_UNLOCK_PAYMENT_CONFIG.buyQuantity,
+        env: order?.env ?? REPORT_UNLOCK_PAYMENT_CONFIG.env,
+        currencyType: order?.currencyType || REPORT_UNLOCK_PAYMENT_CONFIG.currencyType,
+        productId: order?.productId || REPORT_UNLOCK_PAYMENT_CONFIG.productId,
+        goodsPrice: order?.goodsPrice ?? REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice,
+        outTradeNo: order?.outTradeNo,
+        attach: order?.attach || REPORT_UNLOCK_PAYMENT_CONFIG.attach,
+      };
+      const paymentArgs = {
+        signData: JSON.stringify(signData),
+        paySig: order?.paySig,
+        signature: order?.signature,
+        mode: order?.mode || REPORT_UNLOCK_PAYMENT_CONFIG.mode,
+      };
+debugger
+      if (!order.outTradeNo || !paymentArgs.paySig || !paymentArgs.signature) {
+        throw new Error('支付参数不完整');
+      }
+
+      const paymentResult = await requestVirtualPayment(wxApi, paymentArgs);
+      const parsedSignData = parseSignData(paymentArgs.signData);
+
+      await confirmReportUnlockPayment(reportId, {
+        outTradeNo: order?.outTradeNo || parsedSignData?.outTradeNo,
+        signData: paymentArgs.signData,
+        mode: paymentArgs.mode,
+        paymentResult,
+        productId: order?.productId || parsedSignData?.productId,
+      });
+
+      setShowUnlockDialog(false);
       setIsUnlocked(true);
       setShowShare(true);
-      Taro.showToast({ title: '邀请码验证成功', icon: 'success' });
+      Taro.showToast({ title: '支付成功，已解锁', icon: 'success' });
+
       if (db) {
         const detail = await getReportDetailApi(db, reportId, true);
         if (detail) setDisplayContent(detail.content || '');
       }
-    } catch (err) {
-      Taro.showToast({ title: err.message || '验证失败', icon: 'error' });
+    } catch (error) {
+      if (isUserCancelledPayment(error)) {
+        Taro.showToast({ title: '已取消支付', icon: 'none' });
+        return;
+      }
+      Taro.showToast({ title: error?.message || error?.errMsg || '解锁失败', icon: 'none' });
     } finally {
-      setIsVerifying(false);
+      setIsPaying(false);
     }
-  }, [inviteCode, reportId, handleInviteCodeSubmit, db]);
+  }, [createReportUnlockOrder, confirmReportUnlockPayment, db, isPaying, reportId]);
 
   useEffect(() => {
     if (isUnlocked) {
@@ -163,16 +253,6 @@ export default function ReportResult() {
     }
   }, [isUnlocked]);
 
-  // 复制链接（小程序内 path，便于转发）
-  const handleCopyLink = useCallback(() => {
-    const path = `/pages/report-result/index?mode=${mode}&reportId=${reportId}`;
-    Taro.setClipboardData({
-      data: path,
-      success: () => Taro.showToast({ title: '已复制', icon: 'success' }),
-    });
-  }, [mode, reportId]);
-
-  /** 有上一页则返回，否则（如分享直达）回首页 */
   const handleHeaderBack = useCallback(() => {
     const pages = Taro.getCurrentPages();
     if (pages.length > 1) {
@@ -182,27 +262,6 @@ export default function ReportResult() {
     }
   }, []);
 
-  /** 打开公众号图文（需在 brand.js 配置 OFFICIAL_ACCOUNT_ARTICLE_URL） */
-  const handleOpenOfficialAccount = useCallback(() => {
-    const articleUrl = OFFICIAL_ACCOUNT_ARTICLE_URL?.trim();
-    if (!articleUrl) {
-      Taro.showToast({ title: '请配置公众号文章链接', icon: 'none' });
-      return;
-    }
-    const wxApi = typeof globalThis !== 'undefined' ? globalThis.wx : undefined;
-    if (!wxApi?.openOfficialAccountArticle) return;
-    wxApi.openOfficialAccountArticle({
-      url: articleUrl,
-      fail: (err) => {
-        const msg = err?.errMsg || '';
-        if (msg.includes('cancel') || msg.includes('取消')) return;
-        console.error(err);
-        Taro.showToast({ title: msg || '无法打开文章', icon: 'none' });
-      },
-    });
-  }, []);
-
-  // 加载失败页 - 与 H5 一致
   if (loadError) {
     return (
       <View className='report-result rr-error-page'>
@@ -221,7 +280,6 @@ export default function ReportResult() {
     );
   }
 
-  // 加载中 - 与 H5 一致
   if (isLoadingReport || !displayContent) {
     return (
       <View className='report-result rr-loading-page'>
@@ -234,12 +292,10 @@ export default function ReportResult() {
 
   return (
     <View className='report-result'>
-      {/* 背景光晕 - 与 H5 BackgroundBlobs 一致 */}
       <View className='rr-blob rr-blob-1' />
       <View className='rr-blob rr-blob-2' />
       <View className='rr-blob rr-blob-3' />
 
-      {/* 顶部栏 - 与 H5 header 一致 */}
       <View className='rr-header'>
         <View className='rr-header-back' onTouchEnd={handleHeaderBack}>
           <Text className='rr-header-back-icon'>←</Text>
@@ -248,7 +304,6 @@ export default function ReportResult() {
         <View className='rr-header-placeholder' />
       </View>
 
-      {/* 内容区 - 卡片 + 可选「查看完整对话过程」 */}
       <ScrollView scrollY className='rr-scroll' enhanced showScrollbar={false}>
         <View className='rr-content-wrap'>
           <ReportCard modeLabel={modeLabel} subTitle={subTitle} contentHtml={contentHtml} />
@@ -265,40 +320,29 @@ export default function ReportResult() {
         </View>
       </ScrollView>
 
-      {/* 底部转化区 - 与 H5 ConversionZone 一致 */}
       {showShare && (
         <View className='rr-bottom'>
-          <ConversionZone onCopyLink={handleCopyLink} />
+          <ConversionZone />
         </View>
       )}
 
-      {/* 邀请码弹窗 */}
-      {showInviteCodeDialog && (
+      {showUnlockDialog && (
         <View className='rr-dialog-mask'>
           <View className='rr-dialog-content'>
-            <Text className='rr-dialog-title'>输入邀请码</Text>
-            <Text className='rr-dialog-desc rr-dialog-desc-link' onClick={handleOpenOfficialAccount}>
-              关注 Inner Book 公众号，获取邀请码
+            <Text className='rr-dialog-title'>解锁完整报告</Text>
+            <Text className='rr-dialog-desc'>{REPORT_UNLOCK_PAYMENT_CONFIG.productName}</Text>
+            <Text className='rr-dialog-desc rr-dialog-price'>
+              支付 {formatPriceFen(REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice)} 后可查看完整报告与完整对话
             </Text>
-            <View className='rr-invite-input-row'>
-              <Input
-                type='text'
-                value={inviteCode}
-                className='rr-invite-input'
-                placeholder='请输入邀请码'
-                placeholderClass='rr-invite-placeholder'
-                onInput={(e) => setInviteCode(e.detail.value)}
-              />
-            </View>
             <View className='rr-invite-btns'>
-              <View className='rr-invite-cancel' onTouchEnd={() => setShowInviteCodeDialog(false)}>
-                <Text>取消</Text>
+              <View className='rr-invite-cancel' onTouchEnd={() => setShowUnlockDialog(false)}>
+                <Text>稍后再看</Text>
               </View>
               <View
-                className={`rr-invite-confirm ${isVerifying ? 'rr-invite-disabled' : ''}`}
-                onTouchEnd={handleSubmitInviteCode}
+                className={`rr-invite-confirm ${isPaying ? 'rr-invite-disabled' : ''}`}
+                onTouchEnd={handleUnlockReport}
               >
-                <Text>{isVerifying ? '验证中...' : '确认'}</Text>
+                <Text>{isPaying ? '支付中...' : '立即解锁'}</Text>
               </View>
             </View>
           </View>
