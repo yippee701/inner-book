@@ -6,7 +6,7 @@
  * 2. 商品信息会传给服务端用于创建订单，服务端仍需二次校验，不能直接信任前端参数。
  */
 export const REPORT_UNLOCK_PAYMENT_CONFIG = {
-  functionName: 'wxpaycommon',
+  functionName: 'wx-virtual-pay',
   mode: 'short_series_goods',
   offerId: '1450513532',
   env: 1,

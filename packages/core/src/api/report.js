@@ -34,7 +34,7 @@ export async function createVirtualPaymentOrder(cloudbaseApp, payload, functionN
     name: functionName,
     data: payload,
   });
-  
+
   return result;
 }
 

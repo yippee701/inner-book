@@ -95,8 +95,12 @@ function requestVirtualPayment(wxApi, paymentArgs) {
   return new Promise((resolve, reject) => {
     wxApi.requestVirtualPayment({
       ...paymentArgs,
-      success: resolve,
-      fail: reject,
+      success: function (res) {
+        resolve(res);
+      },
+      fail: function (error) {
+        reject(error);
+      },
     });
   });
 }
@@ -116,6 +120,21 @@ function parseSignData(signData) {
 function isUserCancelledPayment(error) {
   const message = error?.errMsg || '';
   return error?.errCode === -2 || message.includes('cancel') || message.includes('取消');
+}
+
+function loginForPayment() {
+  return new Promise((resolve, reject) => {
+    Taro.login({
+      success: (res) => {
+        if (!res?.code) {
+          reject(new Error('获取支付登录态失败'));
+          return;
+        }
+        resolve(res.code);
+      },
+      fail: (error) => reject(new Error(error?.errMsg || '获取支付登录态失败')),
+    });
+  });
 }
 
 export default function ReportResult() {
@@ -192,34 +211,64 @@ export default function ReportResult() {
 
     setIsPaying(true);
     try {
-      const order = await createReportUnlockOrder(reportId);
+      const code = await loginForPayment();
+      const order = await createReportUnlockOrder(reportId, code);
+      const requestVirtualPaymentPayload = order?.requestVirtualPayment || order || {};
       const signData = {
-        offerId: order?.offerId || REPORT_UNLOCK_PAYMENT_CONFIG.offerId,
-        buyQuantity: order?.buyQuantity ?? REPORT_UNLOCK_PAYMENT_CONFIG.buyQuantity,
-        env: order?.env ?? REPORT_UNLOCK_PAYMENT_CONFIG.env,
-        currencyType: order?.currencyType || REPORT_UNLOCK_PAYMENT_CONFIG.currencyType,
-        productId: order?.productId || REPORT_UNLOCK_PAYMENT_CONFIG.productId,
-        goodsPrice: order?.goodsPrice ?? REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice,
-        outTradeNo: order?.outTradeNo,
-        attach: order?.attach || REPORT_UNLOCK_PAYMENT_CONFIG.attach,
-      };
+          offerId: order?.offerId || REPORT_UNLOCK_PAYMENT_CONFIG.offerId,
+          buyQuantity: order?.buyQuantity ?? REPORT_UNLOCK_PAYMENT_CONFIG.buyQuantity,
+          env: order?.env ?? REPORT_UNLOCK_PAYMENT_CONFIG.env,
+          currencyType: order?.currencyType || REPORT_UNLOCK_PAYMENT_CONFIG.currencyType,
+          productId: order?.productId || REPORT_UNLOCK_PAYMENT_CONFIG.productId,
+          goodsPrice: order?.goodsPrice ?? REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice,
+          outTradeNo: order?.outTradeNo,
+          attach: order?.attach || REPORT_UNLOCK_PAYMENT_CONFIG.attach,
+        };
+      
+        /**
+         * 对对象进行 KEY 升序 JSON 序列化（用于签名，绝对稳定）
+         * @param {object} obj 要序列化的对象
+         * @returns {string} 升序排列后的 JSON 字符串
+         */
+        function stableStringify(obj) {
+          // 基础类型直接返回
+          if (typeof obj !== 'object' || obj === null) {
+            return JSON.stringify(obj);
+          }
+
+          // 数组保持顺序
+          if (Array.isArray(obj)) {
+            return `[${obj.map(item => stableStringify(item)).join(',')}]`;
+          }
+
+          // 对象：key 升序排列
+          const sortedKeys = Object.keys(obj).sort();
+          const parts = sortedKeys.map(key => {
+            const value = obj[key];
+            // 递归序列化，保证嵌套也稳定
+            return `"${key}":${stableStringify(value)}`;
+          });
+
+          return `{${parts.join(',')}}`;
+        }
+        const sortedParams = stableStringify(signData);
       const paymentArgs = {
-        signData: JSON.stringify(signData),
+        signData: sortedParams,
         paySig: order?.paySig,
         signature: order?.signature,
-        mode: order?.mode || REPORT_UNLOCK_PAYMENT_CONFIG.mode,
+        mode: REPORT_UNLOCK_PAYMENT_CONFIG.mode,
       };
-debugger
-      if (!order.outTradeNo || !paymentArgs.paySig || !paymentArgs.signature) {
+
+
+      if (!paymentArgs.signData || !paymentArgs.paySig || !paymentArgs.signature) {
         throw new Error('支付参数不完整');
       }
 
       const paymentResult = await requestVirtualPayment(wxApi, paymentArgs);
       const parsedSignData = parseSignData(paymentArgs.signData);
-
       await confirmReportUnlockPayment(reportId, {
         outTradeNo: order?.outTradeNo || parsedSignData?.outTradeNo,
-        signData: paymentArgs.signData,
+        signData: sortedParams,
         mode: paymentArgs.mode,
         paymentResult,
         productId: order?.productId || parsedSignData?.productId,

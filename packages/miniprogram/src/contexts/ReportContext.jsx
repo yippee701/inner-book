@@ -5,11 +5,11 @@ import {
   generateReportTitle, extractReportSubTitle, cleanReportContent, generateReportId,
   REPORT_STATUS,
   sendMessage,
-  getReportDetail, createVirtualPaymentOrder, confirmVirtualPayment, saveMessages,
+  getReportDetail, saveMessages,
   trackVisitEvent, trackConversationRound,
 } from '@know-yourself/core';
 import { useAuth, useCloudbaseApp, useDb } from './cloudbaseContext';
-import { REPORT_UNLOCK_PAYMENT_CONFIG } from '../config/payment';
+import { requestReportUnlockOrder, confirmReportUnlockOrder } from '../services/reportPayment';
 
 const ReportContext = createContext(null);
 const LOCAL_REPORTS_KEY = 'pendingReports';
@@ -284,39 +284,14 @@ export function ReportProvider({ children }) {
     }));
   }, []);
 
-  const createReportUnlockOrder = useCallback(async (reportId) => {
-    const response = await createVirtualPaymentOrder(
-      cloudbaseApp,
-      {
-        action: 'wxpay_virtual_goods',
-        productId: REPORT_UNLOCK_PAYMENT_CONFIG.productId,
-        productName: REPORT_UNLOCK_PAYMENT_CONFIG.productName,
-        price: String(REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice),
-      },
-      REPORT_UNLOCK_PAYMENT_CONFIG.functionName
-    );
-    const result = response?.result;
-    if (!result || result.code !== 0) {
-      throw new Error(result?.message || '创建支付订单失败');
-    }
-    return result.data || result;
+  const createReportUnlockOrder = useCallback(async (reportId, code) => {
+    return requestReportUnlockOrder(cloudbaseApp, code);
   }, [cloudbaseApp]);
 
   const confirmReportUnlockPayment = useCallback(async (reportId, paymentPayload) => {
-    const response = await confirmVirtualPayment(
-      cloudbaseApp,
-      {
-        reportId,
-        ...paymentPayload,
-      },
-      REPORT_UNLOCK_PAYMENT_CONFIG.functionName
-    );
-    const result = response?.result;
-    if (!result || result.retcode !== 0) {
-      throw new Error(result?.message || '支付确认失败');
-    }
+    const result = await confirmReportUnlockOrder(cloudbaseApp, reportId, paymentPayload);
     updateLocalReport(reportId, { lock: 0 });
-    return result.data || result;
+    return result;
   }, [cloudbaseApp, updateLocalReport]);
 
   const completeReport = useCallback(async () => {
