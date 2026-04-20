@@ -9,7 +9,6 @@ import {
   getReportDetail as getReportDetailApi,
 } from '@know-yourself/core';
 import { useDb } from '../../contexts/cloudbaseContext';
-import { REPORT_UNLOCK_PAYMENT_CONFIG, formatPriceFen } from '../../config/payment';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -213,50 +212,12 @@ export default function ReportResult() {
     try {
       const code = await loginForPayment();
       const order = await createReportUnlockOrder(reportId, code);
-      const requestVirtualPaymentPayload = order?.requestVirtualPayment || order || {};
-      const signData = {
-          offerId: order?.offerId || REPORT_UNLOCK_PAYMENT_CONFIG.offerId,
-          buyQuantity: order?.buyQuantity ?? REPORT_UNLOCK_PAYMENT_CONFIG.buyQuantity,
-          env: order?.env ?? REPORT_UNLOCK_PAYMENT_CONFIG.env,
-          currencyType: order?.currencyType || REPORT_UNLOCK_PAYMENT_CONFIG.currencyType,
-          productId: order?.productId || REPORT_UNLOCK_PAYMENT_CONFIG.productId,
-          goodsPrice: order?.goodsPrice ?? REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice,
-          outTradeNo: order?.outTradeNo,
-          attach: order?.attach || REPORT_UNLOCK_PAYMENT_CONFIG.attach,
-        };
-      
-        /**
-         * 对对象进行 KEY 升序 JSON 序列化（用于签名，绝对稳定）
-         * @param {object} obj 要序列化的对象
-         * @returns {string} 升序排列后的 JSON 字符串
-         */
-        function stableStringify(obj) {
-          // 基础类型直接返回
-          if (typeof obj !== 'object' || obj === null) {
-            return JSON.stringify(obj);
-          }
-
-          // 数组保持顺序
-          if (Array.isArray(obj)) {
-            return `[${obj.map(item => stableStringify(item)).join(',')}]`;
-          }
-
-          // 对象：key 升序排列
-          const sortedKeys = Object.keys(obj).sort();
-          const parts = sortedKeys.map(key => {
-            const value = obj[key];
-            // 递归序列化，保证嵌套也稳定
-            return `"${key}":${stableStringify(value)}`;
-          });
-
-          return `{${parts.join(',')}}`;
-        }
-        const sortedParams = stableStringify(signData);
+      const requestVirtualPaymentPayload = order?.requestVirtualPayment || {};
       const paymentArgs = {
-        signData: sortedParams,
-        paySig: order?.paySig,
-        signature: order?.signature,
-        mode: REPORT_UNLOCK_PAYMENT_CONFIG.mode,
+        signData: requestVirtualPaymentPayload?.signData || order?.signData,
+        paySig: requestVirtualPaymentPayload?.paySig || order?.paySig,
+        signature: requestVirtualPaymentPayload?.signature || order?.signature,
+        mode: requestVirtualPaymentPayload?.mode || order?.mode || 'short_series_goods',
       };
 
 
@@ -268,7 +229,7 @@ export default function ReportResult() {
       const parsedSignData = parseSignData(paymentArgs.signData);
       await confirmReportUnlockPayment(reportId, {
         outTradeNo: order?.outTradeNo || parsedSignData?.outTradeNo,
-        signData: sortedParams,
+        signData: paymentArgs.signData,
         mode: paymentArgs.mode,
         paymentResult,
         productId: order?.productId || parsedSignData?.productId,
@@ -379,9 +340,8 @@ export default function ReportResult() {
         <View className='rr-dialog-mask'>
           <View className='rr-dialog-content'>
             <Text className='rr-dialog-title'>解锁完整报告</Text>
-            <Text className='rr-dialog-desc'>{REPORT_UNLOCK_PAYMENT_CONFIG.productName}</Text>
             <Text className='rr-dialog-desc rr-dialog-price'>
-              支付 {formatPriceFen(REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice)} 后可查看完整报告与完整对话
+              支付后可查看完整报告与完整对话
             </Text>
             <View className='rr-invite-btns'>
               <View className='rr-invite-cancel' onTouchEnd={() => setShowUnlockDialog(false)}>

@@ -1,5 +1,6 @@
 import { createVirtualPaymentOrder, confirmVirtualPayment } from '@know-yourself/core';
-import { REPORT_UNLOCK_PAYMENT_CONFIG } from '../config/payment';
+
+const REPORT_UNLOCK_PAYMENT_FUNCTION_NAME = 'wx-virtual-pay';
 
 export async function requestReportUnlockOrder(cloudbaseApp, code) {
   try { 
@@ -7,12 +8,9 @@ export async function requestReportUnlockOrder(cloudbaseApp, code) {
       cloudbaseApp,
       {
         action: 'wxpay_virtual_goods',
-        productId: REPORT_UNLOCK_PAYMENT_CONFIG.productId,
-        productName: REPORT_UNLOCK_PAYMENT_CONFIG.productName,
-        price: String(REPORT_UNLOCK_PAYMENT_CONFIG.goodsPrice),
         code,
       },
-      REPORT_UNLOCK_PAYMENT_CONFIG.functionName
+      REPORT_UNLOCK_PAYMENT_FUNCTION_NAME
     );
     const result = response?.result;
     if (!result || result.code !== 0) {
@@ -35,7 +33,7 @@ export async function confirmReportUnlockOrder(cloudbaseApp, reportId, paymentPa
       reportId,
       ...paymentPayload,
     },
-    REPORT_UNLOCK_PAYMENT_CONFIG.functionName
+    REPORT_UNLOCK_PAYMENT_FUNCTION_NAME
   );
 
   const result = response?.result;
