@@ -285,7 +285,7 @@ export function ReportProvider({ children }) {
   }, []);
 
   const createReportUnlockOrder = useCallback(async (reportId, code) => {
-    return requestReportUnlockOrder(cloudbaseApp, code);
+    return requestReportUnlockOrder(cloudbaseApp, code, reportId);
   }, [cloudbaseApp]);
 
   const confirmReportUnlockPayment = useCallback(async (reportId, paymentPayload) => {

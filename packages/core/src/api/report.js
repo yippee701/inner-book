@@ -30,12 +30,25 @@ export async function createVirtualPaymentOrder(cloudbaseApp, payload, functionN
   if (!cloudbaseApp) {
     throw new Error('cloudbaseApp 未初始化');
   }
-  const result = await cloudbaseApp.callFunction({
-    name: functionName,
-    data: payload,
-  });
+  let response;
+  try {
+    response = await cloudbaseApp.callFunction({
+      name: functionName,
+      data: payload,
+    });
+  } catch (err) {
+    const reason = err?.errMsg || err?.message || err;
+    console.error('[createVirtualPaymentOrder] callFunction rejected:', functionName, reason, err);
+    throw err;
+  }
 
-  return result;
+  // 部分环境下失败仍走 resolve，errMsg 非 cloud.callFunction:ok
+  if (response?.errMsg != null && response.errMsg !== 'cloud.callFunction:ok') {
+    console.error('[createVirtualPaymentOrder] callFunction not ok:', functionName, response);
+    throw new Error(response.errMsg);
+  }
+
+  return response;
 }
 
 /**
@@ -48,11 +61,41 @@ export async function confirmVirtualPayment(cloudbaseApp, payload, functionName 
   const result = await cloudbaseApp.callFunction({
     name: functionName,
     data: {
-      action: 'confirmOrder',
+      action: 'confirm_order',
       ...payload,
     },
   });
   return result;
+}
+
+/**
+ * 小程序：轮询查询支付单与报告解锁状态（云函数 action：query_unlock_status）
+ */
+export async function queryUnlockStatus(cloudbaseApp, payload, functionName = 'report-unlock-payment') {
+  if (!cloudbaseApp) {
+    throw new Error('cloudbaseApp 未初始化');
+  }
+  let response;
+  try {
+    response = await cloudbaseApp.callFunction({
+      name: functionName,
+      data: {
+        action: 'query_unlock_status',
+        ...payload,
+      },
+    });
+  } catch (err) {
+    const reason = err?.errMsg || err?.message || err;
+    console.error('[queryUnlockStatus] callFunction rejected:', functionName, reason, err);
+    throw err;
+  }
+
+  if (response?.errMsg != null && response.errMsg !== 'cloud.callFunction:ok') {
+    console.error('[queryUnlockStatus] callFunction not ok:', functionName, response);
+    throw new Error(response.errMsg);
+  }
+
+  return response;
 }
 
 // 缓存配置

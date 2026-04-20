@@ -8,7 +8,8 @@ import {
   markdownToHtml,
   getReportDetail as getReportDetailApi,
 } from '@know-yourself/core';
-import { useDb } from '../../contexts/cloudbaseContext';
+import { useDb, useCloudbaseApp } from '../../contexts/cloudbaseContext';
+import { pollReportUnlockUntilDone } from '../../services/reportPayment';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -142,6 +143,7 @@ export default function ReportResult() {
   const reportId = router?.params?.reportId;
   const modeLabel = getModeLabel(mode);
   const db = useDb();
+  const cloudbaseApp = useCloudbaseApp();
   const {
     getReportDetail,
     subTitle,
@@ -227,13 +229,27 @@ export default function ReportResult() {
 
       const paymentResult = await requestVirtualPayment(wxApi, paymentArgs);
       const parsedSignData = parseSignData(paymentArgs.signData);
-      await confirmReportUnlockPayment(reportId, {
-        outTradeNo: order?.outTradeNo || parsedSignData?.outTradeNo,
-        signData: paymentArgs.signData,
-        mode: paymentArgs.mode,
-        paymentResult,
-        productId: order?.productId || parsedSignData?.productId,
-      });
+      const outTradeNo = order?.outTradeNo || parsedSignData?.outTradeNo;
+      if (!outTradeNo) {
+        throw new Error('缺少订单号');
+      }
+
+      try {
+        await confirmReportUnlockPayment(reportId, {
+          outTradeNo,
+          signData: paymentArgs.signData,
+          mode: paymentArgs.mode,
+          paymentResult,
+          productId: order?.productId || parsedSignData?.productId,
+        });
+      } catch (confirmErr) {
+        console.warn('[ReportResult] confirm_order 失败，将依赖轮询查询', confirmErr);
+      }
+
+      if (!cloudbaseApp) {
+        throw new Error('云能力未就绪，无法确认支付结果');
+      }
+      await pollReportUnlockUntilDone(cloudbaseApp, reportId, outTradeNo);
 
       setShowUnlockDialog(false);
       setIsUnlocked(true);
@@ -249,11 +265,12 @@ export default function ReportResult() {
         Taro.showToast({ title: '已取消支付', icon: 'none' });
         return;
       }
+      console.error('[ReportResult.handleUnlockReport] 解锁流程失败:', error?.message || error?.errMsg || error, error);
       Taro.showToast({ title: error?.message || error?.errMsg || '解锁失败', icon: 'none' });
     } finally {
       setIsPaying(false);
     }
-  }, [createReportUnlockOrder, confirmReportUnlockPayment, db, isPaying, reportId]);
+  }, [cloudbaseApp, createReportUnlockOrder, confirmReportUnlockPayment, db, isPaying, reportId]);
 
   useEffect(() => {
     if (isUnlocked) {

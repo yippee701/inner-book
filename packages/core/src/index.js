@@ -33,6 +33,7 @@ export {
   verifyInviteCode,
   createVirtualPaymentOrder,
   confirmVirtualPayment,
+  queryUnlockStatus,
   getReportDetail,
   saveMessages,
   getMessages,
