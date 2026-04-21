@@ -165,6 +165,7 @@ export function getReportDetail(db, reportId, skipCache = false) {
         lock: true,
         inviteCode: true,
         mode: true,
+        _openid: true,
       })
       .get((res, data) => {
         if (res !== 0 || !data) {
@@ -188,6 +189,8 @@ export function getReportDetail(db, reportId, skipCache = false) {
             lock: reportDetail.lock !== undefined ? reportDetail.lock : true,
             inviteCode: reportDetail.inviteCode || '',
             isCompleted: reportDetail.status === REPORT_STATUS.COMPLETED,
+            /** 微信云库中文档创建者 openid，用于区分本人报告 / 访客浏览 */
+            creatorOpenid: reportDetail._openid ?? reportDetail.creatorOpenid ?? null,
           };
           if (reportDetail.lock === true) {
             result.content = result.content.slice(0, 200).concat('...(待解锁)');

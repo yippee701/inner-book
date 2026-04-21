@@ -8,7 +8,8 @@ import {
   markdownToHtml,
   getReportDetail as getReportDetailApi,
 } from '@know-yourself/core';
-import { useDb, useCloudbaseApp } from '../../contexts/cloudbaseContext';
+import { useDb, useCloudbaseApp, useOpenidReady } from '../../contexts/cloudbaseContext';
+import { getOpenid } from '../../utils/openidStore';
 import { pollReportUnlockUntilDone } from '../../services/reportPayment';
 import './index.scss';
 
@@ -19,13 +20,24 @@ const QUOTE_ICON_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACk0lEQVR4AeyaP2/CQAzFT5FYKAtDmdu53/+jdG5nOrBQpIqhzS+pEZT8OfvIKT2MZA4S+5793jtEK6rvO39U4c4fTsCdGyC4A9wBd86AH4EpDHA8hLB7b4PXU2Bo96SPw7btid6k/mYOAICNt681yFsIx8829jWogOVe//a0/2h7ojfpJYkAAGD1fGjZWFbAyJP3OVbwEGP3K0QXJn1z3UyAAMAqGw1FLhcwlPQF8YM91W7gvpoA2EXxMQA2lyCXOnl/65W9GRwxwIrdnzoVAYBgq1iAHHmN6gNWH+oBZ0YRAFNa1QV48RDC+jmExVKu3G5FEFS37Lh6rPt6CuNfhRneqrqATDW8xu5CEoJsXkJYbtorVbt0P6cMj+oC0r27/SrKW4YXQc6RewmQs3WeHPua4adQHfyU4bsE6SXAeramHB5RrMp3DQ+hnQQAxE1tYLGplKcniyic+b7hme+KACsQww8BAZYSluHBW9ef9Kx9cUWAFWix6oNIv44oll0QZazugoAUoLlZn8FjHHlBgFV9wOYWMerT84kAq/psEsM0edqgJ6sosUfyRIAVKJZp7fCp+bFHsiEAplMBp6jPIUpDQErzsVbTYuQSpSHAyjRDxVqN3DlGxR88KY3x3TwmtDhf9T9WrX1RG9MTOdVxb4Vp6/huHhVKHPZsEfTP1MZGcwT0ENNWaN0y1M3YvQq7jCWVfH+eDlAelxSBZklAykDa2ooPC21RSfnugJLUtMziDrCwVlKNO6AkNS2zuAMsrJVU4w4oSU3LLO4AC2tzrtH25g7QMlZavjugNEW187gDtIyVlu8OKE1R7TwVPxrMEZrfEJCboycw/AhoLVNavjugNEW187gDtIyVlv/vHZAqyA8AAAD//3GD8NkAAAAGSURBVAMAUXAtn9G4v8MAAAAASUVORK5CYII=';
 const VIRTUAL_PAYMENT_MIN_SDK_VERSION = '2.19.2';
 
-function ConversionZone() {
+/** @param {{ isGuest: boolean }} props — isGuest：浏览他人分享的报告（非创建者本人） */
+function ConversionZone({ isGuest }) {
+  const goHome = () => {
+    Taro.reLaunch({ url: '/pages/index/index' });
+  };
+
   return (
     <View className='rr-conversion'>
       <View className='rr-conversion-btns'>
-        <Button className='rr-btn-primary rr-btn-share' openType='share'>
-          <Text className='rr-btn-text'>分享报告</Text>
-        </Button>
+        {isGuest ? (
+          <View className='rr-btn-primary rr-btn-cta' onTouchEnd={goHome}>
+            <Text className='rr-btn-text'>我也要测试</Text>
+          </View>
+        ) : (
+          <Button className='rr-btn-primary rr-btn-share' openType='share'>
+            <Text className='rr-btn-text'>分享报告</Text>
+          </Button>
+        )}
       </View>
       <View className='rr-signature'>
         <View className='rr-signature-line' />
@@ -34,6 +46,14 @@ function ConversionZone() {
       </View>
     </View>
   );
+}
+
+/** 是否当前用户创建的报告：仅本条报告的云库 creatorOpenid 与当前 openid 一致 */
+function isCurrentUserReportOwner(detail) {
+  if (!detail) return false;
+  const mine = getOpenid();
+  const creator = detail.creatorOpenid;
+  return Boolean(mine && creator && mine === creator);
 }
 
 function ReportCard({ modeLabel, subTitle, contentHtml }) {
@@ -144,6 +164,7 @@ export default function ReportResult() {
   const modeLabel = getModeLabel(mode);
   const db = useDb();
   const cloudbaseApp = useCloudbaseApp();
+  const openidReady = useOpenidReady();
   const {
     getReportDetail,
     subTitle,
@@ -158,6 +179,15 @@ export default function ReportResult() {
   const [isPaying, setIsPaying] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  /** 访客态：看的不是本人在云库创建的报告（无本地草稿关联且 openid 与 creatorOpenid 不一致） */
+  const [conversionGuest, setConversionGuest] = useState(false);
+  /** 用于本人/访客判断（含 creatorOpenid），与展示内容无关字段 */
+  const [ownerCheckDetail, setOwnerCheckDetail] = useState(null);
+
+  useEffect(() => {
+    if (!ownerCheckDetail || !reportId) return;
+    setConversionGuest(!isCurrentUserReportOwner(ownerCheckDetail));
+  }, [ownerCheckDetail, reportId, openidReady]);
 
   useEffect(() => {
     if (!db || !getReportDetail || !reportId) {
@@ -176,6 +206,9 @@ export default function ReportResult() {
           return;
         }
         setDisplayContent(detail.content || '');
+        setOwnerCheckDetail({
+          creatorOpenid: detail.creatorOpenid ?? null,
+        });
         if (detail.lock === true) {
           setIsUnlocked(false);
           setShowUnlockDialog(true);
@@ -349,7 +382,7 @@ export default function ReportResult() {
 
       {showShare && (
         <View className='rr-bottom'>
-          <ConversionZone />
+          <ConversionZone isGuest={conversionGuest} />
         </View>
       )}
 
