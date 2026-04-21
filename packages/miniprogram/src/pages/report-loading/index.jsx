@@ -38,29 +38,6 @@ export default function ReportLoading() {
   const currentChars = content ? content.length : 0;
   const totalChars = Math.max(REPORT_TOTAL_CHARS, currentChars);
 
-  useEffect(() => {
-    console.log('[miniprogram][report-debug] report loading mount', {
-      mode,
-      currentReportId,
-    });
-    return () => {
-      console.log('[miniprogram][report-debug] report loading unmount', {
-        mode,
-        currentReportId,
-      });
-    };
-  }, [mode, currentReportId]);
-
-  useEffect(() => {
-    console.log('[miniprogram][report-debug] report loading state update', {
-      mode,
-      currentReportId,
-      isComplete,
-      currentChars,
-      hasError: !!reportError,
-    });
-  }, [mode, currentReportId, isComplete, currentChars, reportError]);
-
   // 完成后跳转
   useEffect(() => {
     if (isComplete && content) {
