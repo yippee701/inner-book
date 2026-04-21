@@ -32,6 +32,7 @@ export function useChatPage(routerParams) {
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
   const messageListRef = useRef(null);
   const hasRestoredHistoryRef = useRef(false);
+  const hasOpenedReportLoadingRef = useRef(false);
   const db = useDb();
 
   const { isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
@@ -62,14 +63,49 @@ export function useChatPage(routerParams) {
     return () => clearChatPrefetch();
   }, [chatMode, hasStarted]);
 
+  useEffect(() => {
+    return () => {
+      console.log('[miniprogram][report-debug] chat page hook unmount', {
+        mode: chatMode,
+      });
+    };
+  }, [chatMode]);
+
   const handleReportStart = useCallback(() => {
+    if (hasOpenedReportLoadingRef.current) return;
+    hasOpenedReportLoadingRef.current = true;
+    console.log('[miniprogram][report-debug] onReportStart triggered', {
+      mode: chatMode,
+    });
     startReport();
-    Taro.redirectTo({ url: `/pages/report-loading/index?mode=${chatMode}` });
+    // 保留当前聊天页实例，避免 useChat 在检测到 [Report] 后立刻被卸载，
+    // 导致后续 onReportUpdate 无法继续把完整报告写进 ReportContext。
+    Taro.navigateTo({ url: `/pages/report-loading/index?mode=${chatMode}` });
   }, [startReport, chatMode]);
 
-  const handleReportUpdate = useCallback((content) => updateReportContent(content), [updateReportContent]);
-  const handleReportComplete = useCallback(() => completeReport(), [completeReport]);
-  const handleReportError = useCallback((error) => setReportError(error?.message || '报告生成失败'), [setReportError]);
+  const handleReportUpdate = useCallback((content) => {
+    console.log('[miniprogram][report-debug] onReportUpdate', {
+      mode: chatMode,
+      length: content?.length || 0,
+      preview: typeof content === 'string' ? content.slice(0, 80) : '',
+    });
+    updateReportContent(content);
+  }, [chatMode, updateReportContent]);
+
+  const handleReportComplete = useCallback(() => {
+    console.log('[miniprogram][report-debug] onReportComplete', {
+      mode: chatMode,
+    });
+    completeReport();
+  }, [chatMode, completeReport]);
+
+  const handleReportError = useCallback((error) => {
+    console.log('[miniprogram][report-debug] onReportError', {
+      mode: chatMode,
+      message: error?.message || '报告生成失败',
+    });
+    setReportError(error?.message || '报告生成失败');
+  }, [chatMode, setReportError]);
   const handleUserMessageSent = useCallback((msgs) => updateMessages(msgs), [updateMessages]);
 
   const { messages, isLoading, sendUserMessage, restoreMessages, retryMessage } = useChat({
@@ -122,6 +158,7 @@ export function useChatPage(routerParams) {
   const handleResume = useCallback(() => {
     clearChatPrefetch();
     if (pendingReport) {
+      hasOpenedReportLoadingRef.current = false;
       resumeReport(pendingReport);
       restoreMessages(pendingReport.messages);
       setHasStarted(true);
@@ -132,6 +169,7 @@ export function useChatPage(routerParams) {
   }, [pendingReport, resumeReport, restoreMessages]);
 
   const handleStartNew = useCallback(async () => {
+    hasOpenedReportLoadingRef.current = false;
     setPendingReport(null);
     setHasStarted(true);
     await createReport(chatMode);
