@@ -31,7 +31,7 @@ function ConversionZone({ isGuest }) {
       <View className='rr-conversion-btns'>
         {isGuest ? (
           <View className='rr-btn-primary rr-btn-cta' onTouchEnd={goHome}>
-            <Text className='rr-btn-text'>我也要测试</Text>
+            <Text className='rr-btn-text'>我也要探索</Text>
           </View>
         ) : (
           <Button className='rr-btn-primary rr-btn-share' openType='share'>
