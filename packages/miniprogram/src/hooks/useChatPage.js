@@ -10,12 +10,38 @@ import {
   clearChatPrefetch,
   getModeFromParams,
   getPendingReportByMode,
+  getPendingReports,
   checkCanStartChat,
   getMessages,
 } from '@know-yourself/core';
 import { useReport } from '../contexts/ReportContext';
 import { useProfile } from '../hooks/useProfile';
 import { useDb } from '../contexts/cloudbaseContext';
+
+const COMPLETED_REPORT_STATUSES = new Set(['completed', 1, '1']);
+
+function isLockedReport(report) {
+  return report?.lock === true || report?.lock === 1 || report?.lock === '1';
+}
+
+function getReportTimestamp(report) {
+  const value = report?.updatedAt ?? report?.createdAt ?? 0;
+  if (typeof value === 'number') return value;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function findLatestLockedReportByMode(mode, remoteReports = []) {
+  const localReports = getPendingReports();
+  const reports = [...remoteReports, ...localReports]
+    .filter((report) => report?.mode === mode)
+    .filter((report) => COMPLETED_REPORT_STATUSES.has(report?.status))
+    .filter((report) => isLockedReport(report))
+    .filter((report) => Boolean(report?.reportId))
+    .sort((first, second) => getReportTimestamp(second) - getReportTimestamp(first));
+
+  return reports[0] || null;
+}
 
 /**
  * 聊天页业务逻辑：模式、状态、与报告/对话的联动，全部收敛在此
@@ -35,7 +61,7 @@ export function useChatPage(routerParams) {
   const hasOpenedReportLoadingRef = useRef(false);
   const db = useDb();
 
-  const { isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
+  const { reports, isLoggedIn, userExtraInfo, isLoading: isProfileLoading } = useProfile();
   const {
     startReport,
     updateReportContent,
@@ -138,13 +164,26 @@ export function useChatPage(routerParams) {
   }, [pendingReport, resumeReport, restoreMessages]);
 
   const handleStartNew = useCallback(async () => {
+    if (isProfileLoading) {
+      Taro.showToast({ title: '正在检查历史报告，请稍候', icon: 'none' });
+      return;
+    }
+
+    const lockedReport = findLatestLockedReportByMode(chatMode, reports);
+    if (lockedReport?.reportId) {
+      Taro.navigateTo({
+        url: `/pages/report-result/index?mode=${lockedReport.mode || chatMode}&reportId=${lockedReport.reportId}`,
+      });
+      return;
+    }
+
     hasOpenedReportLoadingRef.current = false;
     setPendingReport(null);
     setHasStarted(true);
     await createReport(chatMode);
     sendUserMessage('你好，我准备好了，请开始吧。', getChatPrefetchResult(chatMode));
     trackClickEvent('start_new_chat', { mode: chatMode });
-  }, [chatMode, createReport, sendUserMessage]);
+  }, [chatMode, createReport, isProfileLoading, reports, sendUserMessage]);
 
   const handleStart = useCallback(async () => {
     if (pendingReport) handleResume();

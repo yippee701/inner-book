@@ -1,4 +1,5 @@
-import { View, Text } from '@tarojs/components';
+import { View, Text, RichText } from '@tarojs/components';
+import { markdownToHtml } from '@know-yourself/core';
 
 /**
  * 消息气泡组件（小程序版，替代 antd Bubble）
@@ -8,6 +9,9 @@ export default function MessageBubble({ message, onRetry }) {
   const isStreaming = message.status === 'loading';
   const isError = message.status === 'error';
   const isLoading = isStreaming && !message.content;
+  const markdownContent = !isUser && typeof message.content === 'string'
+    ? markdownToHtml(message.content)
+    : '';
 
   if (isLoading) {
     return (
@@ -25,9 +29,13 @@ export default function MessageBubble({ message, onRetry }) {
   return (
     <View className={`bubble-row ${isUser ? 'bubble-row-user' : 'bubble-row-ai'}`}>
       <View className={`bubble ${isUser ? 'bubble-user' : 'bubble-ai'}`}>
-        <Text className={`bubble-text ${isUser ? 'bubble-text-user' : 'bubble-text-ai'}`}>
-          {message.content}
-        </Text>
+        {isUser ? (
+          <Text className={`bubble-text ${isUser ? 'bubble-text-user' : 'bubble-text-ai'}`}>
+            {message.content}
+          </Text>
+        ) : (
+          <RichText nodes={markdownContent} className='bubble-rich' />
+        )}
       </View>
       {isError && (
         <View className='bubble-error-row'>
