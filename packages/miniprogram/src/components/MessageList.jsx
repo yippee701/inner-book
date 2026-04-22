@@ -1,5 +1,6 @@
+import Taro from '@tarojs/taro';
 import { View, Text, ScrollView } from '@tarojs/components';
-import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import MessageBubble from './MessageBubble';
 import { useLoadingSteps } from '@know-yourself/core';
 
@@ -34,7 +35,8 @@ function LoadingSteps({ isFirstRound }) {
 const MessageList = forwardRef(function MessageList({
   messages, onRetry, recommendedAnswers = [], onSuggestionClick,
 }, ref) {
-  const [scrollIntoView, setScrollIntoView] = useState('');
+  const [scrollTop, setScrollTop] = useState(0);
+  const [scrollWithAnimation, setScrollWithAnimation] = useState(false);
   const lastMessage = messages[messages.length - 1];
   const userMessageCount = messages.filter(m => m.role === 'user').length;
   const isStreaming = lastMessage?.status === 'loading';
@@ -46,22 +48,34 @@ const MessageList = forwardRef(function MessageList({
     : null;
 
   // 滚动到底部
-  const scrollToBottom = useCallback(() => {
-    setScrollIntoView('msg-end');
-    setTimeout(() => setScrollIntoView(''), 100);
+  const scrollToBottom = useCallback((animated = false) => {
+    Taro.nextTick(() => {
+      const query = Taro.createSelectorQuery();
+      query.select('.message-list').boundingClientRect();
+      query.exec((res) => {
+        const height = res?.[0]?.height ?? 0;
+        setScrollWithAnimation(animated);
+        setScrollTop(height);
+      });
+    });
   }, []);
 
   useImperativeHandle(ref, () => ({ scrollToBottom }), [scrollToBottom]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length, lastMessage?.content, scrollToBottom]);
+    scrollToBottom(true);
+  }, [messages.length, scrollToBottom]);
+
+  useEffect(() => {
+    if (!isStreaming) return;
+    scrollToBottom(false);
+  }, [lastMessage?.content, isStreaming, scrollToBottom]);
 
   return (
     <ScrollView
       scrollY
-      scrollIntoView={scrollIntoView}
-      scrollWithAnimation
+      scrollTop={scrollTop}
+      scrollWithAnimation={scrollWithAnimation}
       padding={[0, 24, 0, 24]}
       className='message-list-scroll'
       enhanced

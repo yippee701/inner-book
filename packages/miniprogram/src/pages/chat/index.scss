@@ -140,10 +140,10 @@
 }
 .message-list {
   padding-top: 20px;
-  padding-bottom: 20px;
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
 .msg-end-anchor {
-  height: 2px;
+  height: 56px;
 }
 
 /* Message Bubble */
