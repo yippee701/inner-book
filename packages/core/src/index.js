@@ -38,7 +38,7 @@ export {
   saveMessages,
   getMessages,
 } from './api/report.js';
-export { getUserExtraInfo, restartConversation, getReports, updateReportTitle, updateUserNickname, checkCanStartChat } from './api/profile.js';
+export { getUserExtraInfo, restartConversation, getReports, updateReportTitle, updateUserNickname, registMpUser, checkCanStartChat } from './api/profile.js';
 
 // ===== Hooks =====
 export { useChat } from './hooks/useChat.js';

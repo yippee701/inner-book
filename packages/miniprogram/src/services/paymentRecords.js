@@ -28,7 +28,7 @@ function normalizePayOrder(record) {
     _id: record._id,
     outTradeNo: record.outTradeNo || '',
     reportId: record.reportId || '',
-    openid: record.openid || '',
+    openid: record._openid || record.openid || '',
     productId: record.productId || '',
     productName: record.productName || '',
     offerId: record.offerId || '',
@@ -63,11 +63,12 @@ export async function getPaymentRecords(db) {
 
   return new Promise((resolve, reject) => {
     db.collection('pay_orders')
-      .where({ openid })
+      .where({ _openid: openid })
       .orderBy('createTime', 'desc')
       .field({
         outTradeNo: true,
         reportId: true,
+        _openid: true,
         productId: true,
         productName: true,
         price: true,
@@ -96,11 +97,11 @@ export async function getPaymentRecordDetail(db, outTradeNo) {
 
   return new Promise((resolve, reject) => {
     db.collection('pay_orders')
-      .where({ outTradeNo, openid })
+      .where({ outTradeNo, _openid: openid })
       .field({
         outTradeNo: true,
         reportId: true,
-        openid: true,
+        _openid: true,
         productId: true,
         productName: true,
         offerId: true,

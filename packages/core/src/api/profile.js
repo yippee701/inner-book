@@ -199,14 +199,13 @@ export function updateReportTitle(db, reportId, title) {
  * @param {object} cloudbaseApp - cloudbaseApp 实例
  * @param {string} nickname - 新昵称
  */
-export function updateUserNickname(cloudbaseApp, nickname) {
+export async function updateUserNickname(cloudbaseApp, nickname) {
   if (!cloudbaseApp) {
     return Promise.reject(new Error('cloudbaseApp 未初始化'));
   }
   const name = nickname.trim();
   
-  // TODO 云函数未完整实现
-  const result = cloudbaseApp.callFunction({
+  const result = await cloudbaseApp.callFunction({
     name: 'mp-user-management',
     data: {
       action: 'updateUsername',
@@ -215,14 +214,38 @@ export function updateUserNickname(cloudbaseApp, nickname) {
     },    
   });
 
-  if (result.retcode !== 0) {
+  if (result?.result?.retcode !== 0) {
     return Promise.reject(new Error(result.message || '更新用户昵称失败'));
   }
   // 这两行暂时没什么用，更新数据后用户清除缓存，但是这个缓存目前没用上
   // 没删掉的原因是，如果以后用上了缓存，防止这里忘记清除
-  const cacheKey = getCacheKey(db, 'user_extra_info', userIdent);
-  cache.delete(cacheKey);  
+  // const cacheKey = getCacheKey(db, 'user_extra_info', userIdent);
+  // cache.delete(cacheKey);  
   return Promise.resolve();
+}
+
+export async function registMpUser(cloudbaseApp, userId = getCurrentUserId(), defaultUsername = '微信用户') {
+  if (!cloudbaseApp) {
+    return Promise.reject(new Error('cloudbaseApp 未初始化'));
+  }
+  if (!userId) {
+    return Promise.reject(new Error('用户 ID 为空'));
+  }
+
+  const result = await cloudbaseApp.callFunction({
+    name: 'mp-user-management',
+    data: {
+      action: 'registUser',
+      username: defaultUsername,
+      userid: userId,
+    },
+  });
+
+  if (result?.result?.retcode !== 0) {
+    return Promise.reject(new Error(result?.result?.message || result?.message || '初始化小程序用户失败'));
+  }
+
+  return result.result?.res || null;
 }
 
 /**

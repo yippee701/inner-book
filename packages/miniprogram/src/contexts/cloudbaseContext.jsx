@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import Taro from '@tarojs/taro';
-import { isLoggedIn } from '@know-yourself/core';
+import { isLoggedIn, registMpUser } from '@know-yourself/core';
 import { setCloudbaseApp as setTrackCloudbaseApp } from '@know-yourself/core';
 import { setAuthRef } from '@know-yourself/core';
 import { mpRequestAdapter } from '../adapters/mpRequest';
@@ -35,14 +35,19 @@ export function CloudbaseProvider({ children }) {
       // 一进 app 即获取 openid，用于后续所有请求
       Taro.cloud.callFunction({
         name: 'get-openid',
-        complete: (res) => {
+        complete: async (res) => {
           console.log('callFunction result: ', res);
           const result = res?.result;
           const id = typeof result === 'object' && result !== null ? result.openid : result;
           if (id) {
             setOpenid(id);
-            setOpenidReady(true);
+            try {
+              await registMpUser(cloudApp, id, '微信用户');
+            } catch (error) {
+              console.error('[CloudbaseProvider] registMpUser failed:', error);
+            }
           }
+          setOpenidReady(true);
         },
       });
 
