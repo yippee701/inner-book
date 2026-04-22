@@ -122,6 +122,7 @@ export default function ProfilePage() {
     isLoading,
     error,
     handleViewReport,
+    handleViewPaymentRecords,
     handleGoHome,
     openNicknameDialog,
     showNicknameDialog,
@@ -159,6 +160,14 @@ export default function ProfilePage() {
 
       <ScrollView scrollY className='profile-scroll'>
         <View className='profile-content'>
+          <View className='profile-shortcut-card' onClick={handleViewPaymentRecords}>
+            <View className='profile-shortcut-copy'>
+              <Text className='profile-shortcut-title'>支付记录</Text>
+              <Text className='profile-shortcut-desc'>查看订单、支付状态与购买详情</Text>
+            </View>
+            <Text className='profile-shortcut-arrow'>查看</Text>
+          </View>
+
           <Text className='profile-section-title'>对话记录</Text>
           {isLoading ? (
             <View className='profile-empty'>

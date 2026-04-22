@@ -6,6 +6,8 @@ export default defineAppConfig({
     'pages/chat/index',
     'pages/report-loading/index',
     'pages/report-result/index',
+    'pages/payment-records/index',
+    'pages/payment-record-detail/index',
     'pages/profile/index',
   ],
   window: {

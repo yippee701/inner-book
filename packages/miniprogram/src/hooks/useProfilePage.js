@@ -8,6 +8,7 @@ import { isLoggedIn } from '@know-yourself/core';
  */
 export function useProfilePage() {
   const profile = useProfile();
+  const { updateUserNickname, updateReportTitle } = profile;
   const userLoggedIn = isLoggedIn();
 
   const handleViewReport = (report) => {
@@ -15,6 +16,10 @@ export function useProfilePage() {
       url: `/pages/report-result/index?mode=${report.mode}&reportId=${report.reportId}`,
     });
   };
+
+  const handleViewPaymentRecords = useCallback(() => {
+    Taro.navigateTo({ url: '/pages/payment-records/index' });
+  }, []);
 
   const handleGoHome = () => Taro.reLaunch({ url: '/pages/index/index' });
 
@@ -41,7 +46,7 @@ export function useProfilePage() {
     }
     setIsSubmittingNickname(true);
     try {
-      await profile.updateUserNickname(name);
+      await updateUserNickname(name);
       closeNicknameDialog();
       Taro.showToast({ title: '昵称已更新', icon: 'success' });
     } catch (err) {
@@ -49,7 +54,7 @@ export function useProfilePage() {
     } finally {
       setIsSubmittingNickname(false);
     }
-  }, [nicknameInput, profile.updateUserNickname, closeNicknameDialog]);
+  }, [closeNicknameDialog, nicknameInput, updateUserNickname]);
 
   // ---------- 报告标题内联编辑（与 H5 一致：editingReportId + save/cancel） ----------
   const [editingReportId, setEditingReportId] = useState(null);
@@ -71,7 +76,7 @@ export function useProfilePage() {
     }
     setIsSavingReport(true);
     try {
-      await profile.updateReportTitle(reportId, t);
+      await updateReportTitle(reportId, t);
       setEditingReportId(null);
       Taro.showToast({ title: '标题已更新', icon: 'success' });
     } catch (err) {
@@ -79,12 +84,13 @@ export function useProfilePage() {
     } finally {
       setIsSavingReport(false);
     }
-  }, [profile.updateReportTitle]);
+  }, [updateReportTitle]);
 
   return {
     ...profile,
     userLoggedIn,
     handleViewReport,
+    handleViewPaymentRecords,
     handleGoHome,
     // 昵称弹窗
     showNicknameDialog,

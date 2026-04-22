@@ -17,6 +17,7 @@ import {
 import { useReport } from '../contexts/ReportContext';
 import { useProfile } from '../hooks/useProfile';
 import { useDb } from '../contexts/cloudbaseContext';
+import { parseTimestamp } from '../utils/date';
 
 const COMPLETED_REPORT_STATUSES = new Set(['completed', 1, '1']);
 
@@ -25,10 +26,7 @@ function isLockedReport(report) {
 }
 
 function getReportTimestamp(report) {
-  const value = report?.updatedAt ?? report?.createdAt ?? 0;
-  if (typeof value === 'number') return value;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
+  return parseTimestamp(report?.updatedAt ?? report?.createdAt ?? 0);
 }
 
 function findLatestLockedReportByMode(mode, remoteReports = []) {
