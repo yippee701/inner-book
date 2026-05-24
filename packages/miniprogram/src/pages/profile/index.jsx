@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Input } from '@tarojs/components';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import { REPORT_STATUS } from '@know-yourself/core';
 import { useProfilePage } from '../../hooks/useProfilePage';
@@ -7,11 +7,71 @@ import { useShareAppMessage } from '@tarojs/taro';
 import { NicknameEditDialog } from '../../components/ProfileDialogs';
 import './index.scss';
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const MODE_LABELS = {
+  'discover-self': '发掘自己',
+  'understand-others': '了解他人',
+};
+
+function normalizeDate(value) {
+  if (!value) return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  if (typeof value === 'object') {
+    if (typeof value.getTime === 'function') {
+      const date = new Date(value.getTime());
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    if (typeof value.seconds === 'number') {
+      return new Date(value.seconds * 1000);
+    }
+    if (typeof value._seconds === 'number') {
+      return new Date(value._seconds * 1000);
+    }
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatArchiveTime(value) {
+  const date = normalizeDate(value);
+  if (!date) return 'Undated';
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} · ${hours}:${minutes}`;
+}
+
+function formatArchiveSince(reports) {
+  const dates = reports
+    .map((report) => normalizeDate(report.createdAt))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
+  if (dates.length === 0) return 'first letter';
+  const first = dates[0];
+  return `${MONTHS[first.getMonth()]} ${first.getFullYear()}`;
+}
+
+function getArchiveInitial(username) {
+  const name = (username || '').trim();
+  if (!name || name === '微信用户') return 'w';
+  const first = name[0];
+  return /^[a-z]$/i.test(first) ? first.toLowerCase() : first;
+}
+
+function getArchiveStatus({ isCompleted, isExpired, isLocked }) {
+  if (isLocked) return '已封缄';
+  if (isCompleted) return '已寄达';
+  if (isExpired) return '已过期';
+  return '书写中';
+}
+
 /**
  * 报告卡片，与 H5 一致：支持内联编辑标题（onStartEditTitle / onSaveTitle / onCancelEditTitle）
  */
 function ReportCard({
   report,
+  index,
+  total,
   onView,
   onStartEditTitle,
   onSaveTitle,
@@ -25,23 +85,10 @@ function ReportCard({
   const isLocked = lock === true;
   const isEditing = editingReportId === reportId;
   const [editTitle, setEditTitle] = useState(title || '');
-
-  const createdAt = new Date(report.createdAt).toLocaleString();
-  const modeColors = {
-    'discover-self': { border: '#6E4030', bg: 'rgba(250, 248, 244, 0.58)' },
-    'understand-others': { border: '#1A1714', bg: 'rgba(228, 224, 218, 0.36)' },
-  };
-  const colors = modeColors[mode] || modeColors['discover-self'];
-
-  useShareAppMessage(() => ({
-    title: 'Inner Book',
-    imageUrl: 'https://inner-book.top/share.png',
-    path: '/pages/index/index',
-  }), []);
-
-  useEffect(() => {
-    if (isEditing) setEditTitle(report.title || '');
-  }, [isEditing, report.title]);
+  const archiveNo = total - index;
+  const displayTitle = title || `${MODE_LABELS[mode] || '识心笔记'} · 卷${archiveNo}`;
+  const archiveStatus = getArchiveStatus({ isCompleted, isExpired, isLocked });
+  const statusClass = isLocked ? 'status-sealed' : isExpired ? 'status-expired' : isCompleted ? 'status-delivered' : 'status-pending';
 
   const handleCardClick = () => {
     if (isEditing) return;
@@ -50,6 +97,7 @@ function ReportCard({
 
   const handleEditClick = (e) => {
     e.stopPropagation();
+    setEditTitle(title || '');
     onStartEditTitle?.(reportId);
   };
 
@@ -67,10 +115,10 @@ function ReportCard({
   return (
     <View
       className={`report-card ${isExpired ? 'report-card-expired' : ''} ${isCompleted ? 'report-card-clickable' : ''}`}
-      style={{ borderLeftColor: colors.border, backgroundColor: colors.bg }}
       onClick={handleCardClick}
     >
-      <View className='report-card-head'>
+      <Text className='report-card-index'>№{String(archiveNo).padStart(2, '0')}</Text>
+      <View className='report-card-main'>
         {isEditing ? (
           <View className='report-card-edit-inline' catchClick={(e) => e.stopPropagation()}>
             <Input
@@ -92,24 +140,22 @@ function ReportCard({
           </View>
         ) : (
           <>
-            <Text className='report-card-title'>{title || '未命名报告'}</Text>
-            {isLocked ? (
-              <View className='report-card-edit'>
-                <mp-icon icon="lock" color="#1F2937" size="20" />
-              </View>
-            ) : (
-              <View className='report-card-edit' onClick={handleEditClick}>
-                <mp-icon icon="pencil" color="#1F2937" size="20" />
-              </View>
-            )}
+            <Text className='report-card-title'>{displayTitle}</Text>
+            <Text className='report-card-time'>{formatArchiveTime(report.createdAt)}</Text>
           </>
         )}
       </View>
-      <View className='report-card-meta'>
-        <Text className='report-card-time'>{createdAt}</Text>
-        <Text className={`report-card-status ${isCompleted ? 'status-done' : isExpired ? 'status-expired' : 'status-pending'}`}>
-          {isCompleted ? '已完成' : isExpired ? '已过期' : '进行中'}
-        </Text>
+      <View className='report-card-state'>
+        {isLocked ? (
+          <View className='report-card-lock'>
+            <mp-icon icon="lock" color="#6E4030" size="16" />
+          </View>
+        ) : !isEditing ? (
+          <View className='report-card-edit' onClick={handleEditClick}>
+            <mp-icon icon="pencil" color="#B7B0A4" size="16" />
+          </View>
+        ) : null}
+        <Text className={`report-card-status ${statusClass}`}>{archiveStatus}</Text>
       </View>
     </View>
   );
@@ -137,33 +183,52 @@ export default function ProfilePage() {
     cancelEditTitle,
     isSavingReport,
   } = useProfilePage();
+  const username = user?.username || '微信用户';
+  const archiveInitial = getArchiveInitial(username);
+  const archiveSummary = reports.length > 0
+    ? `${reports.length} letters collected · since ${formatArchiveSince(reports)}`
+    : 'no letters collected · awaiting first note';
+
+  useShareAppMessage(() => ({
+    title: 'Inner Book',
+    imageUrl: 'https://inner-book.top/share.png',
+    path: '/pages/index/index',
+  }), []);
 
   return (
     <View className='profile-page'>
-      <View className='bg-glow bg-glow-1' />
-      <View className='bg-glow bg-glow-2' />
+      <View className='profile-grain' />
 
-      <View className='profile-header'>
-        <View className='profile-header-left'>
+      <View className='profile-top'>
+        <View className='profile-kicker-row'>
+          <Text className='profile-kicker'>MY ARCHIVE</Text>
+          <View className='profile-home-link' onClick={handleGoHome}>
+            <Text>HOME ↗</Text>
+          </View>
+        </View>
+
+        <View className='profile-identity'>
           <View className='profile-avatar'>
-            <mp-icon icon="me" color="#1F2937" size="28" />
+            <Text className='profile-avatar-letter'>{archiveInitial}</Text>
           </View>
-          <Text className='profile-username'>{user?.username || '微信用户'}</Text>
-          <View className='profile-username-edit' onClick={() => openNicknameDialog(user?.username)}>
-            <mp-icon icon="pencil" color="#1F2937" size="20" />
+          <View className='profile-copy'>
+            <View className='profile-name-row'>
+              <Text className='profile-username'>{username}</Text>
+              <Text className='profile-role' onClick={() => openNicknameDialog(username)}>· editor</Text>
+            </View>
+            <Text className='profile-archive-count'>{archiveSummary}</Text>
           </View>
         </View>
-        <View className='profile-header-home' onClick={handleGoHome}>
-          <mp-icon icon="home" color="#1F2937" size="28" />
-        </View>
+
+        <View className='profile-divider' />
       </View>
 
-      <ScrollView scrollY className='profile-scroll'>
+      <ScrollView scrollY className='profile-scroll' enhanced showScrollbar={false}>
         <View className='profile-content'>
           <View className='profile-section-head'>
-            <Text className='profile-section-title'>对话记录</Text>
-            <View className='profile-shortcut-card' onClick={handleViewPaymentRecords}>
-              <Text className='profile-shortcut-title'>支付记录</Text>
+            <Text className='profile-section-title'>往来书信</Text>
+            <View className='profile-ledger-button' onClick={handleViewPaymentRecords}>
+              <Text>LEDGER</Text>
             </View>
           </View>
           {isLoading ? (
@@ -176,14 +241,16 @@ export default function ProfilePage() {
             </View>
           ) : reports.length === 0 ? (
             <View className='profile-empty'>
-              <Text className='profile-empty-text'>暂无对话记录</Text>
+              <Text className='profile-empty-text'>暂无往来书信</Text>
             </View>
           ) : (
             <View className='report-list'>
-              {reports.map((report) => (
+              {reports.map((report, index) => (
                 <ReportCard
                   key={report.reportId || report._id}
                   report={report}
+                  index={index}
+                  total={reports.length}
                   onView={handleViewReport}
                   onStartEditTitle={startEditTitle}
                   onSaveTitle={saveReportTitle}

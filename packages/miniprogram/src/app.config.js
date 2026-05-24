@@ -12,7 +12,7 @@ export default defineAppConfig({
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#F2F0EE',
+    navigationBarBackgroundColor: '#EEECEA',
     navigationBarTitleText: 'Inner Book',
     navigationBarTextStyle: 'black',
     navigationStyle: 'custom',

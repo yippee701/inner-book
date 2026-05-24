@@ -1,6 +1,8 @@
-import { View, Text } from '@tarojs/components';
+import { Image, View, Text } from '@tarojs/components';
 import { useHomePage } from '../../hooks/useHomePage';
 import { useShareAppMessage } from '@tarojs/taro';
+import indexHeader from './index-header.png';
+import indexOrb from './index-orb.png';
 import './index.scss';
 
 export default function Homepage() {
@@ -33,36 +35,23 @@ export default function Homepage() {
 
       <View className='home-archive-entry' onClick={goToProfile}>
         <View className='home-archive-seal'>
-          <Text className='home-archive-seal-text'>ib</Text>
+          <Text className='home-archive-seal-text'>B</Text>
         </View>
         <View className='home-archive-copy'>
-          <Text className='home-archive-label'>YOUR ARCHIVE</Text>
+          <Text className='home-archive-label'>MY ARCHIVE</Text>
           <Text className='home-archive-title'>我的识心笔记</Text>
         </View>
       </View>
 
       <View className='main-content'>
-        <View className='home-hero'>
-          <Text className='home-dear'>Dear you,</Text>
-          <Text className='home-title'>识心笔记</Text>
-          <Text className='home-subtitle'>An Inner Correspondence</Text>
-          <View className='home-wave' />
-        </View>
+        <Image className='home-header-image' src={indexHeader} mode='aspectFit' />
 
         <View className='orb-container'>
-          <View className='orb-shadow' />
-          <View className='book-ribbon' />
-          <View className='book-pages' />
-          <View className='book-cover'>
-            <View className='book-frame' />
-            <Text className='book-kicker'>VOL I</Text>
-            <Text className='book-title'>识心笔记</Text>
-            <Text className='book-subtitle'>Inner Book</Text>
-            <View className='book-seal'>
-              <Text className='book-seal-text'>ib</Text>
-            </View>
-            <Text className='book-number'>NO 001</Text>
-          </View>
+          <Image
+            className='book-image'
+            src={indexOrb}
+            mode='aspectFit'
+          />
         </View>
 
         <View className='carousel-area home-fixed-copy'>
