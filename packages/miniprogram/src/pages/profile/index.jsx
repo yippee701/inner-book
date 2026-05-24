@@ -53,14 +53,14 @@ function formatArchiveSince(reports) {
 
 function getArchiveInitial(username) {
   const name = (username || '').trim();
-  if (!name || name === '微信用户') return 'w';
+  if (!name || name === '微信用户') return 'me';
   const first = name[0];
   return /^[a-z]$/i.test(first) ? first.toLowerCase() : first;
 }
 
 function getArchiveStatus({ isCompleted, isExpired, isLocked }) {
-  if (isLocked) return '已封缄';
-  if (isCompleted) return '已寄达';
+  if (isLocked) return '未解锁';
+  if (isCompleted) return '已解锁';
   if (isExpired) return '已过期';
   return '书写中';
 }
@@ -186,8 +186,8 @@ export default function ProfilePage() {
   const username = user?.username || '微信用户';
   const archiveInitial = getArchiveInitial(username);
   const archiveSummary = reports.length > 0
-    ? `${reports.length} letters collected · since ${formatArchiveSince(reports)}`
-    : 'no letters collected · awaiting first note';
+    ? `共 ${reports.length} 封笔记 · 起始于 ${formatArchiveSince(reports)}`
+    : '暂无识心笔记 · 等待开启';
 
   useShareAppMessage(() => ({
     title: 'Inner Book',
@@ -203,7 +203,8 @@ export default function ProfilePage() {
         <View className='profile-kicker-row'>
           <Text className='profile-kicker'>MY ARCHIVE</Text>
           <View className='profile-home-link' onClick={handleGoHome}>
-            <Text>HOME ↗</Text>
+            <Text>HOME · </Text>
+            <Text> 回到首页 ↗</Text>
           </View>
         </View>
 
@@ -214,7 +215,7 @@ export default function ProfilePage() {
           <View className='profile-copy'>
             <View className='profile-name-row'>
               <Text className='profile-username'>{username}</Text>
-              <Text className='profile-role' onClick={() => openNicknameDialog(username)}>· editor</Text>
+              <Text className='profile-role' onClick={() => openNicknameDialog(username)}>· 作者</Text>
             </View>
             <Text className='profile-archive-count'>{archiveSummary}</Text>
           </View>
@@ -226,9 +227,9 @@ export default function ProfilePage() {
       <ScrollView scrollY className='profile-scroll' enhanced showScrollbar={false}>
         <View className='profile-content'>
           <View className='profile-section-head'>
-            <Text className='profile-section-title'>往来书信</Text>
+            <Text className='profile-section-title'>我的识心笔记</Text>
             <View className='profile-ledger-button' onClick={handleViewPaymentRecords}>
-              <Text>LEDGER</Text>
+              <Text>支付记录</Text>
             </View>
           </View>
           {isLoading ? (
@@ -241,7 +242,7 @@ export default function ProfilePage() {
             </View>
           ) : reports.length === 0 ? (
             <View className='profile-empty'>
-              <Text className='profile-empty-text'>暂无往来书信</Text>
+              <Text className='profile-empty-text'>暂无笔记</Text>
             </View>
           ) : (
             <View className='report-list'>

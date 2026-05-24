@@ -47,7 +47,7 @@ export default function ChatPage() {
         <View className='chat-header-back' onClick={() => Taro.navigateBack()}>
           <Text className='chat-header-back-icon'>←</Text>
         </View>
-        <Text className='chat-header-title'>第 {String(progress).padStart(2, '0')} 封信</Text>
+        <Text className='chat-header-title'>第 {String(progress).padStart(2, '0')} 轮对话</Text>
         <View className='chat-header-placeholder' />
       </View>
 
