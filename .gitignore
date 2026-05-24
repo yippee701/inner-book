@@ -27,6 +27,7 @@ Archive.zip
 
 # Design files
 design/
+.design/
 
 # MD
 CODE_REVIEW.md

@@ -47,14 +47,14 @@ export default function ChatPage() {
         <View className='chat-header-back' onClick={() => Taro.navigateBack()}>
           <Text className='chat-header-back-icon'>←</Text>
         </View>
-        <Text className='chat-header-title'>Talking with Dora</Text>
+        <Text className='chat-header-title'>第 {String(progress).padStart(2, '0')} 封信</Text>
         <View className='chat-header-placeholder' />
       </View>
 
       {/* Progress 状态栏 */}
       <View className='chat-progress-bar'>
         <View className='chat-progress-orb' />
-        <Text className='chat-progress-text'>Progress: {String(progress).padStart(2, '0')}/10</Text>
+        <Text className='chat-progress-text'>{String(progress).padStart(2, '0')} / 10</Text>
       </View>
 
       {/* 聊天内容区 */}

@@ -5,8 +5,6 @@ import './index.scss';
 
 export default function Homepage() {
   const {
-    carouselTexts,
-    currentTextIndex,
     showNoQuotaDialog,
     handleStartChat,
     goToProfile,
@@ -26,39 +24,56 @@ export default function Homepage() {
       <View className='bg-glow bg-glow-2' />
       <View className='bg-glow bg-glow-3' />
 
-      <View className='header'>
-        <View className='header-placeholder' />
-        <View className='header-profile' onClick={goToProfile}>
-          <mp-icon icon="me" color="#1F2937" size="28"></mp-icon>
+      <View className='home-kicker'>
+        <Text>VOL I</Text>
+        <Text>INNER BOOK</Text>
+        <Text>NO 001</Text>
+      </View>
+      <View className='home-rule' />
+
+      <View className='home-archive-entry' onClick={goToProfile}>
+        <View className='home-archive-seal'>
+          <Text className='home-archive-seal-text'>ib</Text>
+        </View>
+        <View className='home-archive-copy'>
+          <Text className='home-archive-label'>YOUR ARCHIVE</Text>
+          <Text className='home-archive-title'>我的识心笔记</Text>
         </View>
       </View>
 
       <View className='main-content'>
-        <View className='orb-container'>
-          <View className='orb-shadow' />
-          <View className='orb-outer-glow' />
-          <View className='orb-inner-glow' />
-          <View className='orb-base' />
-          <View className='orb-glass' />
-          <View className='orb-highlight' />
+        <View className='home-hero'>
+          <Text className='home-dear'>Dear you,</Text>
+          <Text className='home-title'>识心笔记</Text>
+          <Text className='home-subtitle'>An Inner Correspondence</Text>
+          <View className='home-wave' />
         </View>
 
-        <View className='carousel-area'>
-          {carouselTexts.map((item, index) => (
-            <View
-              key={item.title}
-              className={`carousel-item ${index === currentTextIndex ? 'active' : ''}`}
-            >
-              <Text className='carousel-title'>{item.title}</Text>
-              <Text className='carousel-subtitle'>{item.subtitle}</Text>
+        <View className='orb-container'>
+          <View className='orb-shadow' />
+          <View className='book-ribbon' />
+          <View className='book-pages' />
+          <View className='book-cover'>
+            <View className='book-frame' />
+            <Text className='book-kicker'>VOL I</Text>
+            <Text className='book-title'>识心笔记</Text>
+            <Text className='book-subtitle'>Inner Book</Text>
+            <View className='book-seal'>
+              <Text className='book-seal-text'>ib</Text>
             </View>
-          ))}
+            <Text className='book-number'>NO 001</Text>
+          </View>
+        </View>
+
+        <View className='carousel-area home-fixed-copy'>
+          <Text className='carousel-title'>于几轮往来对话，</Text>
+          <Text className='carousel-subtitle'>重新认识那个住在你心里的人。</Text>
         </View>
       </View>
 
       <View className='bottom-buttons safe-area-bottom'>
         <View className='btn-row'>
-          <View className='btn-primary btn-flex' onClick={() => handleStartChat('understand-others')}>
+          <View className='btn-secondary btn-flex' onClick={() => handleStartChat('understand-others')}>
             <Text>了解他人</Text>
           </View>
           <View className='btn-primary btn-flex' onClick={() => handleStartChat('discover-self')}>

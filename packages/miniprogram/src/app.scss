@@ -1,12 +1,11 @@
 /* 全局样式 */
 page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
-    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB',
-    'Microsoft Yahei', sans-serif;
-  background-color: #fafbff;
-  color: #1f2937;
+  font-family: 'Songti SC', 'STSong', 'Noto Serif SC', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft Yahei', serif;
+  background-color: #f2f0ee;
+  color: #1a1714;
   font-size: 28px;
-  line-height: 1.6;
+  line-height: 1.72;
 }
 
 /* 按钮基础样式 */
@@ -15,15 +14,15 @@ page {
   align-items: center;
   justify-content: center;
   padding: 24px 48px;
-  border-radius: 999px;
-  color: #ffffff;
-  font-weight: 600;
-  background: linear-gradient(135deg, #1e1b4b, #1f2937);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-  border: none;
-  letter-spacing: 1px;
+  border-radius: 8px;
+  color: #f2f0ee;
+  font-weight: 500;
+  background: #1a1714;
+  box-shadow: 0 8px 18px rgba(26, 23, 20, 0.16);
+  border: 1.5px solid #1a1714;
+  letter-spacing: 0;
   &::after { border: none; }
-  &:active { opacity: 0.88; }
+  &:active { opacity: 0.82; }
 }
 
 .btn-secondary {
@@ -31,14 +30,14 @@ page {
   align-items: center;
   justify-content: center;
   padding: 24px 48px;
-  border-radius: 999px;
-  color: #374151;
+  border-radius: 8px;
+  color: #1a1714;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1.5px solid rgba(196, 181, 253, 0.4);
-  letter-spacing: 0.5px;
+  background: rgba(250, 248, 244, 0.42);
+  border: 1.5px solid rgba(26, 23, 20, 0.72);
+  letter-spacing: 0;
   &::after { border: none; }
-  &:active { background: rgba(245, 243, 255, 0.95); }
+  &:active { background: rgba(228, 224, 218, 0.7); }
 }
 
 /* 安全区适配 */

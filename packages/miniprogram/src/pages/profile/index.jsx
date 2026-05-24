@@ -28,8 +28,8 @@ function ReportCard({
 
   const createdAt = new Date(report.createdAt).toLocaleString();
   const modeColors = {
-    'discover-self': { border: '#a78bfa', bg: 'rgba(167, 139, 250, 0.08)' },
-    'understand-others': { border: '#60a5fa', bg: 'rgba(96, 165, 250, 0.08)' },
+    'discover-self': { border: '#6E4030', bg: 'rgba(250, 248, 244, 0.58)' },
+    'understand-others': { border: '#1A1714', bg: 'rgba(228, 224, 218, 0.36)' },
   };
   const colors = modeColors[mode] || modeColors['discover-self'];
 
