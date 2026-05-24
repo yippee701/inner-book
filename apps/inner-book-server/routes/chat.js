@@ -4,6 +4,7 @@ const axios = require('axios');
 const { 
   DISCOVER_SELF_SYSTEM_PROMPT, 
   UNDERSTAND_OTHERS_SYSTEM_PROMPT,
+  UNDERSTAND_CHILD_SYSTEM_PROMPT,
   FINAL_REPORT_SYSTEM_SUFFIX,
 } = require('../constants/prompts');
 
@@ -150,6 +151,9 @@ const forwardOpenAIRequest = async (req, res) => {
                 break;
             case 'understand-others':
                 systemPrompt = UNDERSTAND_OTHERS_SYSTEM_PROMPT;
+                break;
+            case 'understand-child':
+                systemPrompt = UNDERSTAND_CHILD_SYSTEM_PROMPT;
                 break;
         }
         
