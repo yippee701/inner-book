@@ -191,7 +191,7 @@ export default function ProfilePage() {
     : '暂无识心笔记 · 等待开启';
 
   useShareAppMessage(() => ({
-    title: 'Inner Book',
+    title: 'INNER BOOK',
     imageUrl: 'https://inner-book.top/share.png',
     path: '/pages/index/index',
   }), []);

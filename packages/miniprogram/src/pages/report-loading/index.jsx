@@ -56,7 +56,7 @@ export default function ReportLoading() {
 
   useShareAppMessage(() => {
     return {
-      title: 'Inner Book',
+      title: 'INNER BOOK',
       imageUrl: 'https://inner-book.top/share.png',
       path: '/pages/index/index',
     };

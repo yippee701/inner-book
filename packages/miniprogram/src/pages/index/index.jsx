@@ -19,7 +19,7 @@ export default function Homepage() {
 
   useShareAppMessage(() => {
     return {
-      title: 'Inner Book',
+      title: 'INNER BOOK',
       path: '/pages/index/index',
     };
   }, []);

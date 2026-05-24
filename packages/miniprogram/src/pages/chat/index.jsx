@@ -30,7 +30,7 @@ export default function ChatPage() {
 
   useShareAppMessage(() => {
     return {
-      title: 'Inner Book',
+      title: 'INNER BOOK',
       imageUrl: 'https://inner-book.top/share.png',
       path: '/pages/index/index',
     };
