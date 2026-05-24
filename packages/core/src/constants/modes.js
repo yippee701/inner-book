@@ -4,6 +4,7 @@
 export const CHAT_MODES = {
   DISCOVER_SELF: 'discover-self',
   UNDERSTAND_OTHERS: 'understand-others',
+  UNDERSTAND_CHILD: 'understand-child',
 };
 
 /**
@@ -11,12 +12,16 @@ export const CHAT_MODES = {
  */
 export const MODE_CONFIG = {
   [CHAT_MODES.DISCOVER_SELF]: {
-    label: '发掘自己',
+    label: '识己',
     description: '深入了解自己的内心世界',
   },
   [CHAT_MODES.UNDERSTAND_OTHERS]: {
-    label: '了解他人',
+    label: '看懂他人',
     description: '更好地理解他人的想法',
+  },
+  [CHAT_MODES.UNDERSTAND_CHILD]: {
+    label: '读懂孩子',
+    description: '更好地理解孩子的内心与表达',
   },
 };
 
@@ -53,9 +58,7 @@ export function isValidMode(mode) {
  */
 export function getModeFromSearchParams(searchParams) {
   const modeParam = searchParams.get('mode');
-  return modeParam === CHAT_MODES.UNDERSTAND_OTHERS 
-    ? CHAT_MODES.UNDERSTAND_OTHERS 
-    : CHAT_MODES.DISCOVER_SELF;
+  return isValidMode(modeParam) ? modeParam : CHAT_MODES.DISCOVER_SELF;
 }
 
 /**
@@ -65,5 +68,5 @@ export function getModeFromSearchParams(searchParams) {
  */
 export function getModeFromParams(params) {
   const mode = params?.mode;
-  return mode === CHAT_MODES.UNDERSTAND_OTHERS ? CHAT_MODES.UNDERSTAND_OTHERS : CHAT_MODES.DISCOVER_SELF;
+  return isValidMode(mode) ? mode : CHAT_MODES.DISCOVER_SELF;
 }

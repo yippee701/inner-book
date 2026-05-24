@@ -8,9 +8,13 @@ import './index.scss';
 export default function Homepage() {
   const {
     showNoQuotaDialog,
+    showPeopleModeDialog,
     handleStartChat,
+    handleSelectPeopleMode,
     goToProfile,
     closeNoQuotaDialog,
+    openPeopleModeDialog,
+    closePeopleModeDialog,
   } = useHomePage();
 
   useShareAppMessage(() => {
@@ -62,14 +66,31 @@ export default function Homepage() {
 
       <View className='bottom-buttons safe-area-bottom'>
         <View className='btn-row'>
-          <View className='btn-secondary btn-flex' onClick={() => handleStartChat('understand-others')}>
-            <Text>了解他人</Text>
+          <View className='btn-secondary btn-flex' onClick={openPeopleModeDialog}>
+            <Text>识人</Text>
           </View>
           <View className='btn-primary btn-flex' onClick={() => handleStartChat('discover-self')}>
-            <Text>发掘自己</Text>
+            <Text>识己</Text>
           </View>
         </View>
       </View>
+
+      {showPeopleModeDialog && (
+        <View className='dialog-mask' onClick={closePeopleModeDialog}>
+          <View className='dialog-content people-mode-dialog' onClick={(e) => e.stopPropagation()}>
+            <Text className='dialog-title'>识人</Text>
+            <Text className='dialog-desc'>选择你想理解的对象</Text>
+            <View className='people-mode-options'>
+              <View className='people-mode-option' onClick={() => handleSelectPeopleMode('understand-others')}>
+                <Text className='people-mode-title'>看懂他人</Text>
+              </View>
+              <View className='people-mode-option' onClick={() => handleSelectPeopleMode('understand-child')}>
+                <Text className='people-mode-title'>读懂孩子</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
 
       {showNoQuotaDialog && (
         <View className='dialog-mask' onClick={closeNoQuotaDialog}>

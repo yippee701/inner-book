@@ -5,7 +5,7 @@
 
 import { CHAT_MODES } from '../constants/modes.js';
 
-// ========== 发掘自己 Mock 数据 ==========
+// ========== 识己 Mock 数据 ==========
 
 const MOCK_RESPONSES_KNOW_YOURSELF = [
   `你好！很高兴能和你一起开启这段探索之旅。
@@ -77,7 +77,7 @@ const MOCK_FINAL_REPORT_KNOW_YOURSELF = `[Report]# 个人天赋使用说明书
 
 *这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
 
-// ========== 了解他人 Mock 数据 ==========
+// ========== 看懂他人 Mock 数据 ==========
 
 const MOCK_RESPONSES_UNDERSTAND_OTHERS = [
   `你好！我很高兴能帮助你更好地理解身边的人。
@@ -184,6 +184,7 @@ function typewriterEffect(text, onUpdate, speed = 30) {
 function getMockDataByMode(mode) {
   switch (mode) {
     case CHAT_MODES.UNDERSTAND_OTHERS:
+    case CHAT_MODES.UNDERSTAND_CHILD:
       return {
         responses: MOCK_RESPONSES_UNDERSTAND_OTHERS,
         finalReport: MOCK_FINAL_REPORT_UNDERSTAND_OTHERS,

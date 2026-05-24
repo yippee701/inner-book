@@ -168,7 +168,7 @@ async function handleStreamResponse(response, onStream) {
  * 发送消息（自动选择模式）
  * @param {Array} messages - 对话历史 [{role: 'user'|'assistant', content: string}]
  * @param {Function} onStream - 流式输出回调（可选）
- * @param {string} mode - 聊天模式：'discover-self' | 'understand-others'
+ * @param {string} mode - 聊天模式：'discover-self' | 'understand-others' | 'understand-child'
  * @returns {Promise<string>} AI 回复内容
  */
 export async function sendMessage(messages, onStream = null, mode = 'discover-self') {

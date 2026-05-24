@@ -10,8 +10,9 @@ import './index.scss';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const MODE_LABELS = {
-  'discover-self': '发掘自己',
-  'understand-others': '了解他人',
+  'discover-self': '识己',
+  'understand-others': '看懂他人',
+  'understand-child': '读懂孩子',
 };
 
 function normalizeDate(value) {

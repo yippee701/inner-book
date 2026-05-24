@@ -34,6 +34,11 @@ export default function ReportLoading() {
   const router = useRouter();
   const mode = router?.params?.mode || 'discover-self';
   const { isComplete, content, currentReportId, reportError, retryReport } = useReport();
+  const statusTextMap = {
+    'understand-others': 'Dora正在分析TA的人格档案',
+    'understand-child': 'Dora 正在读懂孩子的内心档案',
+    'discover-self': 'Dora 正在解析你的内心档案',
+  };
 
   const currentChars = content ? content.length : 0;
   const totalChars = Math.max(REPORT_TOTAL_CHARS, currentChars);
@@ -98,9 +103,7 @@ export default function ReportLoading() {
         ) : (
           <View className='rl-status'>
             <Text className='rl-status-text'>
-              {mode === 'understand-others'
-                ? 'Dora正在分析TA的人格档案'
-                : 'Dora 正在解析你的内心档案'}
+              {statusTextMap[mode] || statusTextMap['discover-self']}
               <LoadingDots />
             </Text>
             <Text className='rl-status-sub'>请稍候，这需要一些时间...</Text>

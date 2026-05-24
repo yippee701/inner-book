@@ -8,6 +8,7 @@ import { useProfile } from './useProfile';
  */
 export function useHomePage() {
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
+  const [showPeopleModeDialog, setShowPeopleModeDialog] = useState(false);
   const { isLoggedIn, userExtraInfo } = useProfile();
   const currentTextIndex = useCarouselIndex(CAROUSEL_TEXTS.length, 4000);
 
@@ -28,13 +29,27 @@ export function useHomePage() {
   }, []);
 
   const closeNoQuotaDialog = useCallback(() => setShowNoQuotaDialog(false), []);
+  const openPeopleModeDialog = useCallback(() => setShowPeopleModeDialog(true), []);
+  const closePeopleModeDialog = useCallback(() => setShowPeopleModeDialog(false), []);
+
+  const handleSelectPeopleMode = useCallback(
+    (mode) => {
+      setShowPeopleModeDialog(false);
+      handleStartChat(mode);
+    },
+    [handleStartChat]
+  );
 
   return {
     carouselTexts: CAROUSEL_TEXTS,
     currentTextIndex,
     showNoQuotaDialog,
+    showPeopleModeDialog,
     handleStartChat,
+    handleSelectPeopleMode,
     goToProfile,
     closeNoQuotaDialog,
+    openPeopleModeDialog,
+    closePeopleModeDialog,
   };
 }
