@@ -1,0 +1,18 @@
+{
+  "name": "@know-yourself/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./adapters": "./src/adapters/index.js",
+    "./api/*": "./src/api/*.js",
+    "./constants/*": "./src/constants/*.js",
+    "./utils/*": "./src/utils/*.js",
+    "./hooks/*": "./src/hooks/*.js"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

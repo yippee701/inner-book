@@ -1,0 +1,392 @@
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../contexts/cloudbaseContext';
+import { useToast } from '../../../components/Toast';
+import { trackVisitEvent } from '../../../utils/track';
+import { BackToHomeButton } from '../../../components/BackToHomeButton';
+
+const COUNTDOWN_SECONDS = 60;
+
+// ========== 通用组件 ==========
+
+function BackgroundDecoration() {
+  return (
+    <>
+      <div 
+        className="absolute top-10 left-1/3 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(196, 181, 253, 0.25)' }}
+      />
+      <div 
+        className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(221, 214, 254, 0.2)' }}
+      />
+      <div 
+        className="absolute bottom-1/3 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+        style={{ background: 'rgba(233, 213, 255, 0.3)' }}
+      />
+      <div className="absolute top-[20%] left-[15%] w-2 h-2 rounded-full animate-float" style={{ backgroundColor: 'rgba(167, 139, 250, 0.4)' }} />
+      <div className="absolute top-[35%] right-[20%] w-1.5 h-1.5 rounded-full animate-float-delay" style={{ backgroundColor: 'rgba(139, 168, 255, 0.4)' }} />
+      <div className="absolute bottom-[30%] left-[25%] w-1 h-1 rounded-full animate-float-delay-2" style={{ backgroundColor: 'rgba(167, 139, 250, 0.3)' }} />
+    </>
+  );
+}
+
+function Logo() {
+  return (
+    <div className="flex flex-col items-center mb-4">
+      <div className="relative w-16 h-16 mb-2 flex items-center justify-center">
+        <div 
+          className="absolute w-16 h-16 rounded-full animate-breathe" 
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 168, 255, 0.3))', 
+            border: '1px solid rgba(167, 139, 250, 0.4)' 
+          }} 
+        />
+        <div 
+          className="absolute w-12 h-12 rounded-full backdrop-blur-sm" 
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.6), rgba(167, 139, 250, 0.5))', 
+            border: '1px solid rgba(255, 255, 255, 0.6)' 
+          }} 
+        />
+        <svg className="relative z-10 w-6 h-6" style={{ color: '#FFFFFF' }} fill="currentColor" viewBox="0 0 24 24">
+          <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+        </svg>
+      </div>
+      <h1 className="text-lg font-bold tracking-wide" style={{ color: '#1F2937' }}>注册账号</h1>
+      <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>开启你的探索之旅</p>
+    </div>
+  );
+}
+
+function InputField({ label, type = 'text', value, onChange, onBlur, placeholder, disabled, hint }) {
+  return (
+    <div className="mb-3">
+      <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>{label}</label>
+      <div 
+        className="flex items-center px-4 py-2.5 rounded-xl transition-all"
+        style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' }}
+      >
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="flex-1 outline-none bg-transparent text-base"
+          style={{ color: '#1F2937' }}
+        />
+      </div>
+      {hint && <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>{hint}</p>}
+    </div>
+  );
+}
+
+function SubmitButton({ onClick, loading, disabled, text = '确认' }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      className="w-full py-3 rounded-full text-white text-base font-medium transition-all active:scale-[0.98] disabled:opacity-60"
+      style={{ backgroundColor: '#1F2937', boxShadow: disabled ? 'none' : '0 8px 20px rgba(0, 0, 0, 0.15)' }}
+    >
+      {loading ? (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          处理中...
+        </span>
+      ) : text}
+    </button>
+  );
+}
+
+/** 从接口/异常中提取可展示的错误文案 */
+function getErrorMessage(err) {
+  if (err == null) return '操作失败，请稍后重试';
+  if (typeof err === 'string') return err;
+  const msg = err.error_description ?? err.error ?? err.error_code;
+  if (msg) return msg;
+  return '操作失败，请稍后重试';
+}
+
+function Agreement() {
+  return (
+    <p className="text-center text-xs mt-3 leading-relaxed" style={{ color: '#9CA3AF' }}>
+      注册即表示同意
+      <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《用户协议》</a>和
+      <a href="#" className="mx-1" style={{ color: '#8B5CF6' }}>《隐私政策》</a>
+    </p>
+  );
+}
+
+// ========== 注册页面组件 ==========
+
+export default function RegisterPage() {
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const [searchParams] = useSearchParams();
+  const { message: toast } = useToast();
+  const returnUrl = searchParams.get('returnUrl');
+
+  useEffect(() => {
+    trackVisitEvent('register_page_expose');
+  }, []);
+
+  // 表单状态
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verification, setVerification] = useState(null);
+  const [countdown, setCountdown] = useState(0);
+  const [loading, setLoading] = useState(false);
+  // 是否展示校验失败原因（仅在失焦或点击注册后展示，避免输入过程中一直提醒）
+  const [showValidationHint, setShowValidationHint] = useState(false);
+
+  // 验证
+  const isValidUsername = username.length >= 6 && username.length <= 25 && /^$|^[a-z][0-9a-z_-]{5,24}$/.test(username);
+  const isValidPassword = password.length >= 6;
+  const isPasswordMatch = password === confirmPassword;
+  const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
+  const isValidCode = verificationCode.length === 6;
+
+  const canSubmit = isValidUsername && isValidPassword && isPasswordMatch && isValidPhone && isValidCode;
+  const canSendCode = isValidPhone && countdown === 0;
+  const phoneNumber = phone ? `+86 ${phone}` : '';
+
+  // 无法点击注册时展示的校验失败原因（按优先级取第一条）
+  const validationHint = useMemo(() => {
+    if (canSubmit) return null;
+    if (username.length > 0 && !isValidUsername) return '用户名需 6–25 位字符、并以小写字母开头';
+    if (password.length > 0 && !isValidPassword) return '密码至少 6 位';
+    if (confirmPassword.length > 0 && !isPasswordMatch) return '两次输入的密码不一致';
+    if (phone.length > 0 && !isValidPhone) return '请输入正确的 11 位手机号';
+    if (verificationCode.length > 0 && !isValidCode) return '请输入 6 位验证码';
+    if (username.length === 0) return '请填写用户名';
+    if (password.length === 0) return '请设置密码';
+    if (confirmPassword.length === 0) return '请再次输入密码';
+    if (phone.length === 0) return '请填写手机号';
+    if (verificationCode.length === 0) return '请填写验证码';
+    return null;
+  }, [canSubmit, username, password, confirmPassword, phone, verificationCode, isValidUsername, isValidPassword, isPasswordMatch, isValidPhone, isValidCode]);
+
+  const onFieldBlur = useCallback(() => setShowValidationHint(true), []);
+
+  // 倒计时
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  // 发送验证码
+  const handleSendCode = useCallback(async () => {
+    if (!canSendCode || !auth) return;
+    try {
+      const verificationResult = await auth.getVerification({
+        phone_number: phoneNumber,
+      });
+      setVerification(verificationResult);
+      setCountdown(COUNTDOWN_SECONDS);
+      toast.success('验证码已发送');
+    } catch (err) {
+      console.error('发送验证码失败:', err);
+      toast.error(getErrorMessage(err) || '验证码发送失败，请稍后重试', 5000);
+    }
+  }, [canSendCode, phoneNumber, auth, toast]);
+
+  // 注册
+  const handleRegister = useCallback(async () => {
+    if (!canSubmit || loading || !auth) return;
+
+    setLoading(true);
+
+    try {
+      // 先验证验证码
+      let verificationTokenRes = null;
+      if (verification && verificationCode) {
+        try {
+          verificationTokenRes = await auth.verify({
+            verification_id: verification.verification_id,
+            verification_code: verificationCode,
+          });
+        } catch (err) {
+          console.error('验证码验证错误:', err);
+          toast.error(getErrorMessage(err) || '验证码错误，请重新输入', 5000);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 注册（接口可能返回 { data, error } 或直接抛错）
+      const signUpResult = await auth.signUp({
+        phone_number: phoneNumber,
+        verification_code: verificationCode,
+        verification_token: verificationTokenRes?.verification_token,
+        name: username,
+        password: password,
+        username: username,
+      });
+
+      const resError = signUpResult?.error ?? signUpResult?.err;
+      if (resError) {
+        console.error('注册错误:', resError);
+        toast.error(getErrorMessage(resError) || '注册失败，请稍后重试', 5000);
+        setLoading(false);
+        return;
+      }
+
+      console.log('注册成功:', signUpResult?.data ?? signUpResult);
+      toast.success('注册成功！正在跳转...', 2000);
+      setLoading(false);
+
+      setTimeout(() => {
+        if (returnUrl) {
+          navigate(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        } else {
+          navigate('/login');
+        }
+      }, 1500);
+    } catch (err) {
+      console.error('注册错误:', err);
+      toast.error(getErrorMessage(err) || '注册失败，请稍后重试', 5000);
+      setLoading(false);
+    }
+  }, [canSubmit, loading, username, password, phone, phoneNumber, verificationCode, verification, auth, returnUrl, navigate, toast]);
+
+  return (
+    <div className="h-screen-safe w-full bg-white relative flex flex-col">
+      <BackgroundDecoration />
+      
+      {/* 顶部：左侧返回登录，右侧返回首页 */}
+      <header className="flex-shrink-0 relative z-10 h-12 flex items-center justify-between px-4">
+        <Link
+          to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'}
+          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+          title="返回登录"
+        >
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <BackToHomeButton />
+      </header>
+      
+      {/* 主内容 - 可滚动 */}
+      <div className="relative z-10 flex-1 overflow-y-auto flex flex-col justify-center px-6 pb-6">
+        <Logo />
+        
+        <div className="w-full max-w-sm mx-auto">
+          <InputField
+            label="用户名"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 25))}
+            onBlur={onFieldBlur}
+            placeholder="请输入用户名"
+            disabled={loading}
+            hint="6–25 位字符、并以小写字母开头"
+          />
+
+          <InputField
+            label="密码"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onBlur={onFieldBlur}
+            placeholder="请输入密码"
+            disabled={loading}
+            hint="至少6位字符"
+          />
+
+          <InputField
+            label="确认密码"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={onFieldBlur}
+            placeholder="请再次输入密码"
+            disabled={loading}
+          />
+
+          <InputField
+            label="手机号"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+            onBlur={onFieldBlur}
+            placeholder="请输入手机号"
+            disabled={loading}
+            prefix="+86"
+          />
+
+          {/* 验证码输入框 */}
+          <div className="mb-3">
+            <label className="block text-sm mb-1.5" style={{ color: '#4B5563' }}>验证码</label>
+            <div className="flex items-center px-4 py-2.5 rounded-xl" style={{ backgroundColor: 'rgba(249, 250, 251, 0.8)', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+              <input
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onBlur={onFieldBlur}
+                placeholder="请输入验证码"
+                disabled={loading}
+                maxLength={6}
+                className="flex-1 outline-none bg-transparent text-base tracking-widest"
+                style={{ color: '#1F2937' }}
+              />
+              <button
+                onClick={handleSendCode}
+                disabled={!canSendCode || countdown > 0}
+                className="text-sm px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                style={{
+                  backgroundColor: canSendCode && countdown === 0 ? 'rgba(167, 139, 250, 0.15)' : 'transparent',
+                  color: canSendCode && countdown === 0 ? '#8B5CF6' : '#9CA3AF',
+                }}
+              >
+                {countdown > 0 ? `${countdown}s` : '获取验证码'}
+              </button>
+            </div>
+          </div>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              if (!canSubmit) setShowValidationHint(true);
+            }}
+            onKeyDown={(e) => e.key === 'Enter' && !canSubmit && setShowValidationHint(true)}
+          >
+            <SubmitButton onClick={handleRegister} loading={loading} disabled={!canSubmit} text="注册" />
+          </div>
+
+          {/* 仅在失焦或点击注册后展示校验失败原因 */}
+          {showValidationHint && !canSubmit && validationHint && (
+            <p className="text-xs text-center mt-2" style={{ color: '#EF4444' }}>
+              {validationHint}
+            </p>
+          )}
+
+          {/* 登录链接 */}
+          <p className="text-center text-sm mt-4" style={{ color: '#6B7280' }}>
+            已有账号？
+            <Link 
+              to={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} 
+              className="ml-1 font-medium" 
+              style={{ color: '#8B5CF6' }}
+            >
+              立即登录
+            </Link>
+          </p>
+          
+          <Agreement />
+        </div>
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent)' }} />
+    </div>
+  );
+}

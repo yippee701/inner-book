@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>报告 - INNER BOOK</title>
+  <style>
+    /* 与 H5 report Result 一致：移动端 viewport + rem 适配，根字号 16px */
+    * { box-sizing: border-box; }
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow-x: hidden;
+    }
+    .report-result {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ========== 背景光晕（与 H5 BackgroundBlobs 一致）========== */
+    .rr-blob {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .rr-blob-1 {
+      width: 18rem; height: 18rem;
+      background: #e9d5ff;
+      top: -5rem; left: -5rem;
+      opacity: 0.6;
+      filter: blur(4rem);
+    }
+    .rr-blob-2 {
+      width: 16rem; height: 16rem;
+      background: #f5f3ff;
+      bottom: -4rem; right: -4rem;
+      opacity: 0.6;
+      filter: blur(4rem);
+    }
+    .rr-blob-3 {
+      width: 10rem; height: 10rem;
+      background: #e0e7ff;
+      top: 40%; left: 20%;
+      opacity: 0.4;
+      filter: blur(3rem);
+    }
+
+    /* ========== 顶部栏（与 H5 Result header 一致：px-4 py-2）========== */
+    .rr-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+      position: relative;
+      z-index: 50;
+      background: rgba(243, 244, 246, 0.4);
+      border-bottom: 1px solid rgba(243, 244, 246, 1);
+    }
+    .rr-header-back, .rr-header-action {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rr-header-back-icon { font-size: 1.25rem; color: #374151; }
+    .rr-header-title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1f2937;
+    }
+    .rr-header-action-icon { font-size: 1.25rem; }
+
+    /* ========== 滚动内容区（与 H5 pb-[220px] px-5 max-w-md）========== */
+    .rr-scroll {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      z-index: 10;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rr-content-wrap {
+      padding: 0.75rem 1.25rem 1rem;
+      max-width: 28rem;
+      margin: 0 auto;
+    }
+
+    /* ========== 报告卡片（与 H5 ReportContentCard：rounded-3xl p-5）========== */
+    .rr-card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      padding: 1.25rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+    .rr-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .rr-card-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .rr-card-brand-icon { font-size: 1.25rem; }
+    .rr-card-brand-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #6366f1;
+    }
+    .rr-card-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(196, 181, 253, 0.3);
+    }
+    .rr-card-badge-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #7c3aed;
+    }
+
+    /* 引用区（与 H5：text-2xl subTitle）========== */
+    .rr-card-quote {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .rr-card-quote-icon {
+      font-size: 1.5rem;
+      color: rgba(196, 181, 253, 0.6);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .rr-card-quote-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #6366f1;
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+    .rr-card-quote-line {
+      width: 2.5rem;
+      height: 0.25rem;
+      border-radius: 4px;
+      background: linear-gradient(to right, #8b5cf6, #b794f6);
+    }
+
+    /* 卡片正文（与 H5 reportMarkdown：text-base leading-[1.7]）========== */
+    .rr-card-body { margin-top: 0.5rem; }
+    .rr-rich {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #374151;
+    }
+    .rr-rich p { margin: 0.5rem 0; }
+    .rr-rich h1 { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 1rem 0 0.5rem; }
+    .rr-rich h2 { font-size: 1.125rem; font-weight: 600; color: #1f2937; margin: 0.875rem 0 0.5rem; }
+    .rr-rich h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin: 0.75rem 0 0.375rem; }
+    .rr-rich h4 { font-size: 0.875rem; font-weight: 600; color: #1f2937; margin: 0.5rem 0 0.25rem; }
+    .rr-rich strong { font-weight: 700; color: #1f2937; }
+    .rr-rich em { color: #8b5cf6; font-style: italic; }
+    .rr-rich hr {
+      border: none;
+      border-top: 1px solid rgba(139, 92, 246, 0.3);
+      margin: 1rem 0;
+    }
+    .rr-rich [style*="border-radius:16px"] {
+      border-radius: 1rem;
+    }
+
+    /* 查看完整对话过程（与 H5 text-sm text-gray-500）========== */
+    .rr-history-link-wrap {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .rr-history-link {
+      font-size: 0.875rem;
+      color: #6b7280;
+      text-decoration: underline;
+    }
+
+    /* ========== 底部转化区（与 H5 ConversionZone：h-12 min-h-28）========== */
+    .rr-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1rem 1.25rem;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(to top, #ffffff 85%, rgba(255, 255, 255, 0) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .rr-conversion-btns {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 28rem;
+      margin-bottom: 1rem;
+    }
+    .rr-btn-primary {
+      flex: 1;
+      min-width: 0;
+      height: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #1f2937, #374151);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      border: none;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+    }
+    .rr-btn-secondary {
+      width: 6rem;
+      flex-shrink: 0;
+      height: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(209, 213, 219, 0.6);
+    }
+    .rr-btn-text-secondary {
+      font-size: 0.75rem;
+      color: #374151;
+      font-weight: 400;
+    }
+    .rr-signature {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .rr-signature-line {
+      width: 1.25rem;
+      height: 1px;
+      background: #d1d5db;
+    }
+    .rr-signature-text {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    ========== 可编辑区域 ==========
+    - 顶部标题：.rr-header-title
+    - 模式标签：.rr-card-badge-text
+    - 引用副标题：.rr-card-quote-title
+    - 报告正文：编辑 scf/report-content.md，然后运行 node scf/build-report-html.mjs 生成本页
+  -->
+  <div class="report-result">
+    <div class="rr-blob rr-blob-1"></div>
+    <div class="rr-blob rr-blob-2"></div>
+    <div class="rr-blob rr-blob-3"></div>
+    <main class="rr-scroll">
+      <div class="rr-content-wrap">
+        <div class="rr-card">
+          <div class="rr-card-header">
+            <div class="rr-card-brand">
+              <span class="rr-card-brand-icon">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABB0lEQVR4AeyS0Q3CMBBDT12GbgMjIIYARgCGQIwA25RpoP44NYouaYQl2g9XskqSs3ly031W/nS28keA7AdSg2qQbYD1z97B92Dmej3NUmG/BoBzV+rDb+zXvH5WBETA7WJ2TYTgVDg77CdoD2W8nuHvENDBhrE9H6y9HRo+COC/eKP/CAFbw/NA+KB8v2Vd8oWALYH/mhEg27QaVINsA6xfd1ANsg2wft3BlTTIYpT9+sTlbtpO1GBbT+Wp2Qb73ux0nnR/mEHY2+7MoFI84/XMENCDAXIc4TYjpMuNWAMOwhzeOGO88OcKAR0qH66tAQhQxhvlh4DR4FJ7AmSbV4NqkG2A9X8BAAD//5ftfh4AAAAGSURBVAMA9wUTwFGTBLkAAAAASUVORK5CYII=" alt=""/>
+              </span>
+              <span class="rr-card-brand-text">INNER BOOK</span>
+            </div>
+            <div class="rr-card-badge">
+              <span class="rr-card-badge-text">{{MODE_LABEL}}</span>
+            </div>
+          </div>
+          <div class="rr-card-quote">
+            <span class="rr-card-quote-icon">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACk0lEQVR4AeyaP2/CQAzFT5FYKAtDmdu53/+jdG5nOrBQpIqhzS+pEZT8OfvIKT2MZA4S+5793jtEK6rvO39U4c4fTsCdGyC4A9wBd86AH4EpDHA8hLB7b4PXU2Bo96SPw7btid6k/mYOAICNt681yFsIx8829jWogOVe//a0/2h7ojfpJYkAAGD1fGjZWFbAyJP3OVbwEGP3K0QXJn1z3UyAAMAqGw1FLhcwlPQF8YM91W7gvpoA2EXxMQA2lyCXOnl/65W9GRwxwIrdnzoVAYBgq1iAHHmN6gNWH+oBZ0YRAFNa1QV48RDC+jmExVKu3G5FEFS37Lh6rPt6CuNfhRneqrqATDW8xu5CEoJsXkJYbtorVbt0P6cMj+oC0r27/SrKW4YXQc6RewmQs3WeHPua4adQHfyU4bsE6SXAeramHB5RrMp3DQ+hnQQAxE1tYLGplKcniyic+b7hme+KACsQww8BAZYSluHBW9ef9Kx9cUWAFWix6oNIv44oll0QZazugoAUoLlZn8FjHHlBgFV9wOYWMerT84kAq/psEsM0edqgJ6sosUfyRIAVKJZp7fCp+bFHsiEAplMBp6jPIUpDQErzsVbTYuQSpSHAyjRDxVqN3DlGxR88KY3x3TwmtDhf9T9WrX1RG9MTOdVxb4Vp6/huHhVKHPZsEfTP1MZGcwT0ENNWaN0y1M3YvQq7jCWVfH+eDlAelxSBZklAykDa2ooPC21RSfnugJLUtMziDrCwVlKNO6AkNS2zuAMsrJVU4w4oSU3LLO4AC2tzrtH25g7QMlZavjugNEW187gDtIyVlu8OKE1R7TwVPxrMEZrfEJCboycw/AhoLVNavjugNEW187gDtIyVlv/vHZAqyA8AAAD//3GD8NkAAAAGSURBVAMAUXAtn9G4v8MAAAAASUVORK5CYII=" alt=""/>
+            </span>
+            <span class="rr-card-quote-title">{{REPORT_TITLE}}</span>
+            <div class="rr-card-quote-line"></div>
+          </div>
+          <div class="rr-card-body">
+            <div class="rr-rich" id="report-body">{{REPORT_BODY}}</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

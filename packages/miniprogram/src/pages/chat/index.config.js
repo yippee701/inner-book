@@ -1,0 +1,6 @@
+export default definePageConfig({
+  navigationStyle: 'custom',
+  disableScroll: false,
+  enableShareAppMessage: true,
+  enableShareTimeline: true,
+});

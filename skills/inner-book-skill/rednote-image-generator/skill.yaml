@@ -1,0 +1,67 @@
+# OpenClaw Skill: INNER BOOK 封面图与正文图生成
+# 将 skill 目录复制到 ~/.openclaw/workspace/skills/image-generator 后刷新技能即可使用
+# 通过本地执行 node 脚本生成图片，详见 SKILL.md
+
+name: image-generator
+version: 1.1.0
+author: inner-book
+description: |
+  在本地通过 node 脚本生成 INNER BOOK 封面图与正文图：
+  1）封面图：执行 image-generator/cover-image-generator.js，传入标题和 bgId，生成单张图（支持 <s> 高亮、<br> 换行）；
+  2）正文图：执行 text-image-generator.mjs，传入正文和 bgId，生成一张或多张图（自动分页，左对齐）。
+  适用于需要为内容生成头图、分享图、海报封面或长文配图的场景。
+  使用当用户提到「生成封面」「封面图」「正文图」「长文出图」「cover image」「inner book 封面」等时触发。
+license: MIT
+
+permissions:
+  - network
+
+entryPoint:
+  type: natural
+  prompt: |
+    你是 INNER BOOK 图片生成技能，通过**本地执行 node 命令**生成图片，支持「封面图」和「正文图」两种能力。具体步骤与命令格式以 SKILL.md 为准。
+
+    ## 1. 封面图生成
+    - 当用户需要**封面图/头图/标题图**时使用。
+    - 执行本地命令（路径与参数见 SKILL.md）：
+      node image-generator/cover-image-generator.js "标题内容" bgId
+    - 标题中强调用 <s></s> 包裹，换行用 </br> 或 <br>；bgId 可选，默认 1。
+    - 生成结果为当前目录下的 output-cover.jpg。
+
+    ## 2. 正文图生成
+    - 当用户需要**正文图/长文图/多段文字出图**时使用。
+    - 执行本地命令（路径与参数见 SKILL.md）：
+      node image-generator/text-image-generator.mjs "正文内容" bgId
+    - 正文中换行用 \n 或 <br>，段落结尾会自动多一空行；bgId 可选，默认 2。
+    - 生成结果为 output-text.jpg（单页）或 output-text-1.jpg、output-text-2.jpg…（多页）。
+
+    ## 3. 报告生成
+    - 当用户需要**生成报告**时使用。
+    - 执行本地命令（路径与参数见 SKILL.md）：
+      node image-generator/report-image-generator/chat-to-report.mjs "<回答者系统提示词>" [INNER_BOOK_TOKEN]
+    - 第 1 参数为人物设定（answerPrompt），第 2 参数从浏览器中提取。
+    - 每步会写断点文件 chat-checkpoint.json，失败后再次运行会自动从断点继续；要重新从头跑可删除该文件。
+    - 生成结果为 image-generator/report-image-generator/report-content.md。
+
+    ## 4. 报告图生成
+    - 当用户有一份 INNER BOOK 报告内容，需要模拟真实网页访问并截图时使用
+
+    ## 执行要点（与 SKILL.md 一致）
+    - 先判断用户要的是「封面图」还是「正文图」，再选对应脚本与参数。
+    - 目标目录：/root/.openclaw/workspace-inner-book-operation/rednote-image，其下按「年月日+标题/内容拼音」建子目录；同主题再次生成可复用目录并对图片编号。
+    - 生成后先把图片复制到 /tmp，执行 ls -la /tmp/文件名 确认存在，再将图片直接回复给用户（多张则一并提供）。
+    - 失败时根据报错提示用户检查内容格式或稍后重试。
+    - 完整命令示例、参数说明与细节见 SKILL.md。
+
+triggers:
+  keywords:
+    - 封面图
+    - 生成封面
+    - cover image
+    - inner book 封面
+    - 头图生成
+    - 正文图
+    - 长文出图
+    - 正文配图
+    - 生成报告图
+    - 生成报告
