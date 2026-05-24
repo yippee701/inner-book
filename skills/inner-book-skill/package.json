@@ -1,0 +1,17 @@
+{
+  "name": "inner-book-scf",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "封面图生成云函数",
+  "main": "cover-image-generator.js",
+  "scripts": {
+    "build:report": "node ./report-image-generator/build-report-html.mjs"
+  },  
+  "dependencies": {
+    "canvas": "^3.2.1",
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.39.1"
+  }
+}

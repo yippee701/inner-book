@@ -27,7 +27,7 @@ export function isMockMode() {
 export const IS_MOCK_MODE = false; // 运行时由 isMockMode() 判断
 
 function getProxyServerUrl() {
-  return env('SERVER_URL') || 'http://localhost:80';
+  return env('SERVER_URL') || 'http://localhost:3001';
 }
 
 /**
@@ -36,7 +36,7 @@ function getProxyServerUrl() {
 export function chatWarmup() {
   const token = getCurrentUserToken();
 
-  return request('https://inner-book.top/chat/health', {
+  return request(`${getProxyServerUrl()}/chat/health`, {
     method: 'GET',
     mode: 'cors',
     headers: {
@@ -66,7 +66,7 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 
 async function sendMessageViaProxy(messages, onStream = null, mode) {
   const token = getCurrentUserToken();
-  const response = await request(`https://inner-book.top/chat`, {
+  const response = await request(`${getProxyServerUrl()}/chat`, {
     method: 'POST',
     mode: 'cors',
     headers: {

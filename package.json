@@ -5,17 +5,23 @@
   "type": "module",
   "homepage": "https://yippee701.github.io/know-yourself/",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*",
+    "skills/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @know-yourself/h5",
-    "build": "npm run build -w @know-yourself/h5",
-    "preview": "npm run preview -w @know-yourself/h5",
-    "deploy": "npm run deploy -w @know-yourself/h5",
-    "build:mp": "npm run build:weapp -w @know-yourself/miniprogram",
-    "dev:mp": "npm run dev:weapp -w @know-yourself/miniprogram",
-    "lint": "eslint ."
+    "dev": "pnpm run dev -w @know-yourself/h5",
+    "build": "pnpm run build -w @know-yourself/h5",
+    "preview": "pnpm run preview -w @know-yourself/h5",
+    "deploy": "pnpm run deploy -w @know-yourself/h5",
+    "build:mp": "pnpm run build:weapp -w @know-yourself/miniprogram",
+    "dev:mp": "pnpm run dev:weapp -w @know-yourself/miniprogram",
+    "lint": "eslint .",
+    "bootstrap": "pnpm install",
+    "build:all": "pnpm -w -r run build",
+    "lint:all": "pnpm -w -r --if-present run lint"
   },
+  "packageManager": "pnpm@8.11.0",
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "eslint": "^9.39.1",

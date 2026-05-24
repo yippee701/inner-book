@@ -19,8 +19,10 @@ function getReportQueryUser(db) {
   return username ? { key: 'username', value: username } : null;
 }
 
-// 是否使用 Mock 数据
-const IS_MOCK_MODE = true;
+function isMockMode() {
+  const envAdapter = getAdapter('env');
+  return envAdapter?.get('MOCK_MODE') === 'true';
+}
 
 function getApiBaseUrl() {
   const envAdapter = getAdapter('env');
@@ -116,7 +118,7 @@ export function getUserExtraInfo(db) {
 }
 
 export async function restartConversation(conversationId) {
-  if (IS_MOCK_MODE) {
+  if (isMockMode()) {
     return mockRestartConversation(conversationId);
   }
   return fetchRestartConversation(conversationId);

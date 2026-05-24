@@ -1,0 +1,12 @@
+{
+  "name": "virtual-pay",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7",
+    "crypto": "^1.0.1",
+    "wx-server-sdk": "^3.0.1"
+  }
+}
