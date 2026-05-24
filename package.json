@@ -10,12 +10,12 @@
     "skills/*"
   ],
   "scripts": {
-    "dev": "pnpm run dev -w @know-yourself/h5",
-    "build": "pnpm run build -w @know-yourself/h5",
-    "preview": "pnpm run preview -w @know-yourself/h5",
-    "deploy": "pnpm run deploy -w @know-yourself/h5",
-    "build:mp": "pnpm run build:weapp -w @know-yourself/miniprogram",
-    "dev:mp": "pnpm run dev:weapp -w @know-yourself/miniprogram",
+    "dev": "pnpm --filter @know-yourself/h5 run dev",
+    "build": "pnpm --filter @know-yourself/h5 run build",
+    "preview": "pnpm --filter @know-yourself/h5 run preview",
+    "deploy": "pnpm --filter @know-yourself/h5 run deploy",
+    "build:mp": "pnpm --filter @know-yourself/miniprogram run build:weapp",
+    "dev:mp": "pnpm --filter @know-yourself/miniprogram run dev:weapp",
     "lint": "eslint .",
     "bootstrap": "pnpm install",
     "build:all": "pnpm -w -r run build",
