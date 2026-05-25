@@ -229,7 +229,6 @@ const forwardOpenAIRequest = async (req, res) => {
             origin: req.headers.origin,
             host: req.headers.host,
         };
-        console.info(`[forwardOpenAIRequest][${traceId}] upstream request:`, upstreamRequestLog);
 
         const axiosConfig = {
             method: 'POST',
@@ -256,7 +255,6 @@ const forwardOpenAIRequest = async (req, res) => {
         const response = await axios(axiosConfig);
         console.info(`[forwardOpenAIRequest][${traceId}] upstream response:`, {
             status: response.status,
-            contentType: response.headers['content-type'],
         });
 
         if (clientDisconnected || res.destroyed || res.writableEnded) {
