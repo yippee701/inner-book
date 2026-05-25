@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 176px 28px 18px;
+  padding: var(--mp-menu-top, 88px) var(--mp-header-side-gap, 28px) 18px;
   position: relative;
   z-index: 10;
   border-bottom: 1px solid rgba(26, 23, 20, 0.28);

@@ -18,7 +18,7 @@
 .rr-header {
   display: flex;
   align-items: center;
-  padding: 176px 28px 18px;
+  padding: var(--mp-menu-top, 88px) var(--mp-header-side-gap, 28px) 18px;
   position: relative;
   z-index: 50;
   background: rgba(238, 236, 234, 0.9);
@@ -295,7 +295,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 176px 28px 20px;
+  padding: var(--mp-menu-top, 88px) var(--mp-header-side-gap, 28px) 20px;
   position: relative;
   z-index: 10;
 }

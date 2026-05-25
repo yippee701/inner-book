@@ -11,6 +11,7 @@ import {
 import { useDb, useCloudbaseApp, useOpenidReady } from '../../contexts/cloudbaseContext';
 import { getOpenid } from '../../utils/openidStore';
 import { pollReportUnlockUntilDone } from '../../services/reportPayment';
+import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -158,6 +159,7 @@ function loginForPayment() {
 }
 
 export default function ReportResult() {
+  const menuButtonLayout = useMenuButtonLayout();
   const router = useRouter();
   const mode = router?.params?.mode || 'discover-self';
   const reportId = router?.params?.reportId;
@@ -325,7 +327,7 @@ export default function ReportResult() {
   if (loadError) {
     return (
       <View className='report-result rr-error-page'>
-        <View className='rr-error-header'>
+        <View className='rr-error-header' style={menuButtonLayout}>
           <View className='rr-error-home' onTouchEnd={() => Taro.reLaunch({ url: '/pages/index/index' })}>
             <Text className='rr-error-home-icon'>🏠</Text>
           </View>
@@ -356,7 +358,7 @@ export default function ReportResult() {
       <View className='rr-blob rr-blob-2' />
       <View className='rr-blob rr-blob-3' />
 
-      <View className='rr-header'>
+      <View className='rr-header' style={menuButtonLayout}>
         <View className='rr-header-back' onTouchEnd={handleHeaderBack}>
           <Text className='rr-header-back-icon'>←</Text>
         </View>

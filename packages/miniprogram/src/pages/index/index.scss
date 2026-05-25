@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 176px 32px 0;
+  padding: var(--mp-menu-top, 88px) var(--mp-header-side-gap, 32px) 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 20px;
   color: #4a413a;
@@ -32,7 +32,7 @@
   position: relative;
   z-index: 10;
   height: 1px;
-  margin: 14px 32px 0;
+  margin: 14px var(--mp-header-side-gap, 32px) 0;
   background: rgba(26, 23, 20, 0.28);
 }
 
@@ -43,7 +43,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 20px 32px 0 auto;
+  margin: 20px var(--mp-header-side-gap, 32px) 0 auto;
   padding: 12px 14px 12px 12px;
   border: 1px solid rgba(26, 23, 20, 0.42);
   border-radius: 8px;

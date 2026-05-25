@@ -2,6 +2,8 @@ import Taro from '@tarojs/taro';
 import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
+const CALL_CONTAINER_TIMEOUT = 15000;
+const CHAT_HTTP_FALLBACK_TIMEOUT = 90000;
 
 /** 是否为 chat 相关接口（走云托管 callContainer） */
 function isChatUrl(url) {
@@ -45,6 +47,11 @@ function parseSSEContent(raw) {
     }
   }
   return content;
+}
+
+function isCallContainerTimeoutError(err) {
+  const message = err?.errMsg || err?.message || '';
+  return err?.errCode === 102002 || /102002|请求超时|timeout/i.test(message);
 }
 
 /**
@@ -100,6 +107,7 @@ export const mpRequestAdapter = {
         method,
         header,
         data: body,
+        timeout: CALL_CONTAINER_TIMEOUT,
       });
       const res = result;
       const statusCode = res.statusCode ?? res.status ?? 200;
@@ -122,8 +130,19 @@ export const mpRequestAdapter = {
       };
       return response;
     } catch (err) {
+      if (isCallContainerTimeoutError(err)) {
+        console.warn('[mpRequest] callContainer timeout, fallback to wx.request:', err);
+        return this._requestChatViaHttpFallback(url, options);
+      }
       throw new Error(err.errMsg || err.message || '云托管请求失败');
     }
+  },
+
+  _requestChatViaHttpFallback(url, options = {}) {
+    return this._wxRequest(url, {
+      ...options,
+      timeout: CHAT_HTTP_FALLBACK_TIMEOUT,
+    });
   },
 
   _wxRequest(url, options = {}) {
@@ -147,6 +166,7 @@ export const mpRequestAdapter = {
         data,
         responseType: options.responseType || 'text',
         enableChunked: !!options.stream,
+        ...(options.timeout ? { timeout: options.timeout } : {}),
         success(res) {
           const response = {
             ok: res.statusCode >= 200 && res.statusCode < 300,

@@ -4,10 +4,12 @@ import MessageList from '../../components/MessageList';
 import WelcomeScreen from '../../components/WelcomeScreen';
 import ChatInput from '../../components/ChatInput';
 import { useChatPage } from '../../hooks/useChatPage';
+import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
 import './index.scss';
 
 export default function ChatPage() {
   const router = useRouter();
+  const menuButtonLayout = useMenuButtonLayout();
   const {
     hasStarted,
     pendingReport,
@@ -43,7 +45,7 @@ export default function ChatPage() {
       <View className='bg-glow bg-glow-2' />
 
       {/* 顶部标题栏 */}
-      <View className='chat-header'>
+      <View className='chat-header' style={menuButtonLayout}>
         <View className='chat-header-back' onClick={() => Taro.navigateBack()}>
           <Text className='chat-header-back-icon'>←</Text>
         </View>

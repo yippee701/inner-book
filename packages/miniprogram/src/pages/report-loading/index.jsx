@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
+import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
 import './index.scss';
 
 // 加载省略号
@@ -30,6 +31,7 @@ function ProgressBar({ current, total }) {
 }
 
 export default function ReportLoading() {
+  const menuButtonLayout = useMenuButtonLayout();
   const REPORT_TOTAL_CHARS = 3000;
   const router = useRouter();
   const mode = router?.params?.mode || 'discover-self';
@@ -70,7 +72,7 @@ export default function ReportLoading() {
       <View className='bg-glow bg-glow-3' />
 
       {/* 顶部 */}
-      <View className='rl-header'>
+      <View className='rl-header' style={menuButtonLayout}>
         <View className='rl-header-back' onClick={() => Taro.reLaunch({ url: '/pages/index/index' })}>
           <Text className='rl-header-back-icon'>←</Text>
         </View>
