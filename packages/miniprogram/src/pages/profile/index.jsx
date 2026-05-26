@@ -187,7 +187,7 @@ export default function ProfilePage() {
   const username = user?.username || '微信用户';
   const archiveInitial = getArchiveInitial(username);
   const archiveSummary = reports.length > 0
-    ? `共 ${reports.length} 封笔记 · 起始于 ${formatArchiveSince(reports)}`
+    ? `共 ${reports.length} 篇笔记 · 起始于 ${formatArchiveSince(reports)}`
     : '暂无识心笔记 · 等待开启';
 
   useShareAppMessage(() => ({
@@ -216,7 +216,7 @@ export default function ProfilePage() {
           <View className='profile-copy'>
             <View className='profile-name-row'>
               <Text className='profile-username'>{username}</Text>
-              <Text className='profile-role' onClick={() => openNicknameDialog(username)}>· 作者</Text>
+              <Text className='profile-role' onClick={() => openNicknameDialog(username)}>· 修改</Text>
             </View>
             <Text className='profile-archive-count'>{archiveSummary}</Text>
           </View>

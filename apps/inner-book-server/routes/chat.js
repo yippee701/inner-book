@@ -12,7 +12,7 @@ const {
 const FORCE_FINAL_REPORT_MESSAGE_THRESHOLD = 26;
 
 const LAST_USER_FORCE_REPORT_HINT =
-  '\n\n（对话已达轮次上限：请直接输出以 [Report] 开头的完整《INNER BOOK》，不要提问。）';
+  '\n\n（对话已达轮次上限：请直接输出以 [Report] 开头的当前模式完整终稿报告，不要提问。）';
 
 // 创建路由实例
 const router = express.Router();
