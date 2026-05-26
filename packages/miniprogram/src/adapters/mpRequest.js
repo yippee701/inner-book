@@ -3,7 +3,9 @@ import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
 const CLOUDBASE_TOKEN_FUNCTION_NAME = 'cloudbase-anonymous-token';
+const PREFER_WX_REQUEST_FOR_CHAT = true;
 const CALL_CONTAINER_TIMEOUT = 15000;
+const WX_REQUEST_FALLBACK_TIMEOUT = 30000;
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 let cachedAccessToken = '';
@@ -133,6 +135,9 @@ export const mpRequestAdapter = {
 
   async request(url, options = {}) {
     if (this._cloudApp && isChatUrl(url)) {
+      if (PREFER_WX_REQUEST_FOR_CHAT) {
+        return this._requestChatViaWxRequestFallback(url, options);
+      }
       return this._requestChatViaCallContainer(url, options);
     }
     return this._wxRequest(url, options);
@@ -211,7 +216,7 @@ export const mpRequestAdapter = {
     return this._wxRequest(url, {
       ...options,
       headers,
-      timeout: options.timeout || CALL_CONTAINER_TIMEOUT,
+      timeout: options.timeout || WX_REQUEST_FALLBACK_TIMEOUT,
     });
   },
 

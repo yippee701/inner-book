@@ -35,9 +35,14 @@ function ConversionZone({ isGuest }) {
             <Text className='rr-btn-text'>我也要探索</Text>
           </View>
         ) : (
-          <Button className='rr-btn-primary rr-btn-share' openType='share'>
-            <Text className='rr-btn-text'>分享报告</Text>
-          </Button>
+          <>
+            <Button className='rr-btn-primary rr-btn-share' openType='share'>
+              <Text className='rr-btn-text'>分享报告</Text>
+            </Button>
+            <View className='rr-btn-primary rr-btn-cta' onTouchEnd={goHome}>
+              <Text className='rr-btn-text'>我也要测</Text>
+            </View>
+          </>
         )}
       </View>
       <View className='rr-signature'>
