@@ -21,8 +21,8 @@ const router = express.Router();
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.lkeap.cloud.tencent.com/plan/v3';
 const DEFAULT_TIMEOUT = parseInt(process.env.TIMEOUT || '90000'); // 90秒超时
 const SSE_HEARTBEAT_INTERVAL_MS = parseInt(process.env.SSE_HEARTBEAT_INTERVAL_MS || '15000');
-const DEFAULT_MAX_TOKENS = parseInt(process.env.MAX_TOKENS || '8192', 10);
-const FINAL_REPORT_MAX_TOKENS = parseInt(process.env.FINAL_REPORT_MAX_TOKENS || '12000', 10);
+const DEFAULT_MAX_TOKENS = parseInt(process.env.MAX_TOKENS || '10000', 10);
+const FINAL_REPORT_MAX_TOKENS = parseInt(process.env.FINAL_REPORT_MAX_TOKENS || '15000', 10);
 
 function parsePositiveInteger(value) {
     const parsed = Number.parseInt(value, 10);
