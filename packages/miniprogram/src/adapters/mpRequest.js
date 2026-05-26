@@ -49,6 +49,23 @@ function parseSSEContent(raw) {
   return content;
 }
 
+function parseResponseDataAsJson(data) {
+  if (typeof data !== 'string') return data;
+  try {
+    return JSON.parse(data);
+  } catch (error) {
+    const content = parseSSEContent(data);
+    if (content) {
+      return { content, raw: data };
+    }
+    return {
+      detail: data,
+      raw: data,
+      parseError: error?.message || 'response is not JSON',
+    };
+  }
+}
+
 function isCallContainerTimeoutError(err) {
   const message = err?.errMsg || err?.message || '';
   return err?.errCode === 102002 || /102002|请求超时|timeout/i.test(message);
@@ -61,9 +78,25 @@ function isCallContainerTimeoutError(err) {
  */
 export const mpRequestAdapter = {
   _cloudApp: null,
+  _cloudbaseAccessTokenProvider: null,
 
   setCloudApp(app) {
     this._cloudApp = app;
+  },
+
+  setCloudbaseAccessTokenProvider(provider) {
+    this._cloudbaseAccessTokenProvider = typeof provider === 'function' ? provider : null;
+  },
+
+  async _getCloudbaseAccessToken() {
+    if (!this._cloudbaseAccessTokenProvider) {
+      throw new Error('CloudBase token provider 未初始化');
+    }
+    const token = await this._cloudbaseAccessTokenProvider();
+    if (typeof token !== 'string' || !token) {
+      throw new Error('CloudBase accessToken 为空');
+    }
+    return token;
   },
 
   async request(url, options = {}) {
@@ -138,9 +171,14 @@ export const mpRequestAdapter = {
     }
   },
 
-  _requestChatViaHttpFallback(url, options = {}) {
+  async _requestChatViaHttpFallback(url, options = {}) {
+    const accessToken = await this._getCloudbaseAccessToken();
+    const header = { ...(options.headers || {}) };
+    header.Authorization = `Bearer ${accessToken}`;
+
     return this._wxRequest(url, {
       ...options,
+      headers: header,
       timeout: CHAT_HTTP_FALLBACK_TIMEOUT,
     });
   },
@@ -174,9 +212,7 @@ export const mpRequestAdapter = {
             statusText: '',
             headers: res.header || {},
             json() {
-              return Promise.resolve(
-                typeof res.data === 'string' ? JSON.parse(res.data) : res.data
-              );
+              return Promise.resolve(parseResponseDataAsJson(res.data));
             },
             text() {
               return Promise.resolve(

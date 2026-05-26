@@ -22,6 +22,7 @@
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
     "@babel/runtime": "^7.27.1",
+    "@cloudbase/js-sdk": "^2.25.4",
     "@know-yourself/core": "1.0.0",
     "@tarojs/components": "4.x",
     "@tarojs/helper": "4.x",
@@ -40,6 +41,6 @@
     "@tarojs/webpack5-runner": "4.x",
     "babel-preset-taro": "4.x",
     "scss": "^0.2.4",
-    "webpack": "5.x"
+    "webpack": "5.91.0"
   }
 }

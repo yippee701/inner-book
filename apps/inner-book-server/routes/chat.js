@@ -21,6 +21,13 @@ const router = express.Router();
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.lkeap.cloud.tencent.com/plan/v3';
 const DEFAULT_TIMEOUT = parseInt(process.env.TIMEOUT || '90000'); // 90秒超时
 const SSE_HEARTBEAT_INTERVAL_MS = parseInt(process.env.SSE_HEARTBEAT_INTERVAL_MS || '15000');
+const DEFAULT_MAX_TOKENS = parseInt(process.env.MAX_TOKENS || '8192', 10);
+const FINAL_REPORT_MAX_TOKENS = parseInt(process.env.FINAL_REPORT_MAX_TOKENS || '12000', 10);
+
+function parsePositiveInteger(value) {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 const createRequestTraceId = () =>
     `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -210,6 +217,8 @@ const forwardOpenAIRequest = async (req, res) => {
         }
         
         const model = process.env.OPENAI_MODEL || 'gemini-3-flash-preview';
+        const maxTokens = parsePositiveInteger(req.body?.max_tokens)
+            || (forceFinalReport ? FINAL_REPORT_MAX_TOKENS : DEFAULT_MAX_TOKENS);
 
         upstreamRequestLog = {
             traceId,
@@ -221,7 +230,7 @@ const forwardOpenAIRequest = async (req, res) => {
             mode,
             stream: isStreamRequest,
             timeout: DEFAULT_TIMEOUT,
-            maxTokens: req.body?.max_tokens,
+            maxTokens,
             userMessageCount: userMessages.length,
             fullMessageCount: fullMessages.length,
             forceFinalReport,
@@ -241,7 +250,7 @@ const forwardOpenAIRequest = async (req, res) => {
                 model,
                 messages: fullMessages,
                 stream: isStreamRequest,
-                max_tokens: req.body?.max_tokens,
+                max_tokens: maxTokens,
             },
             timeout: DEFAULT_TIMEOUT,
             // 始终使用 stream 响应类型，以便根据响应头判断

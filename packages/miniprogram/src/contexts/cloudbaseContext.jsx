@@ -6,8 +6,10 @@ import { setAuthRef } from '@know-yourself/core';
 import { mpRequestAdapter } from '../adapters/mpRequest';
 import { wrapMpDb } from '../adapters/mpDb';
 import { setOpenid } from '../utils/openidStore';
+import cloudbase from '@cloudbase/js-sdk/miniprogram_dist/index';
 
 const CloudbaseContext = createContext(null);
+const CLOUDBASE_ENV_ID = 'inner-book-0gdweqyu8ab70e46';
 
 /**
  * 小程序版 Cloudbase Provider
@@ -23,7 +25,7 @@ export function CloudbaseProvider({ children }) {
     // 初始化微信云开发
     if (Taro.cloud) {
       Taro.cloud.init({
-        env: 'inner-book-0gdweqyu8ab70e46',
+        env: CLOUDBASE_ENV_ID,
         traceUser: true,
       });
 
@@ -32,11 +34,24 @@ export function CloudbaseProvider({ children }) {
       setTrackCloudbaseApp(cloudApp);
       mpRequestAdapter.setCloudApp(cloudApp);
 
+      const cloudbaseJSSDK = cloudbase.init({
+        env: CLOUDBASE_ENV_ID,
+      });
+      const cloudbaseAuth = cloudbaseJSSDK.auth();
+      const anonymousLoginPromise = cloudbaseAuth.signInAnonymously().catch((error) => {
+        console.error('[CloudbaseProvider] signInAnonymously failed:', error);
+        throw error;
+      });
+      mpRequestAdapter.setCloudbaseAccessTokenProvider(async () => {
+        await anonymousLoginPromise;
+        const tokenResult = await cloudbaseAuth.getAccessToken();
+        return tokenResult?.accessToken || tokenResult?.access_token || tokenResult || '';
+      });
+
       // 一进 app 即获取 openid，用于后续所有请求
       Taro.cloud.callFunction({
         name: 'get-openid',
         complete: async (res) => {
-          console.log('callFunction result: ', res);
           const result = res?.result;
           const id = typeof result === 'object' && result !== null ? result.openid : result;
           if (id) {
