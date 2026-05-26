@@ -3,7 +3,6 @@ import { useEffect, useCallback, useState } from 'react';
 import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import { useReport } from '../../contexts/ReportContext';
 import {
-  generateReportTitle,
   getModeLabel,
   markdownToHtml,
   getReportDetail as getReportDetailApi,
@@ -12,6 +11,7 @@ import { useDb, useCloudbaseApp, useOpenidReady } from '../../contexts/cloudbase
 import { getOpenid } from '../../utils/openidStore';
 import { pollReportUnlockUntilDone } from '../../services/reportPayment';
 import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
+import ibIcon from '../../assets/ib-icon.png';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -35,14 +35,9 @@ function ConversionZone({ isGuest }) {
             <Text className='rr-btn-text'>我也要探索</Text>
           </View>
         ) : (
-          <>
-            <Button className='rr-btn-primary rr-btn-share' openType='share'>
-              <Text className='rr-btn-text'>分享报告</Text>
-            </Button>
-            <View className='rr-btn-primary rr-btn-cta' onTouchEnd={goHome}>
-              <Text className='rr-btn-text'>我也要测</Text>
-            </View>
-          </>
+          <Button className='rr-btn-primary rr-btn-share' openType='share'>
+            <Text className='rr-btn-text'>分享报告</Text>
+          </Button>
         )}
       </View>
       <View className='rr-signature'>
@@ -180,6 +175,7 @@ export default function ReportResult() {
   } = useReport();
 
   const [displayContent, setDisplayContent] = useState('');
+  const [reportTitle, setReportTitle] = useState('');
   const [isLoadingReport, setIsLoadingReport] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [showUnlockDialog, setShowUnlockDialog] = useState(false);
@@ -212,6 +208,7 @@ export default function ReportResult() {
           setLoadError('报告内容不存在');
           return;
         }
+        setReportTitle(detail.title || '');
         setDisplayContent(detail.content || '');
         setOwnerCheckDetail({
           creatorOpenid: detail.creatorOpenid ?? null,
@@ -234,9 +231,11 @@ export default function ReportResult() {
     loadReport();
   }, [db, getReportDetail, reportId]);
 
+  const displayTitle = reportTitle || modeLabel;
+
   useShareAppMessage(() => {
     return {
-      title: subTitle || generateReportTitle(mode),
+      title: displayTitle,
       path: `/pages/report-result/index?mode=${mode}&reportId=${reportId}`,
     };
   });
@@ -298,7 +297,10 @@ export default function ReportResult() {
 
       if (db) {
         const detail = await getReportDetailApi(db, reportId, true);
-        if (detail) setDisplayContent(detail.content || '');
+        if (detail) {
+          setReportTitle(detail.title || '');
+          setDisplayContent(detail.content || '');
+        }
       }
     } catch (error) {
       if (isUserCancelledPayment(error)) {
@@ -334,7 +336,7 @@ export default function ReportResult() {
       <View className='report-result rr-error-page'>
         <View className='rr-error-header' style={menuButtonLayout}>
           <View className='rr-error-home' onTouchEnd={() => Taro.reLaunch({ url: '/pages/index/index' })}>
-            <Text className='rr-error-home-icon'>🏠</Text>
+            <mp-icon icon='home' color='#1A1714' size='24' />
           </View>
         </View>
         <View className='rr-error-body'>
@@ -367,7 +369,7 @@ export default function ReportResult() {
         <View className='rr-header-back' onTouchEnd={handleHeaderBack}>
           <Text className='rr-header-back-icon'>←</Text>
         </View>
-        <Text className='rr-header-title'>{generateReportTitle(mode)}</Text>
+        <Text className='rr-header-title'>{displayTitle}</Text>
         <View className='rr-header-placeholder' />
       </View>
 
@@ -396,6 +398,7 @@ export default function ReportResult() {
       {showUnlockDialog && (
         <View className='rr-dialog-mask'>
           <View className='rr-dialog-content'>
+            <Image className='rr-dialog-icon' src={ibIcon} mode='aspectFit' />
             <Text className='rr-dialog-title'>解锁完整报告</Text>
             <Text className='rr-dialog-desc rr-dialog-price'>
               支付后可查看完整报告与完整对话

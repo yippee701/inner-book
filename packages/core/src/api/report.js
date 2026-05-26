@@ -158,6 +158,7 @@ export function getReportDetail(db, reportId, skipCache = false) {
     db.collection('report')
       .where({ reportId })
       .field({
+        title: true,
         content: true,
         status: true,
         subTitle: true,
@@ -182,6 +183,7 @@ export function getReportDetail(db, reportId, skipCache = false) {
           }
           const reportDetail = list[0];
           const result = {
+            title: reportDetail.title || '',
             content: reportDetail.content || '',
             status: reportDetail.status,
             subTitle: reportDetail.subTitle || '',
