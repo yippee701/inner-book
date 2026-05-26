@@ -98,7 +98,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28px 40px 0;
+  padding: 36px 40px 0;
 }
 
 .home-header-image {
@@ -109,24 +109,24 @@
 
 .orb-container {
   position: relative;
-  width: 420px;
-  height: 420px;
-  margin-top: 42px;
+  width: 520px;
+  height: 520px;
+  margin-top: 62px;
   transform: rotate(-2deg);
   animation: book-breathe 5s ease-in-out infinite;
 }
 
 .book-image {
   display: block;
-  width: 420px;
-  height: 420px;
+  width: 520px;
+  height: 520px;
 }
 
 .carousel-area {
   position: relative;
   width: 100%;
-  height: 142px;
-  margin-top: 35px;
+  height: 88px;
+  margin-top: 24px;
 }
 
 .home-fixed-copy {
@@ -175,26 +175,48 @@
 
 .bottom-buttons {
   position: fixed;
-  bottom: 0;
+  bottom: 132px;
   left: 0;
   right: 0;
   z-index: 20;
-  padding: 24px 28px 68px;
+  padding: 18px 28px 30px;
   background: linear-gradient(to top, rgba(238, 236, 234, 0.98) 72%, rgba(238, 236, 234, 0));
 }
 
 .btn-row {
+  width: 620px;
+  margin: 0 auto;
   display: flex;
-  gap: 16px;
-  align-items: center;
+  gap: 20px;
+  align-items: flex-start;
   justify-content: center;
 }
 
+.home-action {
+  width: 300px;
+  flex: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
 .btn-flex {
-  flex: 1;
-  height: 88px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 82px;
   padding: 0 16px;
-  font-size: 29px;
+  font-size: 28px;
+}
+
+.home-action-desc {
+  display: block;
+  font-size: 22px;
+  line-height: 1.32;
+  color: #4a413a;
+  text-align: center;
+  white-space: normal;
 }
 
 .dialog-mask {

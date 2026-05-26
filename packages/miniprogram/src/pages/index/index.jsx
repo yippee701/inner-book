@@ -59,20 +59,21 @@ export default function Homepage() {
             mode='aspectFit'
           />
         </View>
-
-        <View className='carousel-area home-fixed-copy'>
-          <Text className='carousel-title'>于几轮往来对话，</Text>
-          <Text className='carousel-subtitle'>重新认识那个住在你心里的人。</Text>
-        </View>
       </View>
 
       <View className='bottom-buttons safe-area-bottom'>
         <View className='btn-row'>
-          <View className='btn-secondary btn-flex' onClick={openPeopleModeDialog}>
-            <Text>识人</Text>
+          <View className='home-action'>
+            <View className='btn-secondary btn-flex' onClick={openPeopleModeDialog}>
+              <Text>识人</Text>
+            </View>
+            <Text className='home-action-desc'>读懂爱人/孩子/朋友/上司</Text>
           </View>
-          <View className='btn-primary btn-flex' onClick={() => handleStartChat('discover-self')}>
-            <Text>识己</Text>
+          <View className='home-action'>
+            <View className='btn-primary btn-flex' onClick={() => handleStartChat('discover-self')}>
+              <Text>识己</Text>
+            </View>
+            <Text className='home-action-desc'>发掘自身潜能</Text>
           </View>
         </View>
       </View>
