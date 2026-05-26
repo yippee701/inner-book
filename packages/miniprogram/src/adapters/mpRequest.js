@@ -3,9 +3,9 @@ import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
 const CLOUDBASE_TOKEN_FUNCTION_NAME = 'cloudbase-anonymous-token';
-const PREFER_WX_REQUEST_FOR_CHAT = true;
 const CALL_CONTAINER_TIMEOUT = 15000;
-const WX_REQUEST_FALLBACK_TIMEOUT = 30000;
+const WX_REQUEST_FROM_USER_MESSAGE_COUNT = 10;
+const WX_REQUEST_FALLBACK_TIMEOUT = 60000;
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
 let cachedAccessToken = '';
@@ -77,6 +77,23 @@ function isCallContainerTimeoutError(err) {
   return err?.errCode === 102002 || /102002|请求超时|timeout/i.test(message);
 }
 
+function parseRequestBody(body) {
+  if (!body) return null;
+  if (typeof body !== 'string') return body;
+  try {
+    return JSON.parse(body);
+  } catch {
+    return {};
+  }
+}
+
+function shouldUseWxRequestForChat(options = {}) {
+  const body = parseRequestBody(options.body);
+  const messages = Array.isArray(body?.messages) ? body.messages : [];
+  const userMessageCount = messages.filter((message) => message?.role === 'user').length;
+  return userMessageCount >= WX_REQUEST_FROM_USER_MESSAGE_COUNT;
+}
+
 function getCloudbaseTokenResult(response) {
   const result = response?.result || response || {};
   if (result.code && result.code !== 0) {
@@ -123,7 +140,7 @@ function withCloudbaseAccessTokenHeaders(headers, accessToken) {
 
 /**
  * 小程序端 Request 适配器
- * - chat 接口：优先使用 wx.cloud.callContainer，超时时兜底使用 wx.request
+ * - chat 接口：前 9 问优先使用 wx.cloud.callContainer，第 10 问起使用 wx.request，因为第 10 问起输出报告，比较容易超时
  * - 其他：使用 wx.request
  */
 export const mpRequestAdapter = {
@@ -135,7 +152,7 @@ export const mpRequestAdapter = {
 
   async request(url, options = {}) {
     if (this._cloudApp && isChatUrl(url)) {
-      if (PREFER_WX_REQUEST_FOR_CHAT) {
+      if (shouldUseWxRequestForChat(options)) {
         return this._requestChatViaWxRequestFallback(url, options);
       }
       return this._requestChatViaCallContainer(url, options);
@@ -152,14 +169,7 @@ export const mpRequestAdapter = {
       return Promise.reject(new Error('云托管未初始化，无法调用 chat 接口'));
     }
 
-    let body = null;
-    if (options.body) {
-      try {
-        body = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
-      } catch {
-        body = {};
-      }
-    }
+    const body = parseRequestBody(options.body);
 
     const method = (options.method || 'POST').toUpperCase();
     const path = getPathFromUrl(url);
