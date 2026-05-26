@@ -15,6 +15,7 @@ exports.main = async (event, context) => {
   const CONFIG = getConfig();
   const { wxpayVirtualGoods } = require("./virtual-goods");
   const { confirmOrder, queryUnlockStatus } = require("./confirm-order");
+  const { getAccessToken } = require("./access-token");
   global.cloud = cloud;
   global.crypto = crypto;
   global.db = db;
@@ -39,6 +40,8 @@ exports.main = async (event, context) => {
       return await confirmOrder(event, context);
     case 'query_unlock_status':
       return await queryUnlockStatus(event, context);
+    case 'get_access_token':
+      return await getAccessToken(event, context);
     default:
       console.log('Unimplemented method', event);
       return {

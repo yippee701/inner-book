@@ -2,7 +2,13 @@ import Taro from '@tarojs/taro';
 import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
-const CALL_CONTAINER_TIMEOUT = 90000;
+const ACCESS_TOKEN_FUNCTION_NAME = 'wx-virtual-pay';
+const ACCESS_TOKEN_ACTION = 'get_access_token';
+const CALL_CONTAINER_TIMEOUT = 15000;
+const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
+
+let cachedAccessToken = '';
+let cachedAccessTokenExpiresAt = 0;
 
 /** 是否为 chat 相关接口（走云托管 callContainer） */
 function isChatUrl(url) {
@@ -68,6 +74,38 @@ function parseResponseDataAsJson(data) {
 function isCallContainerTimeoutError(err) {
   const message = err?.errMsg || err?.message || '';
   return err?.errCode === 102002 || /102002|请求超时|timeout/i.test(message);
+}
+
+function getAccessTokenResult(response) {
+  const result = response?.result || response || {};
+  const accessToken = result.access_token || result.accessToken || '';
+  if (!accessToken) {
+    const message = result.message || result.msg || result.errmsg || '获取 access_token 失败';
+    throw new Error(message);
+  }
+  return {
+    accessToken,
+    expiresIn: Number(result.expires_in || result.expiresIn || 7200),
+  };
+}
+
+async function getWxAccessToken(cloudApp) {
+  if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_BUFFER_MS) {
+    return cachedAccessToken;
+  }
+
+  if (!cloudApp || !cloudApp.callFunction) {
+    throw new Error('云函数未初始化，无法获取 access_token');
+  }
+
+  const response = await cloudApp.callFunction({
+    name: ACCESS_TOKEN_FUNCTION_NAME,
+    data: { action: ACCESS_TOKEN_ACTION },
+  });
+  const { accessToken, expiresIn } = getAccessTokenResult(response);
+  cachedAccessToken = accessToken;
+  cachedAccessTokenExpiresAt = Date.now() + expiresIn * 1000;
+  return accessToken;
 }
 
 /**
@@ -148,10 +186,25 @@ export const mpRequestAdapter = {
     } catch (err) {
       if (isCallContainerTimeoutError(err)) {
         console.warn('[mpRequest] callContainer timeout:', err);
-        throw new Error(err.errMsg || err.message || '云托管请求超时，请稍后重试');
+        return this._requestChatViaWxRequestFallback(url, options);
       }
       throw new Error(err.errMsg || err.message || '云托管请求失败');
     }
+  },
+
+  async _requestChatViaWxRequestFallback(url, options = {}) {
+    const accessToken = await getWxAccessToken(this._cloudApp);
+    const headers = {
+      ...(options.headers || {}),
+      'X-WX-CLOUDBASE-ACCESS-TOKEN': accessToken,
+      'X-WX-Access-Token': accessToken,
+    };
+
+    return this._wxRequest(url, {
+      ...options,
+      headers,
+      timeout: options.timeout || CALL_CONTAINER_TIMEOUT,
+    });
   },
 
   _wxRequest(url, options = {}) {

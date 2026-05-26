@@ -2,8 +2,8 @@ import { Image, View, Text } from '@tarojs/components';
 import { useHomePage } from '../../hooks/useHomePage';
 import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
 import { useShareAppMessage } from '@tarojs/taro';
-import indexHeader from './index-header.png';
-import indexOrb from './index-orb.png';
+import indexHeader from '../../assets/index-header.png';
+import indexOrb from '../../assets/index-orb.png';
 import './index.scss';
 
 export default function Homepage() {

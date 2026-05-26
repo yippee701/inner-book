@@ -10,6 +10,7 @@
 - `wxpay_virtual_goods`：创建 `pay_orders` 待支付订单，并返回 `wx.requestVirtualPayment` 所需签名参数。
 - `confirm_order`：支付成功后确认订单并解锁报告。
 - `query_unlock_status`：轮询查询订单支付状态与报告是否已解锁（只读）。
+- `get_access_token`：服务端获取并缓存小程序后台接口调用凭据 `access_token`。
 
 推送事件（见 `payment-push.js`）：
 
