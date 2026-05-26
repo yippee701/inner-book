@@ -193,7 +193,7 @@ export function getReportDetail(db, reportId, skipCache = false) {
             creatorOpenid: reportDetail._openid ?? reportDetail.creatorOpenid ?? null,
           };
           if (reportDetail.lock === true) {
-            result.content = result.content.slice(0, 200).concat('...(待解锁)');
+            result.content = result.content.slice(0, 500).concat('...(待解锁)');
           }
           setCachedData(cacheKey, result);
           resolve(result);
