@@ -30,18 +30,26 @@ function getProxyServerUrl() {
   return env('SERVER_URL') || 'http://localhost:3001';
 }
 
+function getProxyAuthHeaders() {
+  const platform = getAdapter('platform');
+  if (platform?.getPlatformName?.() === 'miniprogram') {
+    return {};
+  }
+
+  const token = getCurrentUserToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 /**
  * 聊天预热：请求聊天服务健康检查接口
  */
 export function chatWarmup() {
-  const token = getCurrentUserToken();
-
   return request(`${getProxyServerUrl()}/chat/health`, {
     method: 'GET',
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      ...getProxyAuthHeaders(),
     },
     credentials: 'include',
   }).then(() => {});
@@ -65,13 +73,12 @@ export function typewriterEffect(text, onUpdate, speed = 30) {
 }
 
 async function sendMessageViaProxy(messages, onStream = null, mode) {
-  const token = getCurrentUserToken();
   const response = await request(`${getProxyServerUrl()}/chat`, {
     method: 'POST',
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      ...getProxyAuthHeaders(),
     },
     credentials: 'include',
     body: JSON.stringify({

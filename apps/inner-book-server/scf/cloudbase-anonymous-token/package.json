@@ -1,0 +1,10 @@
+{
+  "name": "cloudbase-anonymous-token",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@cloudbase/js-sdk": "^2.28.6"
+  }
+}

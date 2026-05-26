@@ -1,11 +1,20 @@
+function getRuntimeConfig() {
+  if (globalThis.CONFIG) {
+    return globalThis.CONFIG;
+  }
+  const { getConfig } = require("./config");
+  return getConfig();
+}
+
 async function getSession(code) {
   const { requestJson } = require("./request");
+  const config = getRuntimeConfig();
 
   const API_ROOT = "https://api.weixin.qq.com";
   const url =
     `${API_ROOT}/sns/jscode2session` +
-    `?appid=${encodeURIComponent('wxd4168d20a8ab16bf')}` +
-    `&secret=${encodeURIComponent('3ac79768a3483ce510886697a710f0ad')}` +
+    `?appid=${encodeURIComponent(config.appId)}` +
+    `&secret=${encodeURIComponent(config.appSecret)}` +
     `&js_code=${encodeURIComponent(code)}` +
     `&grant_type=authorization_code`;
 

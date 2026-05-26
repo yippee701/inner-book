@@ -1,5 +1,5 @@
 const COMMON_VIRTUAL_PAY_CONFIG = {
-  appId: "wxd4168d20a8ab16bf",
+  appId: process.env.WX_APPID || "wxd4168d20a8ab16bf",
   appSecret: process.env.WX_APPSECRET || "",
   offerId: "1450513532",
   appKey: process.env.WX_VP_APP_KEY || "",

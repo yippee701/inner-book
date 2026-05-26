@@ -2,8 +2,7 @@ import Taro from '@tarojs/taro';
 import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
-const ACCESS_TOKEN_FUNCTION_NAME = 'wx-virtual-pay';
-const ACCESS_TOKEN_ACTION = 'get_access_token';
+const CLOUDBASE_TOKEN_FUNCTION_NAME = 'cloudbase-anonymous-token';
 const CALL_CONTAINER_TIMEOUT = 15000;
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 
@@ -76,11 +75,14 @@ function isCallContainerTimeoutError(err) {
   return err?.errCode === 102002 || /102002|请求超时|timeout/i.test(message);
 }
 
-function getAccessTokenResult(response) {
+function getCloudbaseTokenResult(response) {
   const result = response?.result || response || {};
+  if (result.code && result.code !== 0) {
+    throw new Error(result.message || result.msg || '获取 CloudBase access_token 失败');
+  }
   const accessToken = result.access_token || result.accessToken || '';
   if (!accessToken) {
-    const message = result.message || result.msg || result.errmsg || '获取 access_token 失败';
+    const message = result.message || result.msg || result.errmsg || '获取 CloudBase access_token 失败';
     throw new Error(message);
   }
   return {
@@ -89,28 +91,37 @@ function getAccessTokenResult(response) {
   };
 }
 
-async function getWxAccessToken(cloudApp) {
+async function getCloudbaseAccessToken(cloudApp) {
   if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_BUFFER_MS) {
     return cachedAccessToken;
   }
 
   if (!cloudApp || !cloudApp.callFunction) {
-    throw new Error('云函数未初始化，无法获取 access_token');
+    throw new Error('云函数未初始化，无法获取 CloudBase access_token');
   }
 
   const response = await cloudApp.callFunction({
-    name: ACCESS_TOKEN_FUNCTION_NAME,
-    data: { action: ACCESS_TOKEN_ACTION },
+    name: CLOUDBASE_TOKEN_FUNCTION_NAME,
+    data: {},
   });
-  const { accessToken, expiresIn } = getAccessTokenResult(response);
+  const { accessToken, expiresIn } = getCloudbaseTokenResult(response);
   cachedAccessToken = accessToken;
   cachedAccessTokenExpiresAt = Date.now() + expiresIn * 1000;
   return accessToken;
 }
 
+function withCloudbaseAccessTokenHeaders(headers, accessToken) {
+  return {
+    ...(headers || {}),
+    'Authorization': `Bearer ${accessToken}`,
+    'X-WX-CLOUDBASE-ACCESS-TOKEN': accessToken,
+    'X-WX-Access-Token': accessToken,
+  };
+}
+
 /**
  * 小程序端 Request 适配器
- * - chat 接口：使用 wx.cloud.callContainer 调用云托管
+ * - chat 接口：优先使用 wx.cloud.callContainer，超时时兜底使用 wx.request
  * - 其他：使用 wx.request
  */
 export const mpRequestAdapter = {
@@ -149,9 +160,10 @@ export const mpRequestAdapter = {
     const path = getPathFromUrl(url);
 
     const openid = getOpenid();
+    const accessToken = await getCloudbaseAccessToken(cloudApp);
     const header = {
       'X-WX-SERVICE': CHAT_SERVICE_NAME,
-      ...(options.headers || {}),
+      ...withCloudbaseAccessTokenHeaders(options.headers, accessToken),
     };
     if (openid) header['X-WX-Openid'] = openid;
 
@@ -193,12 +205,8 @@ export const mpRequestAdapter = {
   },
 
   async _requestChatViaWxRequestFallback(url, options = {}) {
-    const accessToken = await getWxAccessToken(this._cloudApp);
-    const headers = {
-      ...(options.headers || {}),
-      'X-WX-CLOUDBASE-ACCESS-TOKEN': accessToken,
-      'X-WX-Access-Token': accessToken,
-    };
+    const accessToken = await getCloudbaseAccessToken(this._cloudApp);
+    const headers = withCloudbaseAccessTokenHeaders(options.headers, accessToken);
 
     return this._wxRequest(url, {
       ...options,
