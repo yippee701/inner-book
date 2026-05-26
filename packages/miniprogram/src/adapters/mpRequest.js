@@ -2,8 +2,7 @@ import Taro from '@tarojs/taro';
 import { getOpenid } from '../utils/openidStore';
 
 const CHAT_SERVICE_NAME = 'inner-book-server';
-const CALL_CONTAINER_TIMEOUT = 15000;
-const CHAT_HTTP_FALLBACK_TIMEOUT = 90000;
+const CALL_CONTAINER_TIMEOUT = 90000;
 
 /** 是否为 chat 相关接口（走云托管 callContainer） */
 function isChatUrl(url) {
@@ -78,25 +77,9 @@ function isCallContainerTimeoutError(err) {
  */
 export const mpRequestAdapter = {
   _cloudApp: null,
-  _cloudbaseAccessTokenProvider: null,
 
   setCloudApp(app) {
     this._cloudApp = app;
-  },
-
-  setCloudbaseAccessTokenProvider(provider) {
-    this._cloudbaseAccessTokenProvider = typeof provider === 'function' ? provider : null;
-  },
-
-  async _getCloudbaseAccessToken() {
-    if (!this._cloudbaseAccessTokenProvider) {
-      throw new Error('CloudBase token provider 未初始化');
-    }
-    const token = await this._cloudbaseAccessTokenProvider();
-    if (typeof token !== 'string' || !token) {
-      throw new Error('CloudBase accessToken 为空');
-    }
-    return token;
   },
 
   async request(url, options = {}) {
@@ -164,23 +147,11 @@ export const mpRequestAdapter = {
       return response;
     } catch (err) {
       if (isCallContainerTimeoutError(err)) {
-        console.warn('[mpRequest] callContainer timeout, fallback to wx.request:', err);
-        return this._requestChatViaHttpFallback(url, options);
+        console.warn('[mpRequest] callContainer timeout:', err);
+        throw new Error(err.errMsg || err.message || '云托管请求超时，请稍后重试');
       }
       throw new Error(err.errMsg || err.message || '云托管请求失败');
     }
-  },
-
-  async _requestChatViaHttpFallback(url, options = {}) {
-    const accessToken = await this._getCloudbaseAccessToken();
-    const header = { ...(options.headers || {}) };
-    header.Authorization = `Bearer ${accessToken}`;
-
-    return this._wxRequest(url, {
-      ...options,
-      headers: header,
-      timeout: CHAT_HTTP_FALLBACK_TIMEOUT,
-    });
   },
 
   _wxRequest(url, options = {}) {

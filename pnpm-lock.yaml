@@ -129,9 +129,6 @@ importers:
       '@babel/runtime':
         specifier: ^7.27.1
         version: 7.29.2
-      '@cloudbase/js-sdk':
-        specifier: ^2.25.4
-        version: 2.28.6
       '@know-yourself/core':
         specifier: 1.0.0
         version: link:../core
