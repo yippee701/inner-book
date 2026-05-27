@@ -13,7 +13,7 @@ const MODE_LABELS = {
   'discover-self': '发现天赋',
   'reduce-inner-friction': '消除内耗',
   'life-choice': '人生选择器',
-  'understand-others': '读懂好友同事',
+  'understand-others': '读懂亲友',
   'understand-child': '读懂孩子',
   'understand-lover': '读懂爱人',
 };

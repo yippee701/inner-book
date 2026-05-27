@@ -27,8 +27,8 @@ export const MODE_CONFIG = {
     description: '推演选择、代价与下一步行动',
   },
   [CHAT_MODES.UNDERSTAND_OTHERS]: {
-    label: '读懂好友同事',
-    description: '看懂朋友、同事与合作对象',
+    label: '读懂亲友',
+    description: '看懂亲友与身边人的底层动机',
   },
   [CHAT_MODES.UNDERSTAND_CHILD]: {
     label: '读懂孩子',

@@ -71,7 +71,7 @@ export default function Homepage() {
             <View className='btn-secondary btn-flex' onClick={openPeopleModeDialog}>
               <Text>识人</Text>
             </View>
-            <Text className='home-action-desc'>好友/同事/孩子/爱人</Text>
+            <Text className='home-action-desc'>亲友/孩子/爱人</Text>
           </View>
           <View className='home-action'>
             <View className='btn-primary btn-flex' onClick={openSelfModeDialog}>
@@ -109,7 +109,7 @@ export default function Homepage() {
             <Text className='dialog-desc'>选择你想理解的对象</Text>
             <View className='people-mode-options'>
               <View className='people-mode-option' onClick={() => handleSelectPeopleMode(CHAT_MODES.UNDERSTAND_OTHERS)}>
-                <Text className='people-mode-title'>读懂好友同事</Text>
+                <Text className='people-mode-title'>读懂亲友</Text>
               </View>
               <View className='people-mode-option' onClick={() => handleSelectPeopleMode(CHAT_MODES.UNDERSTAND_CHILD)}>
                 <Text className='people-mode-title'>读懂孩子</Text>

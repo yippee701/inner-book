@@ -33,8 +33,8 @@ const SELF_MODE_OPTIONS = [
 const PEOPLE_MODE_OPTIONS = [
   {
     mode: CHAT_MODES.UNDERSTAND_OTHERS,
-    title: '读懂好友同事',
-    subtitle: '看懂身边人的底层动机',
+    title: '读懂亲友',
+    subtitle: '看懂亲友与身边人的底层动机',
   },
   {
     mode: CHAT_MODES.UNDERSTAND_CHILD,
