@@ -13,7 +13,6 @@ import { requestReportUnlockOrder, confirmReportUnlockOrder } from '../services/
 
 const ReportContext = createContext(null);
 const LOCAL_REPORTS_KEY = 'pendingReports';
-const DISCOVER_SELF_FIRST_3_ANSWERS_KEY = 'discoverSelfFirst3Answers';
 
 /** 读取本地报告列表 */
 function readLocalReports() {
@@ -258,22 +257,6 @@ export function ReportProvider({ children }) {
       if (prev.currentReportId) {
         updateLocalReport(prev.currentReportId, { messages });
       }
-      // discover-self 模式保存推荐答案
-      if (prev.currentMode === 'discover-self' && Array.isArray(messages)) {
-        const userContents = messages.filter(m => m.role === 'user' && m.content)
-          .map(m => typeof m.content === 'string' ? m.content.trim() : '').filter(Boolean);
-        const round2To4 = userContents.slice(1, 4);
-        try {
-          let existing = [null, null, null];
-          const raw = Taro.getStorageSync(DISCOVER_SELF_FIRST_3_ANSWERS_KEY);
-          if (raw) {
-            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-            if (Array.isArray(parsed)) existing = [parsed[0] ?? null, parsed[1] ?? null, parsed[2] ?? null];
-          }
-          const merged = [round2To4[0] ?? existing[0], round2To4[1] ?? existing[1], round2To4[2] ?? existing[2]];
-          if (merged.some(Boolean)) Taro.setStorageSync(DISCOVER_SELF_FIRST_3_ANSWERS_KEY, JSON.stringify(merged));
-        } catch {}
-      }
       return newState;
     });
   }, [updateLocalReport]);
@@ -341,15 +324,6 @@ export function ReportProvider({ children }) {
     } catch { return null; }
   }, [db]);
 
-  const getDiscoverSelfFirst3Answers = useCallback(() => {
-    try {
-      const raw = Taro.getStorageSync(DISCOVER_SELF_FIRST_3_ANSWERS_KEY);
-      if (!raw) return [null, null, null];
-      const arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      return Array.isArray(arr) ? [arr[0] ?? null, arr[1] ?? null, arr[2] ?? null] : [null, null, null];
-    } catch { return [null, null, null]; }
-  }, []);
-
   const getPendingReport = useCallback((mode) => {
     try {
       return readLocalReports().find(r => r.mode === mode && r.status === 'pending') || null;
@@ -371,7 +345,7 @@ export function ReportProvider({ children }) {
       ...reportState,
       isLoggedIn: isLoggedIn(),
       createReport, startReport, updateMessages, updateReportContent, completeReport,
-      getPendingReport, getDiscoverSelfFirst3Answers, getReportDetail: getReportDetailWrapper,
+      getPendingReport, getReportDetail: getReportDetailWrapper,
       resumeReport, saveReportToLocal, saveReportToRemote, syncLocalReportsToRemote,
       checkLoginAndSync, createReportUnlockOrder, confirmReportUnlockPayment, setReportError, retryReport,
       registerInviteCodeDialog: (cb) => { onShowInviteCodeDialogRef.current = cb; },

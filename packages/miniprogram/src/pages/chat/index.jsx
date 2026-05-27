@@ -15,12 +15,9 @@ export default function ChatPage() {
     pendingReport,
     showNoQuotaDialog,
     welcomeMessage,
-    recommendedAnswers,
     progress,
     messages,
     isLoading,
-    suggestionToFill,
-    setSuggestionToFill,
     messageListRef,
     handleStart,
     handleResume,
@@ -74,8 +71,6 @@ export default function ChatPage() {
             ref={messageListRef}
             messages={messages}
             onRetry={retryMessage}
-            recommendedAnswers={recommendedAnswers}
-            onSuggestionClick={setSuggestionToFill}
           />
         )}
       </View>
@@ -87,8 +82,6 @@ export default function ChatPage() {
             onSend={sendUserMessage}
             isLoading={isLoading}
             disabled={!hasStarted}
-            suggestionToFill={suggestionToFill}
-            onSuggestionConsumed={() => setSuggestionToFill(null)}
           />
         </View>
       )}

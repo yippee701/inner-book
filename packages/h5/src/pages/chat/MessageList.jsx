@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback, useState, forwardRef, useImperativeHand
 import { Bubble, Actions } from '@ant-design/x';
 import XMarkdown from '@ant-design/x-markdown';
 import { RedoOutlined, CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { Space, Typography } from 'antd';
 
 // 节流函数
 function throttle(fn, delay) {
@@ -133,28 +132,16 @@ const userBubbleProps = {
   },
 };
 
-// 系统气泡样式（与 AI 气泡风格一致）
-const systemBubbleStyles = {
-  content: {
-    color: '#6B7280',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderColor: 'rgba(129, 128, 128, 0.3)',
-  },
-};
-
-const MessageList = forwardRef(function MessageList({ messages, keyboardHeight = 0, onRetry, recommendedAnswers = [], onSuggestionClick }, ref) {
+const MessageList = forwardRef(function MessageList({ messages, keyboardHeight = 0, onRetry }, ref) {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const lastMessage = messages[messages.length - 1];
 
   // 用户消息数：1=第 1 轮已发（自动「你好，我准备好了...」），2=第 2 轮已发，3=第 3 轮已发，4=第 4 轮已发
   const userMessageCount = messages.filter(m => m.role === 'user').length;
-  // 推荐从第 2 轮开始：userMessageCount=1 时展示第 2 轮推荐，2 时第 3 轮，3 时第 4 轮
-  const currentRoundIndex = userMessageCount - 1; // 0=第2轮, 1=第3轮, 2=第4轮
-  const currentRoundSuggestion = Array.isArray(recommendedAnswers) && currentRoundIndex >= 0 && currentRoundIndex <= 2
-    ? recommendedAnswers[currentRoundIndex]
-    : null;
-  const roundLabel = currentRoundIndex >= 0 && currentRoundIndex <= 2 ? currentRoundIndex + 2 : null; // 2, 3, 4
+  const lastUserMessageIndex = messages.reduce((lastIndex, message, index) => (
+    message.role === 'user' ? index : lastIndex
+  ), -1);
   const lastContent = lastMessage?.content;
   const isStreaming = lastMessage?.status === 'loading';
 
@@ -254,19 +241,18 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
 
         if (isUser) {
           const isFailed = msg.status === 'error';
-          
-          // 失败消息的 footer actions
+          const isLastUserMessage = index === lastUserMessageIndex;
           const actionItems = [
-            {
+            ...(isFailed ? [{
               key: 'retry',
               icon: <RedoOutlined style={{ color: 'gray' }} />,
               label: '重新发送',
-            },
-            {
+            }] : []),
+            ...(isLastUserMessage ? [{
               key: 'copy',
-              icon: <CopyOutlined style={{ color: 'gray' }}  />,
-              label: '复制',
-            },
+              icon: <CopyOutlined title="复制" style={{ color: 'gray' }} />,
+              label: null,
+            }] : []),
           ];
 
           const extraSlot = isFailed ? () => (
@@ -294,7 +280,7 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
               key={msg.id || index}
               content={msg.content}
               extra={extraSlot}
-              {...(isFailed && {
+              {...(actionItems.length > 0 && {
                 footer: (content) => (
                   <Actions 
                     items={actionItems} 
@@ -321,23 +307,9 @@ const MessageList = forwardRef(function MessageList({ messages, keyboardHeight =
           />
         );
       })}
-      {currentRoundSuggestion != null && roundLabel != null && lastMessage?.role === 'assistant' && !isStreaming && (
-        <Bubble.System
-          content={
-            <Space>
-            {`你上次这样回答过：${currentRoundSuggestion}`}
-            <Typography.Link onClick={() => onSuggestionClick?.(currentRoundSuggestion)}>输入</Typography.Link>
-          </Space>
-          }
-          variant="outlined"
-          shape="corner"
-          styles={systemBubbleStyles}
-        />
-      )}
       <div ref={messagesEndRef} />
     </div>
   );
 });
 
 export default MessageList;
-

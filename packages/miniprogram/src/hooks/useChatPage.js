@@ -52,7 +52,6 @@ export function useChatPage(routerParams) {
 
   const [hasStarted, setHasStarted] = useState(false);
   const [pendingReport, setPendingReport] = useState(null);
-  const [suggestionToFill, setSuggestionToFill] = useState(null);
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
   const messageListRef = useRef(null);
   const hasRestoredHistoryRef = useRef(false);
@@ -67,7 +66,6 @@ export function useChatPage(routerParams) {
     createReport,
     updateMessages,
     resumeReport,
-    getDiscoverSelfFirst3Answers,
     setReportError,
   } = useReport();
 
@@ -143,7 +141,6 @@ export function useChatPage(routerParams) {
     if (lastMessage?.status !== 'loading') updateMessages(messages);
   }, [hasStarted, messages, updateMessages]);
 
-  const recommendedAnswers = chatMode === 'discover-self' ? getDiscoverSelfFirst3Answers() : [];
   const welcomeMessage = getWelcomeMessage(chatMode);
   const aiMessageCount = messages.filter((m) => m.role === 'assistant').length;
   const progress = Math.min(aiMessageCount, 10);
@@ -199,12 +196,9 @@ export function useChatPage(routerParams) {
     pendingReport,
     showNoQuotaDialog,
     welcomeMessage,
-    recommendedAnswers,
     progress,
     messages,
     isLoading,
-    suggestionToFill,
-    setSuggestionToFill,
     messageListRef,
     handleStart,
     handleResume,

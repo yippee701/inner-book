@@ -256,44 +256,61 @@
   text-align: left;
 }
 
-.bubble-error-row {
+.bubble-action-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   margin-top: 8px;
 }
 
-.bubble-error-icon {
-  font-size: 24px;
+.bubble-action-row-user {
+  justify-content: flex-end;
+}
+
+.bubble-action-row-ai {
+  justify-content: flex-start;
+  padding-left: 15px;
+}
+
+.bubble-error-text {
+  font-size: 22px;
+  color: #8b3a2b;
+}
+
+.bubble-copy-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  color: #6e4030;
+  border-radius: 4px;
+}
+
+.bubble-copy-btn::before,
+.bubble-copy-btn::after {
+  content: '';
+  position: absolute;
+  width: 19px;
+  height: 23px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.bubble-copy-btn::before {
+  top: 8px;
+  left: 16px;
+  opacity: 0.48;
+}
+
+.bubble-copy-btn::after {
+  top: 13px;
+  left: 10px;
+  background: rgba(238, 236, 234, 0.98);
 }
 
 .bubble-retry-btn {
   font-size: 22px;
   color: #6e4030;
-  text-decoration: underline;
-}
-
-.suggestion-bubble {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 18px 22px;
-  margin-bottom: 24px;
-  border-radius: 8px;
-  background: rgba(250, 248, 244, 0.56);
-  border: 1px dashed rgba(26, 23, 20, 0.32);
-}
-
-.suggestion-text {
-  font-size: 24px;
-  color: #4a413a;
-}
-
-.suggestion-action {
-  font-size: 24px;
-  color: #6e4030;
-  font-weight: 500;
   text-decoration: underline;
 }
 

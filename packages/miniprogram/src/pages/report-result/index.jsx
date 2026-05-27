@@ -20,6 +20,10 @@ const INNER_BOOK_ICON_DATA_URI =
 const QUOTE_ICON_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACk0lEQVR4AeyaP2/CQAzFT5FYKAtDmdu53/+jdG5nOrBQpIqhzS+pEZT8OfvIKT2MZA4S+5793jtEK6rvO39U4c4fTsCdGyC4A9wBd86AH4EpDHA8hLB7b4PXU2Bo96SPw7btid6k/mYOAICNt681yFsIx8829jWogOVe//a0/2h7ojfpJYkAAGD1fGjZWFbAyJP3OVbwEGP3K0QXJn1z3UyAAMAqGw1FLhcwlPQF8YM91W7gvpoA2EXxMQA2lyCXOnl/65W9GRwxwIrdnzoVAYBgq1iAHHmN6gNWH+oBZ0YRAFNa1QV48RDC+jmExVKu3G5FEFS37Lh6rPt6CuNfhRneqrqATDW8xu5CEoJsXkJYbtorVbt0P6cMj+oC0r27/SrKW4YXQc6RewmQs3WeHPua4adQHfyU4bsE6SXAeramHB5RrMp3DQ+hnQQAxE1tYLGplKcniyic+b7hme+KACsQww8BAZYSluHBW9ef9Kx9cUWAFWix6oNIv44oll0QZazugoAUoLlZn8FjHHlBgFV9wOYWMerT84kAq/psEsM0edqgJ6sosUfyRIAVKJZp7fCp+bFHsiEAplMBp6jPIUpDQErzsVbTYuQSpSHAyjRDxVqN3DlGxR88KY3x3TwmtDhf9T9WrX1RG9MTOdVxb4Vp6/huHhVKHPZsEfTP1MZGcwT0ENNWaN0y1M3YvQq7jCWVfH+eDlAelxSBZklAykDa2ooPC21RSfnugJLUtMziDrCwVlKNO6AkNS2zuAMsrJVU4w4oSU3LLO4AC2tzrtH25g7QMlZavjugNEW187gDtIyVlu8OKE1R7TwVPxrMEZrfEJCboycw/AhoLVNavjugNEW187gDtIyVlv/vHZAqyA8AAAD//3GD8NkAAAAGSURBVAMAUXAtn9G4v8MAAAAASUVORK5CYII=';
 const VIRTUAL_PAYMENT_MIN_SDK_VERSION = '2.19.2';
+const IOS_PAYMENT_MIN_SYSTEM_VERSION = '15.0.0';
+const IOS_PAYMENT_MIN_WECHAT_VERSION = '8.0.68';
+const IOS_PAYMENT_REQUIREMENT_PROMPT =
+  'iOS 支付需：\n1. 使用 iPhone 或 iPad，且系统为 iOS 15 及以上\n2. 微信客户端为 8.0.68 及以上\n请升级设备系统或微信后再试';
 
 /** @param {{ isGuest: boolean }} props — isGuest：浏览他人分享的报告（非创建者本人） */
 function ConversionZone({ isGuest }) {
@@ -97,6 +101,36 @@ function compareVersion(versionA, versionB) {
   }
 
   return 0;
+}
+
+function getVersionFromText(text) {
+  return String(text || '').match(/\d+(?:\.\d+)*/)?.[0] || '';
+}
+
+function getWxSystemInfo(wxApi) {
+  try {
+    return wxApi?.getSystemInfoSync?.() || null;
+  } catch {
+    return null;
+  }
+}
+
+function isIphoneOrIpad(systemInfo) {
+  const model = String(systemInfo?.model || '');
+  return /iPhone|iPad/i.test(model);
+}
+
+function getIOSPaymentRequirementPrompt(wxApi) {
+  const systemInfo = getWxSystemInfo(wxApi);
+  if (!systemInfo) return IOS_PAYMENT_REQUIREMENT_PROMPT;
+
+  const iOSVersion = getVersionFromText(systemInfo.system);
+  const weChatVersion = getVersionFromText(systemInfo.version);
+  const isSupportedDevice = isIphoneOrIpad(systemInfo);
+  const isSupportedIOS = iOSVersion && compareVersion(iOSVersion, IOS_PAYMENT_MIN_SYSTEM_VERSION) >= 0;
+  const isSupportedWeChat = weChatVersion && compareVersion(weChatVersion, IOS_PAYMENT_MIN_WECHAT_VERSION) >= 0;
+
+  return isSupportedDevice && isSupportedIOS && isSupportedWeChat ? '' : IOS_PAYMENT_REQUIREMENT_PROMPT;
 }
 
 function canUseVirtualPayment(wxApi) {
@@ -244,6 +278,17 @@ export default function ReportResult() {
     if (!reportId || isPaying) return;
 
     const wxApi = typeof globalThis !== 'undefined' ? globalThis.wx : undefined;
+    const paymentRequirementPrompt = getIOSPaymentRequirementPrompt(wxApi);
+    if (paymentRequirementPrompt) {
+      Taro.showModal({
+        title: '暂不支持支付',
+        content: paymentRequirementPrompt,
+        showCancel: false,
+        confirmText: '我知道了',
+      });
+      return;
+    }
+
     if (!canUseVirtualPayment(wxApi)) {
       Taro.showToast({ title: '当前微信版本不支持虚拟支付', icon: 'none' });
       return;

@@ -56,7 +56,6 @@ const ReportContext = createContext(null);
 
 // localStorage keys
 const LOCAL_REPORTS_KEY = 'pendingReports';
-const DISCOVER_SELF_FIRST_3_ANSWERS_KEY = 'discoverSelfFirst3Answers';
 
 /** 本地报告 LRU 裁剪：Completed 最多 3 个，Pending 同一 mode 最多 1 个 */
 function trimLocalReports(reports) {
@@ -487,38 +486,6 @@ export function ReportProvider({ children }) {
         console.log('对话记录已更新到本地, 消息数:', messages.length);
       }
 
-      // discover-self 模式下，保存第 2、3、4 轮用户答案用于下次推荐（第 1 轮为自动发送的「你好，我准备好了，请开始吧」）
-      // 与上次记录合并：本次没有的轮次保留上次的，避免新聊天覆盖掉旧推荐
-      if (prev.currentMode === 'discover-self' && Array.isArray(messages)) {
-        const userContents = messages
-          .filter(m => m.role === 'user' && m.content)
-          .map(m => (typeof m.content === 'string' ? m.content : m.content?.text || '').trim())
-          .filter(Boolean);
-        // 第 2、3、4 轮对应索引 0、1、2
-        const round2To4 = userContents.slice(1, 4);
-        try {
-          let existing = [null, null, null];
-          const raw = localStorage.getItem(DISCOVER_SELF_FIRST_3_ANSWERS_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              existing = [parsed[0] ?? null, parsed[1] ?? null, parsed[2] ?? null];
-            }
-          }
-          // 当前有的轮次用当前值，没有的保留上次
-          const merged = [
-            round2To4[0] ?? existing[0],
-            round2To4[1] ?? existing[1],
-            round2To4[2] ?? existing[2],
-          ];
-          if (merged.some(Boolean)) {
-            localStorage.setItem(DISCOVER_SELF_FIRST_3_ANSWERS_KEY, JSON.stringify(merged));
-          }
-        } catch (e) {
-          console.warn('保存第 2/3/4 轮答案失败:', e);
-        }
-      }
-
       return newState;
     });
   }, [updateLocalReport]);
@@ -673,20 +640,6 @@ export function ReportProvider({ children }) {
     }
   }, [db]);
 
-  // 获取 discover-self 模式下保存的前三轮用户答案（用于推荐）
-  // 返回 [第2轮, 第3轮, 第4轮]，可能含 null（未填的保留上次或空）
-  const getDiscoverSelfFirst3Answers = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(DISCOVER_SELF_FIRST_3_ANSWERS_KEY);
-      if (!raw) return [null, null, null];
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return [null, null, null];
-      return [arr[0] ?? null, arr[1] ?? null, arr[2] ?? null];
-    } catch (e) {
-      return [null, null, null];
-    }
-  }, []);
-
   // 获取指定模式下的未完成报告
   const getPendingReport = useCallback((mode) => {
     try {
@@ -732,7 +685,6 @@ export function ReportProvider({ children }) {
       updateReportContent,
       completeReport,
       getPendingReport,
-      getDiscoverSelfFirst3Answers,
       getReportDetail: getReportDetailWrapper,
       resumeReport,
       saveReportToLocal,

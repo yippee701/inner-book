@@ -1,16 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Sender, XProvider } from '@ant-design/x';
 
-export default function ChatInput({ onSend, isLoading, disabled, suggestionToFill, onSuggestionConsumed }) {
+export default function ChatInput({ onSend, isLoading, disabled }) {
   const [inputValue, setInputValue] = useState('');
-
-  // 点击系统推荐气泡时，将推荐内容填入输入框
-  useEffect(() => {
-    if (suggestionToFill != null && suggestionToFill !== '') {
-      setInputValue(suggestionToFill);
-      onSuggestionConsumed?.();
-    }
-  }, [suggestionToFill, onSuggestionConsumed]);
 
   const handleSubmit = (message) => {
     if (!message?.trim() || isLoading || disabled) return;
@@ -53,4 +45,3 @@ export default function ChatInput({ onSend, isLoading, disabled, suggestionToFil
     </XProvider>
   );
 }
-

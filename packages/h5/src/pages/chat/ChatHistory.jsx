@@ -113,7 +113,6 @@ export default function ChatHistory() {
               ref={messageListRef}
               messages={messages}
               keyboardHeight={0}
-              recommendedAnswers={[]}
             />
           )}
         </div>

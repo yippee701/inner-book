@@ -1,19 +1,11 @@
 import { View, Textarea, Text } from '@tarojs/components';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * 聊天输入组件（小程序版，替代 antd Sender）
  */
-export default function ChatInput({ onSend, isLoading, disabled, suggestionToFill, onSuggestionConsumed }) {
+export default function ChatInput({ onSend, isLoading, disabled }) {
   const [inputValue, setInputValue] = useState('');
-
-  // 推荐内容填入
-  useEffect(() => {
-    if (suggestionToFill != null && suggestionToFill !== '') {
-      setInputValue(suggestionToFill);
-      onSuggestionConsumed?.();
-    }
-  }, [suggestionToFill]);
 
   const handleSubmit = () => {
     const msg = inputValue.trim();

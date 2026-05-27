@@ -32,20 +32,15 @@ function LoadingSteps({ isFirstRound }) {
   );
 }
 
-const MessageList = forwardRef(function MessageList({
-  messages, onRetry, recommendedAnswers = [], onSuggestionClick,
-}, ref) {
+const MessageList = forwardRef(function MessageList({ messages, onRetry }, ref) {
   const [scrollTop, setScrollTop] = useState(0);
   const [scrollWithAnimation, setScrollWithAnimation] = useState(false);
   const lastMessage = messages[messages.length - 1];
   const userMessageCount = messages.filter(m => m.role === 'user').length;
+  const lastUserMessageIndex = messages.reduce((lastIndex, message, index) => (
+    message.role === 'user' ? index : lastIndex
+  ), -1);
   const isStreaming = lastMessage?.status === 'loading';
-
-  // 推荐逻辑
-  const currentRoundIndex = userMessageCount - 1;
-  const currentRoundSuggestion = Array.isArray(recommendedAnswers) && currentRoundIndex >= 0 && currentRoundIndex <= 2
-    ? recommendedAnswers[currentRoundIndex]
-    : null;
 
   // 滚动到底部
   const scrollToBottom = useCallback((animated = false) => {
@@ -94,21 +89,10 @@ const MessageList = forwardRef(function MessageList({
               key={msg.id || index}
               message={msg}
               onRetry={onRetry}
+              canCopy={index === lastUserMessageIndex}
             />
           );
         })}
-
-        {/* 推荐气泡 */}
-        {currentRoundSuggestion && lastMessage?.role === 'assistant' && !isStreaming && (
-          <View className='suggestion-bubble'>
-            <Text className='suggestion-text'>
-              你上次这样回答过：{currentRoundSuggestion}
-            </Text>
-            <Text className='suggestion-action' onClick={() => onSuggestionClick?.(currentRoundSuggestion)}>
-              输入
-            </Text>
-          </View>
-        )}
 
         <View id='msg-end' className='msg-end-anchor' />
       </View>

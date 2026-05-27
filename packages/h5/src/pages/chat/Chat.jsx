@@ -90,8 +90,6 @@ export default function Chat() {
   const [hasStarted, setHasStarted] = useState(false);
   const [pendingReport, setPendingReport] = useState(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  // 点击系统推荐气泡时，将推荐内容填入输入框
-  const [suggestionToFill, setSuggestionToFill] = useState(null);
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
   const inputAreaRef = useRef(null);
   const messageListRef = useRef(null);
@@ -174,14 +172,10 @@ export default function Chat() {
     createReport,
     updateMessages,
     resumeReport,
-    getDiscoverSelfFirst3Answers,
     setReportError,
     currentReportId,
   } = useReport();
   const db = useDb();
-
-  // discover-self 模式下用于推荐的前三轮答案（每次渲染从 localStorage 读取，保证推荐为最新）
-  const recommendedAnswers = chatMode === 'discover-self' ? getDiscoverSelfFirst3Answers() : [];
 
   // 获取对应模式的欢迎消息
   const welcomeMessage = getWelcomeMessage(chatMode);
@@ -332,8 +326,6 @@ export default function Chat() {
               messages={messages} 
               keyboardHeight={keyboardHeight}
               onRetry={retryMessage}
-              recommendedAnswers={recommendedAnswers}
-              onSuggestionClick={setSuggestionToFill}
             />
           )}
         </div>
@@ -351,8 +343,6 @@ export default function Chat() {
             onSend={sendUserMessage} 
             isLoading={isLoading}
             disabled={!hasStarted}
-            suggestionToFill={suggestionToFill}
-            onSuggestionConsumed={() => setSuggestionToFill(null)}
           />
         </div>
         <p className="mt-3 text-center text-xs text-gray-500">
