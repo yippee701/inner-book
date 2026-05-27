@@ -56,6 +56,20 @@ const ReportContext = createContext(null);
 
 // localStorage keys
 const LOCAL_REPORTS_KEY = 'pendingReports';
+const TRANSIENT_MESSAGE_STATUSES = new Set(['loading', 'sending', 'error']);
+
+function isUnavailableReplyContent(content) {
+  if (typeof content !== 'string') return false;
+  return content.trim().replace(/[。.!！]+$/, '') === '抱歉，我暂时无法回应';
+}
+
+function getPersistableMessages(messages = []) {
+  return (Array.isArray(messages) ? messages : []).filter((message) => {
+    if (TRANSIENT_MESSAGE_STATUSES.has(message?.status)) return false;
+    if (message?.role === 'assistant' && isUnavailableReplyContent(message?.content)) return false;
+    return true;
+  });
+}
 
 /** 本地报告 LRU 裁剪：Completed 最多 3 个，Pending 同一 mode 最多 1 个 */
 function trimLocalReports(reports) {
@@ -470,20 +484,21 @@ export function ReportProvider({ children }) {
 
   // 更新对话记录
   const updateMessages = useCallback((messages) => {
+    const persistableMessages = getPersistableMessages(messages);
     const reportId = reportStateRef.current?.currentReportId;
-    const round = (messages || []).filter(m => m.role === 'user').length;
+    const round = persistableMessages.filter(m => m.role === 'user').length;
     const lastReported = lastReportedRoundByReportIdRef.current[reportId] ?? 0;
     if (reportId && round > lastReported) {
       trackConversationRound(reportId, round);
       lastReportedRoundByReportIdRef.current[reportId] = round;
     }
     setReportState(prev => {
-      const newState = { ...prev, messages };
+      const newState = { ...prev, messages: persistableMessages };
 
       // 同时更新本地存储
       if (prev.currentReportId) {
-        updateLocalReport(prev.currentReportId, { messages });
-        console.log('对话记录已更新到本地, 消息数:', messages.length);
+        updateLocalReport(prev.currentReportId, { messages: persistableMessages });
+        console.log('对话记录已更新到本地, 消息数:', persistableMessages.length);
       }
 
       return newState;

@@ -198,25 +198,19 @@ export default function Chat() {
     setReportError(error?.message || '报告生成失败');
   }, [setReportError]);
 
-  const handleUserMessageSent = useCallback((msgs) => {
-    updateMessages(msgs);
-  }, [updateMessages]);
-
   const { messages, isLoading, sendUserMessage, restoreMessages, retryMessage } = useChat({
     mode: chatMode,
     onReportStart: handleReportStart,
     onReportUpdate: handleReportUpdate,
     onReportComplete: handleReportComplete,
     onReportError: handleReportError,
-    onUserMessageSent: handleUserMessageSent,
   });
 
-  // 对话记录变化时同步到 ReportContext（AI 回复完成、流式结束等；用户最后一次输入由 onUserMessageSent 在发送时立即保存）
+  // 对话记录变化时同步到 ReportContext；发送中/失败的临时消息不进入历史与轮次统计
   useEffect(() => {
     if (!hasStarted || messages.length === 0) return;
     const lastMessage = messages[messages.length - 1];
-    const isLastMessageLoading = lastMessage?.status === 'loading';
-    if (!isLastMessageLoading) {
+    if (!['loading', 'sending', 'error'].includes(lastMessage?.status)) {
       updateMessages(messages);
     }
   }, [hasStarted, messages, updateMessages]);

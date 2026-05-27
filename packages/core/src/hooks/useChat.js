@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { sendMessage, CHAT_MODES, isMockMode } from '../api/chat.js';
+import { sendMessage, CHAT_MODES, isMockMode, isUnavailableChatReply } from '../api/chat.js';
 import { clearChatPrefetch } from '../utils/chatPrefetch.js';
 
 // 打字机速度配置（毫秒/字符）
@@ -14,10 +14,9 @@ const TYPEWRITER_SPEED = 15;
  * @param {Function} options.onReportUpdate - 报告内容更新时的回调
  * @param {Function} options.onReportComplete - 报告生成完成时的回调
  * @param {Function} options.onReportError - 报告生成过程中请求失败时的回调
- * @param {Function} options.onUserMessageSent - 用户发送消息后立即回调
  */
 export function useChat(options = {}) {
-  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete, onReportError, onUserMessageSent } = options;
+  const { mode = CHAT_MODES.DISCOVER_SELF, initialMessages = [], onReportStart, onReportUpdate, onReportComplete, onReportError } = options;
   const [messages, setMessages] = useState(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const reportStartedRef = useRef(false);
@@ -86,7 +85,7 @@ export function useChat(options = {}) {
     aiMsgIdRef.current = aiMsgId;
     setMessages(prev => {
       const updated = userMsgId 
-        ? prev.map(msg => msg.id === userMsgId ? { ...msg, status: 'local' } : msg)
+        ? prev.map(msg => msg.id === userMsgId ? { ...msg, status: 'sending' } : msg)
         : prev;
       return [...updated, {
         id: aiMsgId,
@@ -106,6 +105,9 @@ export function useChat(options = {}) {
         cachedContent = null;
         clearChatPrefetch();
       }
+    }
+    if (isUnavailableChatReply(cachedContent)) {
+      cachedContent = null;
     }
 
     isStreamingRef.current = !cachedContent;
@@ -182,9 +184,9 @@ export function useChat(options = {}) {
         }
 
         setMessages(prev => prev.map(msg => 
-          msg.id === aiMsgId 
+          msg.id === aiMsgId
             ? { ...msg, status: 'success' }
-            : msg
+            : (userMsgId && msg.id === userMsgId ? { ...msg, status: 'local' } : msg)
         ));
 
         if (reportStartedRef.current) {
@@ -230,13 +232,11 @@ export function useChat(options = {}) {
       id: Date.now(),
       role: 'user',
       content: userMessage,
-      status: 'local'
+      status: 'sending'
     };
     
     const updatedMessages = [...messages, newUserMsg];
     setMessages(updatedMessages);
-
-    onUserMessageSent?.(updatedMessages);
 
     const apiMessages = updatedMessages.map(msg => ({
       role: msg.role,
@@ -244,7 +244,7 @@ export function useChat(options = {}) {
     }));
 
     await sendMessageInternal(apiMessages, newUserMsg.id, cachedResponse);
-  }, [messages, isLoading, sendMessageInternal, onUserMessageSent]);
+  }, [messages, isLoading, sendMessageInternal]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);

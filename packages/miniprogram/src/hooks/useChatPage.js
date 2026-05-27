@@ -97,7 +97,6 @@ export function useChatPage(routerParams) {
   const handleReportUpdate = useCallback((content) => updateReportContent(content), [updateReportContent]);
   const handleReportComplete = useCallback(() => completeReport(), [completeReport]);
   const handleReportError = useCallback((error) => setReportError(error?.message || '报告生成失败'), [setReportError]);
-  const handleUserMessageSent = useCallback((msgs) => updateMessages(msgs), [updateMessages]);
 
   const { messages, isLoading, sendUserMessage, restoreMessages, retryMessage } = useChat({
     mode: chatMode,
@@ -105,7 +104,6 @@ export function useChatPage(routerParams) {
     onReportUpdate: handleReportUpdate,
     onReportComplete: handleReportComplete,
     onReportError: handleReportError,
-    onUserMessageSent: handleUserMessageSent,
   });
 
   // 从报告结果页进入时，按 reportId 回放历史对话
@@ -138,7 +136,7 @@ export function useChatPage(routerParams) {
   useEffect(() => {
     if (!hasStarted || messages.length === 0) return;
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.status !== 'loading') updateMessages(messages);
+    if (!['loading', 'sending', 'error'].includes(lastMessage?.status)) updateMessages(messages);
   }, [hasStarted, messages, updateMessages]);
 
   const welcomeMessage = getWelcomeMessage(chatMode);

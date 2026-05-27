@@ -13,6 +13,20 @@ import { requestReportUnlockOrder, confirmReportUnlockOrder } from '../services/
 
 const ReportContext = createContext(null);
 const LOCAL_REPORTS_KEY = 'pendingReports';
+const TRANSIENT_MESSAGE_STATUSES = new Set(['loading', 'sending', 'error']);
+
+function isUnavailableReplyContent(content) {
+  if (typeof content !== 'string') return false;
+  return content.trim().replace(/[。.!！]+$/, '') === '抱歉，我暂时无法回应';
+}
+
+function getPersistableMessages(messages = []) {
+  return (Array.isArray(messages) ? messages : []).filter((message) => {
+    if (TRANSIENT_MESSAGE_STATUSES.has(message?.status)) return false;
+    if (message?.role === 'assistant' && isUnavailableReplyContent(message?.content)) return false;
+    return true;
+  });
+}
 
 /** 读取本地报告列表 */
 function readLocalReports() {
@@ -245,17 +259,18 @@ export function ReportProvider({ children }) {
   }, []);
 
   const updateMessages = useCallback((messages) => {
+    const persistableMessages = getPersistableMessages(messages);
     const reportId = reportStateRef.current?.currentReportId;
-    const round = (messages || []).filter(m => m.role === 'user').length;
+    const round = persistableMessages.filter(m => m.role === 'user').length;
     const lastReported = lastReportedRoundByReportIdRef.current[reportId] ?? 0;
     if (reportId && round > lastReported) {
       trackConversationRound(reportId, round);
       lastReportedRoundByReportIdRef.current[reportId] = round;
     }
     setReportState(prev => {
-      const newState = { ...prev, messages };
+      const newState = { ...prev, messages: persistableMessages };
       if (prev.currentReportId) {
-        updateLocalReport(prev.currentReportId, { messages });
+        updateLocalReport(prev.currentReportId, { messages: persistableMessages });
       }
       return newState;
     });

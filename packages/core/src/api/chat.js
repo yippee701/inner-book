@@ -25,6 +25,20 @@ export function isMockMode() {
 
 // 为兼容性保留
 export const IS_MOCK_MODE = false; // 运行时由 isMockMode() 判断
+export const EMPTY_CHAT_RESPONSE_MESSAGE = '抱歉，我暂时无法回应。';
+
+export function isUnavailableChatReply(content) {
+  if (typeof content !== 'string') return true;
+  const normalized = content.trim().replace(/[。.!！]+$/, '');
+  return !normalized || normalized === '抱歉，我暂时无法回应';
+}
+
+function assertValidChatContent(content) {
+  if (isUnavailableChatReply(content)) {
+    throw new Error('AI_EMPTY_RESPONSE');
+  }
+  return content;
+}
 
 function getProxyServerUrl() {
   return env('SERVER_URL') || 'http://localhost:3001';
@@ -101,13 +115,13 @@ async function sendMessageViaProxy(messages, onStream = null, mode) {
       return handleStreamResponse(response, onStream);
     }
     const data = await response.json();
-    const content = data.content || '抱歉，我暂时无法回应。';
+    const content = assertValidChatContent(data.content);
     onStream(content);
     return content;
   }
 
   const data = await response.json();
-  return data.content || '抱歉，我暂时无法回应。';
+  return assertValidChatContent(data.content);
 }
 
 /**
@@ -168,7 +182,7 @@ async function handleStreamResponse(response, onStream) {
     }
   }
 
-  return fullContent;
+  return assertValidChatContent(fullContent);
 }
 
 /**
@@ -218,7 +232,7 @@ export async function sendMessageWithTypewriter(messages, onUpdate, typingSpeed 
     }
     
     const data = await response.json();
-    const content = data.content || '抱歉，我暂时无法回应。';
+    const content = assertValidChatContent(data.content);
     
     await typewriterEffect(content, onUpdate, typingSpeed);
     
