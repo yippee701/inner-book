@@ -37,9 +37,12 @@ export default function ReportLoading() {
   const mode = router?.params?.mode || 'discover-self';
   const { isComplete, content, currentReportId, reportError, retryReport } = useReport();
   const statusTextMap = {
-    'understand-others': 'Dora正在分析TA的人格档案',
+    'discover-self': 'Dora 正在整理你的天赋地图',
+    'reduce-inner-friction': 'Dora 正在拆解你的内耗回路',
+    'life-choice': 'Dora 正在推演你的选择路径',
+    'understand-others': 'Dora 正在分析TA的人格档案',
     'understand-child': 'Dora 正在读懂孩子的内心档案',
-    'discover-self': 'Dora 正在解析你的内心档案',
+    'understand-lover': 'Dora 正在梳理亲密关系档案',
   };
 
   const currentChars = content ? content.length : 0;

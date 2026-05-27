@@ -1,10 +1,8 @@
 // routes/openai.routers.js
 const express = require('express');
 const axios = require('axios');
-const { 
-  DISCOVER_SELF_SYSTEM_PROMPT, 
-  UNDERSTAND_OTHERS_SYSTEM_PROMPT,
-  UNDERSTAND_CHILD_SYSTEM_PROMPT,
+const {
+  SYSTEM_PROMPTS_BY_MODE,
   FINAL_REPORT_SYSTEM_SUFFIX,
 } = require('../constants/prompts');
 
@@ -151,17 +149,14 @@ const forwardOpenAIRequest = async (req, res) => {
             });
         }
         const mode = req.body.mode;
-        let systemPrompt = '';
-        switch (mode) {
-            case 'discover-self':
-                systemPrompt = DISCOVER_SELF_SYSTEM_PROMPT;
-                break;
-            case 'understand-others':
-                systemPrompt = UNDERSTAND_OTHERS_SYSTEM_PROMPT;
-                break;
-            case 'understand-child':
-                systemPrompt = UNDERSTAND_CHILD_SYSTEM_PROMPT;
-                break;
+        let systemPrompt = SYSTEM_PROMPTS_BY_MODE[mode];
+        if (!systemPrompt) {
+            return res.status(400).json({
+                error: {
+                    message: `不支持的 mode 参数：${mode}`,
+                    type: 'invalid_request_error'
+                }
+            });
         }
         
         // 构建完整的消息列表（包含系统提示词）

@@ -3,8 +3,11 @@
  */
 export const CHAT_MODES = {
   DISCOVER_SELF: 'discover-self',
+  REDUCE_INNER_FRICTION: 'reduce-inner-friction',
+  LIFE_CHOICE: 'life-choice',
   UNDERSTAND_OTHERS: 'understand-others',
   UNDERSTAND_CHILD: 'understand-child',
+  UNDERSTAND_LOVER: 'understand-lover',
 };
 
 /**
@@ -12,16 +15,28 @@ export const CHAT_MODES = {
  */
 export const MODE_CONFIG = {
   [CHAT_MODES.DISCOVER_SELF]: {
-    label: '识己',
-    description: '深入了解自己的内心世界',
+    label: '发现天赋',
+    description: '找到可迁移的底层天赋',
+  },
+  [CHAT_MODES.REDUCE_INNER_FRICTION]: {
+    label: '消除内耗',
+    description: '理清情绪与反复消耗的念头',
+  },
+  [CHAT_MODES.LIFE_CHOICE]: {
+    label: '人生选择器',
+    description: '推演选择、代价与下一步行动',
   },
   [CHAT_MODES.UNDERSTAND_OTHERS]: {
-    label: '看懂他人',
-    description: '更好地理解他人的想法',
+    label: '读懂好友同事',
+    description: '看懂朋友、同事与合作对象',
   },
   [CHAT_MODES.UNDERSTAND_CHILD]: {
     label: '读懂孩子',
     description: '更好地理解孩子的内心与表达',
+  },
+  [CHAT_MODES.UNDERSTAND_LOVER]: {
+    label: '读懂爱人',
+    description: '理解伴侣在亲密关系里的模式',
   },
 };
 

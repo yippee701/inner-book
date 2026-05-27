@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useProfile, checkCanStartChat } from '../hooks/useProfile';
 import NoQuotaDialog from '../components/NoQuotaDialog';
 import { trackVisitEvent } from '../utils/track';
+import { CHAT_MODES } from '../constants/modes';
 
 // 轮播文字配置
 const CAROUSEL_TEXTS = [
@@ -11,11 +12,81 @@ const CAROUSEL_TEXTS = [
   { title: '解决你的社交难题', subtitle: '智能分析与精准建议 🎯' },
 ];
 
+const SELF_MODE_OPTIONS = [
+  {
+    mode: CHAT_MODES.DISCOVER_SELF,
+    title: '发现天赋',
+    subtitle: '找到你的底层天赋',
+  },
+  {
+    mode: CHAT_MODES.REDUCE_INNER_FRICTION,
+    title: '消除内耗',
+    subtitle: '拆解反复消耗你的念头',
+  },
+  {
+    mode: CHAT_MODES.LIFE_CHOICE,
+    title: '人生选择器',
+    subtitle: '推演选择、代价与行动',
+  },
+];
+
+const PEOPLE_MODE_OPTIONS = [
+  {
+    mode: CHAT_MODES.UNDERSTAND_OTHERS,
+    title: '读懂好友同事',
+    subtitle: '看懂身边人的底层动机',
+  },
+  {
+    mode: CHAT_MODES.UNDERSTAND_CHILD,
+    title: '读懂孩子',
+    subtitle: '理解孩子的底色与需要',
+  },
+  {
+    mode: CHAT_MODES.UNDERSTAND_LOVER,
+    title: '读懂爱人',
+    subtitle: '看见亲密关系的互动模式',
+  },
+];
+
+function ModeDialog({ title, description, options, onSelect, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-5 pb-6"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-lg bg-white p-5 shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="mb-4 text-center">
+          <h3 className="text-xl font-medium text-gray-900">{title}</h3>
+          <p className="mt-2 text-sm leading-6 text-gray-500">{description}</p>
+        </div>
+        <div className="flex flex-col gap-3">
+          {options.map((option) => (
+            <button
+              key={option.mode}
+              type="button"
+              onClick={() => onSelect(option.mode)}
+              className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left transition-colors active:bg-gray-100"
+            >
+              <span className="block text-base font-medium text-gray-900">{option.title}</span>
+              <span className="mt-1 block text-sm text-gray-500">{option.subtitle}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Homepage() {
   const canvasRef = useRef(null);
   const navigate = useNavigate();
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
+  const [showSelfModeDialog, setShowSelfModeDialog] = useState(false);
+  const [showPeopleModeDialog, setShowPeopleModeDialog] = useState(false);
   
   // 获取用户信息
   const { isLoggedIn, userExtraInfo } = useProfile();
@@ -29,6 +100,12 @@ export default function Homepage() {
     navigate(`/chat?mode=${mode}`);
     trackVisitEvent('start_chat', { mode });
   }, [isLoggedIn, userExtraInfo, navigate]);
+
+  const handleSelectMode = useCallback((mode) => {
+    setShowSelfModeDialog(false);
+    setShowPeopleModeDialog(false);
+    handleStartChat(mode);
+  }, [handleStartChat]);
 
   // 文字轮播效果
   useEffect(() => {
@@ -249,24 +326,44 @@ export default function Homepage() {
         {/* 底部按钮区域 */}
         <div className="fixed bottom-0 left-0 right-0 pb-12 pt-6 px-6 z-20">
           <div className="flex gap-3 items-center justify-center w-full max-w-md mx-auto">
-            {/* 了解他人按钮 */}
+            {/* 识人按钮 */}
             <button 
-              onClick={() => handleStartChat('understand-others')}
+              onClick={() => setShowPeopleModeDialog(true)}
               className="btn-primary flex-1 text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
             >
-              了解他人
+              识人
             </button>
 
-            {/* 发掘自己按钮 */}
+            {/* 识己按钮 */}
             <button 
-              onClick={() => handleStartChat('discover-self')}
+              onClick={() => setShowSelfModeDialog(true)}
               className="btn-primary flex-1 text-base font-medium transition-all duration-300 active:scale-[0.99] hover:shadow-xl"
             >
-              发掘自己
+              识己
             </button>
           </div>
         </div>
       </div>
+
+      {showSelfModeDialog && (
+        <ModeDialog
+          title="识己"
+          description="选择你想先看清自己的哪一面"
+          options={SELF_MODE_OPTIONS}
+          onSelect={handleSelectMode}
+          onClose={() => setShowSelfModeDialog(false)}
+        />
+      )}
+
+      {showPeopleModeDialog && (
+        <ModeDialog
+          title="识人"
+          description="选择你想理解的对象"
+          options={PEOPLE_MODE_OPTIONS}
+          onSelect={handleSelectMode}
+          onClose={() => setShowPeopleModeDialog(false)}
+        />
+      )}
 
       {/* 对话次数不足弹窗 */}
       <NoQuotaDialog 
@@ -276,4 +373,3 @@ export default function Homepage() {
     </div>
   );
 }
-

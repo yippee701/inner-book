@@ -11,7 +11,15 @@ export { registerAdapter, registerAdapters, getAdapter } from './adapters/index.
 export { CLOUDBASE_ENV, USER_INFO_LOCAL_STORAGE_KEY, CREDENTIALS_LOCAL_STORAGE_KEY } from './constants/global.js';
 export { CHAT_MODES, MODE_CONFIG, getModeLabel, getDefaultMode, isValidMode, getModeFromSearchParams, getModeFromParams } from './constants/modes.js';
 export { REPORT_STATUS } from './constants/reportStatus.js';
-export { DISCOVER_SELF_WELCOME_MESSAGE, UNDERSTAND_OTHERS_WELCOME_MESSAGE, getWelcomeMessage } from './constants/welcome-message.js';
+export {
+  DISCOVER_SELF_WELCOME_MESSAGE,
+  REDUCE_INNER_FRICTION_WELCOME_MESSAGE,
+  LIFE_CHOICE_WELCOME_MESSAGE,
+  UNDERSTAND_OTHERS_WELCOME_MESSAGE,
+  UNDERSTAND_CHILD_WELCOME_MESSAGE,
+  UNDERSTAND_LOVER_WELCOME_MESSAGE,
+  getWelcomeMessage,
+} from './constants/welcome-message.js';
 export { CAROUSEL_TEXTS } from './constants/carousel.js';
 export { STEPS_POOL_DEFAULT, STEPS_POOL_FIRST_ROUND } from './constants/loadingSteps.js';
 

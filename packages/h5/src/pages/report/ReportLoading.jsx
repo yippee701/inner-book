@@ -152,6 +152,14 @@ export default function ReportLoading() {
   
   // 从 URL 参数获取模式
   const mode = useMemo(() => getModeFromSearchParams(searchParams), [searchParams]);
+  const statusTextMap = {
+    'discover-self': 'Dora 正在整理你的天赋地图',
+    'reduce-inner-friction': 'Dora 正在拆解你的内耗回路',
+    'life-choice': 'Dora 正在推演你的选择路径',
+    'understand-others': 'Dora 正在分析TA的人格档案',
+    'understand-child': 'Dora 正在读懂孩子的内心档案',
+    'understand-lover': 'Dora 正在梳理亲密关系档案',
+  };
   
   // 计算进度
   const currentChars = content ? content.length : 0;
@@ -223,7 +231,7 @@ export default function ReportLoading() {
                 fontWeight: 500,
               }}
             >
-              {mode === 'understand-others' ? 'Dora正在分析TA的人格档案' : 'Dora 正在解析你的内心档案'}<LoadingDots />
+              {statusTextMap[mode] || statusTextMap['discover-self']}<LoadingDots />
             </p>
             <p className="mt-3 text-sm text-gray-400">
               请稍候，这需要一些时间...
@@ -237,4 +245,3 @@ export default function ReportLoading() {
     </div>
   );
 }
-

@@ -77,16 +77,56 @@ const MOCK_FINAL_REPORT_KNOW_YOURSELF = `[Report]# 个人天赋使用说明书
 
 *这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
 
+const MOCK_RESPONSES_REDUCE_INNER_FRICTION = [
+  `你好，我是 Dora。
+
+我们先不急着把你劝好，先把内耗拆清楚。
+
+**最近最让你反复想、停不下来的那件事是什么？**
+
+请只讲一个具体场景：发生了什么、你当时最强烈的情绪是什么？`,
+  `我先接住这个感受。现在我们把它从一团情绪里拆出来。
+
+**如果只列客观事实，不加判断，这件事目前确定发生了哪些事实？**`,
+  `这里我看到一个可能反复刺痛你的信念。
+
+**当你想到这件事时，你脑子里最自动跳出来的一句话是什么？**`,
+];
+
+const MOCK_FINAL_REPORT_REDUCE_INNER_FRICTION = `[Report]# 内耗备忘录
+
+这是一份 mock 示例报告。真实模式下，Dora 会根据 10 轮对话，帮你拆解诱发事件、自动化信念、情绪反应、隐藏天赋和下一步微行动。
+
+*这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
+
+const MOCK_RESPONSES_LIFE_CHOICE = [
+  `你好，我是 Dora。
+
+《决策推演报告》会帮你把选择、代价、恐惧和真正想要的东西摆到桌面上。
+
+**讲述一下你当前面临什么样的难题呢？可以和我讲讲事情的背景，当下的情况，你面临的选择是什么？条件和代价又是什么？**`,
+  `我先不替你判断对错，我们先把基本盘摆稳。
+
+**这几个选项里，哪一个代价是你最害怕承受的？**`,
+  `这个害怕很关键，它可能比“哪个选项更好”更接近答案。
+
+**如果只能保住一个最重要的东西，你最想保住什么？**`,
+];
+
+const MOCK_FINAL_REPORT_LIFE_CHOICE = `[Report]# 决策推演报告
+
+这是一份 mock 示例报告。真实模式下，Dora 会根据 10 轮对话，帮你推演选择、机会成本、最坏情况托底与可执行的下一步。
+
+*这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
+
 // ========== 看懂他人 Mock 数据 ==========
 
 const MOCK_RESPONSES_UNDERSTAND_OTHERS = [
-  `你好！我很高兴能帮助你更好地理解身边的人。
+  `你好，我是 Dora。
 
-在开始之前，我想先了解一下你想深入了解的是谁。
+《人类洞察笔记》会帮你从一个人的言行细节里，看见他的价值观、底层动机和相处边界。
 
-**请告诉我：你想了解的这个人是谁？你们是什么关系？**
-
-比如：伴侣、父母、孩子、朋友、同事、上司等。这会帮助我更好地引导后续的对话。`,
+**请告诉我他的年龄、性别、职业，你们之间的关系，以及你开启这次对话的核心目的。**`,
 
   `谢谢你的分享。了解你们的关系背景很重要。
 
@@ -121,13 +161,13 @@ const MOCK_RESPONSES_UNDERSTAND_OTHERS = [
 这个对比会帮助我们理解你对这段关系的期待，以及可能存在的差距。`,
 ];
 
-const MOCK_FINAL_REPORT_UNDERSTAND_OTHERS = `[Report]# 关系洞察报告
+const MOCK_FINAL_REPORT_UNDERSTAND_OTHERS = `[Report]# 人类洞察笔记
 
 ---
 
 ## 写在前面
 
-感谢你愿意花时间来理解身边重要的人。在过去的对话中，我看到了你对这段关系的重视和用心。现在，让我为你呈现这份关于TA的《关系洞察报告》。
+感谢你愿意花时间来理解身边重要的人。在过去的对话中，我看到了你对这段关系的重视和用心。现在，让我为你呈现这份关于TA的《人类洞察笔记》。
 
 ## 一、TA的行为模式解读
 
@@ -161,6 +201,44 @@ const MOCK_FINAL_REPORT_UNDERSTAND_OTHERS = `[Report]# 关系洞察报告
 
 *这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
 
+const MOCK_RESPONSES_UNDERSTAND_CHILD = [
+  `你好，我是 Dora，很高兴陪你一起读懂孩子。
+
+**请告诉我孩子的年龄、性别，你们之间的关系，以及你开启这次对话的核心目的。**`,
+  `谢谢你，这些背景很重要。
+
+**当孩子完全放松、没有任何外在压力时，他最不自觉、最投入去做的事情是什么？**`,
+  `这个细节很有价值。
+
+**孩子上一次遇到比较大的挫折或委屈是什么时候？当时他是什么反应？**`,
+];
+
+const MOCK_FINAL_REPORT_UNDERSTAND_CHILD = `[Report]# 给父母的信
+
+这是一份 mock 示例报告。真实模式下，Dora 会根据 10 轮对话，帮你看见孩子的性格底色、天赋、短板和更适合的相处方式。
+
+*这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
+
+const MOCK_RESPONSES_UNDERSTAND_LOVER = [
+  `你好，我是 Dora。
+
+《爱人白皮书》会帮你更清楚地理解伴侣，也看见你们之间的互动循环。
+
+**请告诉我他的年龄、性别、职业，你们之间的关系，以及你开启这次对话的核心目的。**`,
+  `我听到了，你不是只想“分析对方”，更是想看懂这段关系。
+
+**你了解他有什么兴趣爱好吗？如果有，具体是什么？如果没有，他闲暇时一般如何打发？**`,
+  `这些兴趣常常会泄露一个人在关系外最自然的能量来源。
+
+**你最看不惯他生活中的哪一个小习惯？他改了吗？你提醒时他通常怎么反应？**`,
+];
+
+const MOCK_FINAL_REPORT_UNDERSTAND_LOVER = `[Report]# 爱人白皮书
+
+这是一份 mock 示例报告。真实模式下，Dora 会根据 10 轮对话，帮你理解伴侣的性格底色、亲密关系模式、风险点与相处建议。
+
+*这是测试模式下的模拟输出。配置真实的 API_KEY 后将获得完整的 AI 分析。*`;
+
 /**
  * 打字机效果 - 逐字显示文本（mock 专用）
  */
@@ -183,11 +261,30 @@ function typewriterEffect(text, onUpdate, speed = 30) {
  */
 function getMockDataByMode(mode) {
   switch (mode) {
+    case CHAT_MODES.REDUCE_INNER_FRICTION:
+      return {
+        responses: MOCK_RESPONSES_REDUCE_INNER_FRICTION,
+        finalReport: MOCK_FINAL_REPORT_REDUCE_INNER_FRICTION,
+      };
+    case CHAT_MODES.LIFE_CHOICE:
+      return {
+        responses: MOCK_RESPONSES_LIFE_CHOICE,
+        finalReport: MOCK_FINAL_REPORT_LIFE_CHOICE,
+      };
     case CHAT_MODES.UNDERSTAND_OTHERS:
-    case CHAT_MODES.UNDERSTAND_CHILD:
       return {
         responses: MOCK_RESPONSES_UNDERSTAND_OTHERS,
         finalReport: MOCK_FINAL_REPORT_UNDERSTAND_OTHERS,
+      };
+    case CHAT_MODES.UNDERSTAND_CHILD:
+      return {
+        responses: MOCK_RESPONSES_UNDERSTAND_CHILD,
+        finalReport: MOCK_FINAL_REPORT_UNDERSTAND_CHILD,
+      };
+    case CHAT_MODES.UNDERSTAND_LOVER:
+      return {
+        responses: MOCK_RESPONSES_UNDERSTAND_LOVER,
+        finalReport: MOCK_FINAL_REPORT_UNDERSTAND_LOVER,
       };
     case CHAT_MODES.DISCOVER_SELF:
     default:

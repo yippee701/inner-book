@@ -8,6 +8,7 @@ import { useProfile } from './useProfile';
  */
 export function useHomePage() {
   const [showNoQuotaDialog, setShowNoQuotaDialog] = useState(false);
+  const [showSelfModeDialog, setShowSelfModeDialog] = useState(false);
   const [showPeopleModeDialog, setShowPeopleModeDialog] = useState(false);
   const { isLoggedIn, userExtraInfo } = useProfile();
   const currentTextIndex = useCarouselIndex(CAROUSEL_TEXTS.length, 4000);
@@ -28,9 +29,19 @@ export function useHomePage() {
     Taro.navigateTo({ url: '/pages/profile/index' });
   }, []);
 
+  const openSelfModeDialog = useCallback(() => setShowSelfModeDialog(true), []);
+  const closeSelfModeDialog = useCallback(() => setShowSelfModeDialog(false), []);
   const closeNoQuotaDialog = useCallback(() => setShowNoQuotaDialog(false), []);
   const openPeopleModeDialog = useCallback(() => setShowPeopleModeDialog(true), []);
   const closePeopleModeDialog = useCallback(() => setShowPeopleModeDialog(false), []);
+
+  const handleSelectSelfMode = useCallback(
+    (mode) => {
+      setShowSelfModeDialog(false);
+      handleStartChat(mode);
+    },
+    [handleStartChat]
+  );
 
   const handleSelectPeopleMode = useCallback(
     (mode) => {
@@ -44,11 +55,15 @@ export function useHomePage() {
     carouselTexts: CAROUSEL_TEXTS,
     currentTextIndex,
     showNoQuotaDialog,
+    showSelfModeDialog,
     showPeopleModeDialog,
     handleStartChat,
+    handleSelectSelfMode,
     handleSelectPeopleMode,
     goToProfile,
     closeNoQuotaDialog,
+    openSelfModeDialog,
+    closeSelfModeDialog,
     openPeopleModeDialog,
     closePeopleModeDialog,
   };
