@@ -403,6 +403,7 @@ export default function ReportResult() {
   }
 
   const contentHtml = markdownToHtml(displayContent);
+  const canViewChatHistory = isUnlocked && ownerCheckDetail && isCurrentUserReportOwner(ownerCheckDetail);
 
   return (
     <View className='report-result'>
@@ -421,7 +422,7 @@ export default function ReportResult() {
       <ScrollView scrollY className='rr-scroll' enhanced showScrollbar={false}>
         <View className='rr-content-wrap'>
           <ReportCard modeLabel={modeLabel} subTitle={subTitle} contentHtml={contentHtml} />
-          {isUnlocked && (
+          {canViewChatHistory && (
             <View className='rr-history-link-wrap'>
               <Text
                 className='rr-history-link'
