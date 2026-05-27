@@ -13,6 +13,7 @@ import { useReport } from '../../contexts/ReportContext';
 import { useProfile, checkCanStartChat } from '../../hooks/useProfile';
 import { useStayTime } from '../../hooks/useStayTime';
 import { getWelcomeMessage } from '../../constants/welcome-message';
+import { AI_CONTENT_NOTICE } from '../../constants/global';
 import { getModeFromSearchParams } from '../../constants/modes';
 import { trackClickEvent } from '../../utils/track';
 import { startChatPrefetch, getChatPrefetchResult, clearChatPrefetch } from '../../utils/chatPrefetch';
@@ -329,9 +330,12 @@ export default function Chat() {
       {hasStarted && (
       <div 
         ref={inputAreaRef}
-        className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-2 pt-2 z-20"
+        className="fixed left-0 right-0 max-w-md mx-auto bg-white px-5 pb-2 pt-2 z-20 border-t border-gray-100"
         style={{ bottom: 0 }}
       >
+        <p className="mb-2 text-center text-xs text-gray-500">
+          推荐使用输入法的语音输入功能
+        </p>
         <div className="flex-1">
           <ChatInput 
             onSend={sendUserMessage} 
@@ -339,8 +343,8 @@ export default function Chat() {
             disabled={!hasStarted}
           />
         </div>
-        <p className="mt-3 text-center text-xs text-gray-500">
-          推荐使用输入法的语音输入功能
+        <p className="mt-3 text-center text-[11px] font-medium leading-relaxed text-gray-500">
+          {AI_CONTENT_NOTICE}
         </p>
       </div>
       )}

@@ -22,8 +22,10 @@ const QUOTE_ICON_DATA_URI =
 const VIRTUAL_PAYMENT_MIN_SDK_VERSION = '2.19.2';
 const IOS_PAYMENT_MIN_SYSTEM_VERSION = '15.0.0';
 const IOS_PAYMENT_MIN_WECHAT_VERSION = '8.0.68';
-const IOS_PAYMENT_REQUIREMENT_PROMPT =
-  'iOS 支付需：\n1. 使用 iPhone 或 iPad，且系统为 iOS 15 及以上\n2. 微信客户端为 8.0.68 及以上\n请升级设备系统或微信后再试';
+const IOS_PAYMENT_SYSTEM_VERSION_UNKNOWN_PROMPT =
+  '无法识别当前 iOS 系统版本，请升级到 iOS 15 及以上后再试';
+const IOS_PAYMENT_WECHAT_VERSION_UNKNOWN_PROMPT =
+  '无法识别当前微信版本，请升级微信到 8.0.68 及以上后再试';
 
 /** @param {{ isGuest: boolean }} props — isGuest：浏览他人分享的报告（非创建者本人） */
 function ConversionZone({ isGuest }) {
@@ -115,22 +117,37 @@ function getWxSystemInfo(wxApi) {
   }
 }
 
-function isIphoneOrIpad(systemInfo) {
+function isIOSDevice(systemInfo) {
+  const platform = String(systemInfo?.platform || '');
+  const system = String(systemInfo?.system || '');
   const model = String(systemInfo?.model || '');
-  return /iPhone|iPad/i.test(model);
+  return platform.toLowerCase() === 'ios' || /iOS/i.test(system) || /iPhone|iPad/i.test(model);
+}
+
+function getIOSPaymentSystemVersionPrompt(iOSVersion) {
+  if (!iOSVersion) return IOS_PAYMENT_SYSTEM_VERSION_UNKNOWN_PROMPT;
+  if (compareVersion(iOSVersion, IOS_PAYMENT_MIN_SYSTEM_VERSION) < 0) {
+    return `当前 iOS 系统版本为 ${iOSVersion}，需升级到 iOS 15 及以上后再试`;
+  }
+  return '';
+}
+
+function getIOSPaymentWeChatVersionPrompt(weChatVersion) {
+  if (!weChatVersion) return IOS_PAYMENT_WECHAT_VERSION_UNKNOWN_PROMPT;
+  if (compareVersion(weChatVersion, IOS_PAYMENT_MIN_WECHAT_VERSION) < 0) {
+    return `当前微信版本为 ${weChatVersion}，需升级微信到 8.0.68 及以上后再试`;
+  }
+  return '';
 }
 
 function getIOSPaymentRequirementPrompt(wxApi) {
   const systemInfo = getWxSystemInfo(wxApi);
-  if (!systemInfo) return IOS_PAYMENT_REQUIREMENT_PROMPT;
+  if (!systemInfo || !isIOSDevice(systemInfo)) return '';
 
   const iOSVersion = getVersionFromText(systemInfo.system);
   const weChatVersion = getVersionFromText(systemInfo.version);
-  const isSupportedDevice = isIphoneOrIpad(systemInfo);
-  const isSupportedIOS = iOSVersion && compareVersion(iOSVersion, IOS_PAYMENT_MIN_SYSTEM_VERSION) >= 0;
-  const isSupportedWeChat = weChatVersion && compareVersion(weChatVersion, IOS_PAYMENT_MIN_WECHAT_VERSION) >= 0;
 
-  return isSupportedDevice && isSupportedIOS && isSupportedWeChat ? '' : IOS_PAYMENT_REQUIREMENT_PROMPT;
+  return getIOSPaymentSystemVersionPrompt(iOSVersion) || getIOSPaymentWeChatVersionPrompt(weChatVersion);
 }
 
 function canUseVirtualPayment(wxApi) {

@@ -322,6 +322,21 @@
   padding: 16px 24px 0;
 }
 
+.ai-content-notice {
+  margin-top: 12px;
+  padding: 0 18px;
+  text-align: center;
+}
+
+.ai-content-notice-text {
+  display: block;
+  color: #8f877c;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
 .chat-input-container {}
 
 .chat-input-row {
@@ -381,7 +396,7 @@
 }
 
 .chat-input-tip {
-  padding: 14px 0 20px;
+  padding: 0 0 12px;
   text-align: center;
 }
 

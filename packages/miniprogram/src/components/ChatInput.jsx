@@ -43,9 +43,6 @@ export default function ChatInput({ onSend, isLoading, disabled }) {
           )}
         </View>
       </View>
-      <View className='chat-input-tip'>
-        <Text className='chat-input-tip-text'>推荐使用输入法的语音输入功能</Text>
-      </View>
     </View>
   );
 }

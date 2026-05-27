@@ -5,6 +5,7 @@ import WelcomeScreen from '../../components/WelcomeScreen';
 import ChatInput from '../../components/ChatInput';
 import { useChatPage } from '../../hooks/useChatPage';
 import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
+import { AI_CONTENT_NOTICE } from '@know-yourself/core';
 import './index.scss';
 
 export default function ChatPage() {
@@ -78,11 +79,17 @@ export default function ChatPage() {
       {/* 输入区域 */}
       {hasStarted && (
         <View className='chat-input-wrapper safe-area-bottom'>
+          <View className='chat-input-tip'>
+            <Text className='chat-input-tip-text'>推荐使用输入法的语音输入功能</Text>
+          </View>
           <ChatInput
             onSend={sendUserMessage}
             isLoading={isLoading}
             disabled={!hasStarted}
           />
+          <View className='ai-content-notice'>
+            <Text className='ai-content-notice-text'>{AI_CONTENT_NOTICE}</Text>
+          </View>
         </View>
       )}
 

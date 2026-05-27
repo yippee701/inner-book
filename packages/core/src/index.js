@@ -8,7 +8,7 @@
 export { registerAdapter, registerAdapters, getAdapter } from './adapters/index.js';
 
 // ===== Constants =====
-export { CLOUDBASE_ENV, USER_INFO_LOCAL_STORAGE_KEY, CREDENTIALS_LOCAL_STORAGE_KEY } from './constants/global.js';
+export { CLOUDBASE_ENV, USER_INFO_LOCAL_STORAGE_KEY, CREDENTIALS_LOCAL_STORAGE_KEY, AI_CONTENT_NOTICE } from './constants/global.js';
 export { CHAT_MODES, MODE_CONFIG, getModeLabel, getDefaultMode, isValidMode, getModeFromSearchParams, getModeFromParams } from './constants/modes.js';
 export { REPORT_STATUS } from './constants/reportStatus.js';
 export {
