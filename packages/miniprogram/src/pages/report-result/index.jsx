@@ -84,8 +84,8 @@ function ReportCard({ modeLabel, subTitle, contentHtml, isLocked, onUnlockClick 
         <RichText nodes={contentHtml} className='rr-rich' />
         {isLocked && (
           <View className='rr-unlock-entry'>
-            <View className='rr-unlock-button' onTouchEnd={onUnlockClick}>
-              <Text className='rr-unlock-link'>点击解锁</Text>
+            <View className='rr-btn-primary rr-unlock-button' onTouchEnd={onUnlockClick}>
+              <Text className='rr-btn-text'>解锁更多</Text>
             </View>
           </View>
         )}
