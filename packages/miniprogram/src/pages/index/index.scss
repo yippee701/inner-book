@@ -112,7 +112,6 @@
   width: 460px;
   height: 460px;
   margin-top: 80px;
-  transform: rotate(-2deg);
   animation: book-breathe 5s ease-in-out infinite;
 }
 
@@ -295,6 +294,6 @@
 }
 
 @keyframes book-breathe {
-  0%, 100% { transform: rotate(-2deg) translateY(0); }
-  50% { transform: rotate(-2deg) translateY(-6px); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }

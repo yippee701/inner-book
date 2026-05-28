@@ -167,6 +167,7 @@
 
 .rr-card-body {
   position: relative;
+  z-index: 1;
   margin-top: 24px;
 }
 
@@ -174,6 +175,31 @@
   font-size: 29px;
   line-height: 1.88;
   color: #4a413a;
+}
+
+.rr-unlock-entry {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.rr-unlock-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: 8px;
+  background: rgba(250, 248, 244, 0.82);
+  border: 1.5px solid rgba(26, 23, 20, 0.62);
+  box-shadow: 0 8px 18px rgba(70, 50, 30, 0.12);
+}
+
+.rr-unlock-link {
+  color: #1a1714;
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .rr-history-link-wrap {

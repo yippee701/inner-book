@@ -600,10 +600,7 @@ export function ReportProvider({ children }) {
           console.log('报告已同步到远端 (completed)');
           trackVisitEvent('complete_report_expose');
 
-          // 提示输入邀请码（通过回调通知 Result.jsx）
-          if (onShowInviteCodeDialogRef.current) {
-            onShowInviteCodeDialogRef.current(reportId);
-          }
+          // 解锁入口由报告页中的「点击解锁」主动触发。
         }
       } catch (err) {
         console.error('同步到远端失败，保留本地记录:', err);
@@ -640,12 +637,7 @@ export function ReportProvider({ children }) {
           currentReportId: reportId,
         }));
         
-        // 如果报告未解锁，弹出邀请码对话框（通过回调通知 Result.jsx）
-        if (reportDetail.lock) {
-          if (onShowInviteCodeDialogRef.current) {
-            onShowInviteCodeDialogRef.current(reportId);
-          }
-        }
+        // 未解锁报告只展示预览，解锁入口由报告页中的「点击解锁」主动触发。
       }
       
       return reportDetail;

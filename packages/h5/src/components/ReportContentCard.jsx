@@ -12,6 +12,8 @@ function ReportContentCard({
   className = '',
   style = {},
   contentClassName = 'text-dora',
+  isLocked = false,
+  onUnlockClick,
 }) {
   return (
     <div
@@ -54,6 +56,17 @@ function ReportContentCard({
         components={markdownComponents}
         content={content}
       />
+      {isLocked && (
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={onUnlockClick}
+            className="inline-flex items-center justify-center rounded-lg border border-stone-800/60 bg-stone-50 px-5 py-2.5 text-sm font-medium text-stone-900 shadow-sm transition-colors hover:bg-stone-100 active:scale-[0.98]"
+          >
+            点击解锁
+          </button>
+        </div>
+      )}
     </div>
   );
 }

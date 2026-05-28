@@ -4,6 +4,8 @@
 
 import { REPORT_STATUS } from '../constants/reportStatus.js';
 
+const LOCKED_REPORT_PREVIEW_LIMIT = 1800;
+
 /**
  * 验证邀请码
  */
@@ -194,8 +196,8 @@ export function getReportDetail(db, reportId, skipCache = false) {
             /** 微信云库中文档创建者 openid，用于区分本人报告 / 访客浏览 */
             creatorOpenid: reportDetail._openid ?? reportDetail.creatorOpenid ?? null,
           };
-          if (reportDetail.lock === true) {
-            result.content = result.content.slice(0, 500).concat('...(待解锁)');
+          if (reportDetail.lock === true && result.content.length > LOCKED_REPORT_PREVIEW_LIMIT) {
+            result.content = result.content.slice(0, LOCKED_REPORT_PREVIEW_LIMIT).concat('...(解锁查看完整报告与建议)...');
           }
           setCachedData(cacheKey, result);
           resolve(result);

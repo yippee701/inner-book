@@ -21,7 +21,7 @@ export default function ChatInput({ onSend, isLoading, disabled }) {
           className='chat-input-textarea'
           value={inputValue}
           onInput={(e) => setInputValue(e.detail.value)}
-          placeholder='输入消息...'
+          placeholder='推荐使用语音输入功能...'
           placeholderClass='chat-input-placeholder'
           autoHeight
           maxlength={2000}

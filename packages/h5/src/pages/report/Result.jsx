@@ -230,6 +230,16 @@ export default function Result() {
     setIsShareImageOpen(false);
   }, []);
 
+  const handleOpenUnlockDialog = useCallback(() => {
+    const reportId = searchParams.get('reportId');
+    if (!reportId) {
+      message.warning('报告 ID 不存在，无法解锁');
+      return;
+    }
+    setPendingUnlockReportId(reportId);
+    setShowInviteCodeDialog(true);
+  }, [message, searchParams]);
+
   // 长图弹窗用的 shareUrl（与分享链接一致）
   const shareUrlForImage = useMemo(() => {
     const currentSearchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
@@ -269,10 +279,12 @@ export default function Result() {
 
         if (reportDetail.lock === true) {
           setIsUnlocked(false);
-          setShowInviteCodeDialog(true);
+          setPendingUnlockReportId(reportId);
+          setShowInviteCodeDialog(false);
           setShowShare(false);
         } else {
           setIsUnlocked(true);
+          setPendingUnlockReportId(null);
           setShowInviteCodeDialog(false);
           setShowShare(true);
         }
@@ -361,7 +373,13 @@ export default function Result() {
         className="flex-1 overflow-y-auto pb-[220px] px-5 relative z-10"
       >
         <div className="max-w-md mx-auto py-3">
-          <ReportContentCard content={displayContent} subTitle={subTitle} modeLabel={modeLabel} />
+          <ReportContentCard
+            content={displayContent}
+            subTitle={subTitle}
+            modeLabel={modeLabel}
+            isLocked={!isUnlocked}
+            onUnlockClick={handleOpenUnlockDialog}
+          />
           {/* 查看完整对话过程（仅解锁后显示） */}
           {isUnlocked && (
             <div className="mt-4 mb-2 flex items-center gap-2 w-full justify-center">
@@ -420,4 +438,3 @@ export default function Result() {
     </div>
   );
 }
-

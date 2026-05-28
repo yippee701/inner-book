@@ -63,7 +63,7 @@ function isCurrentUserReportOwner(detail) {
   return Boolean(mine && creator && mine === creator);
 }
 
-function ReportCard({ modeLabel, subTitle, contentHtml }) {
+function ReportCard({ modeLabel, subTitle, contentHtml, isLocked, onUnlockClick }) {
   return (
     <View className='rr-card'>
       <View className='rr-card-header'>
@@ -82,6 +82,13 @@ function ReportCard({ modeLabel, subTitle, contentHtml }) {
       </View>
       <View className='rr-card-body'>
         <RichText nodes={contentHtml} className='rr-rich' />
+        {isLocked && (
+          <View className='rr-unlock-entry'>
+            <View className='rr-unlock-button' onTouchEnd={onUnlockClick}>
+              <Text className='rr-unlock-link'>点击解锁</Text>
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -266,7 +273,7 @@ export default function ReportResult() {
         });
         if (detail.lock === true) {
           setIsUnlocked(false);
-          setShowUnlockDialog(true);
+          setShowUnlockDialog(false);
           setShowShare(false);
         } else {
           setIsUnlocked(true);
@@ -283,6 +290,11 @@ export default function ReportResult() {
   }, [db, getReportDetail, reportId]);
 
   const displayTitle = reportTitle || modeLabel;
+
+  const handleOpenUnlockDialog = useCallback(() => {
+    if (isUnlocked) return;
+    setShowUnlockDialog(true);
+  }, [isUnlocked]);
 
   useShareAppMessage(() => {
     return {
@@ -438,7 +450,13 @@ export default function ReportResult() {
 
       <ScrollView scrollY className='rr-scroll' enhanced showScrollbar={false}>
         <View className='rr-content-wrap'>
-          <ReportCard modeLabel={modeLabel} subTitle={subTitle} contentHtml={contentHtml} />
+          <ReportCard
+            modeLabel={modeLabel}
+            subTitle={subTitle}
+            contentHtml={contentHtml}
+            isLocked={!isUnlocked}
+            onUnlockClick={handleOpenUnlockDialog}
+          />
           {canViewChatHistory && (
             <View className='rr-history-link-wrap'>
               <Text

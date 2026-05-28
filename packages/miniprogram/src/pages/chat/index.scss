@@ -322,22 +322,9 @@
   padding: 16px 24px 0;
 }
 
-.ai-content-notice {
-  margin-top: 12px;
-  padding: 0 18px;
-  text-align: center;
+.chat-input-container {
+  margin-bottom: 32px;
 }
-
-.ai-content-notice-text {
-  display: block;
-  color: #8f877c;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 1.45;
-  letter-spacing: 0;
-}
-
-.chat-input-container {}
 
 .chat-input-row {
   display: flex;
@@ -401,8 +388,11 @@
 }
 
 .chat-input-tip-text {
-  font-size: 22px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.45;
   color: #8f877c;
+  letter-spacing: 0;
 }
 
 .dialog-mask {
