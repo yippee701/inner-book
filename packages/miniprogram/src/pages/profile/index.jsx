@@ -231,7 +231,7 @@ export default function ProfilePage() {
       <ScrollView scrollY className='profile-scroll' enhanced showScrollbar={false}>
         <View className='profile-content'>
           <View className='profile-section-head'>
-            <Text className='profile-section-title'>我的识心笔记</Text>
+            <Text className='profile-section-title'>我的笔记</Text>
             <View className='profile-ledger-button' onClick={handleViewPaymentRecords}>
               <Text>支付记录</Text>
             </View>

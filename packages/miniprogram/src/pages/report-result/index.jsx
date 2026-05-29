@@ -11,7 +11,7 @@ import { useDb, useCloudbaseApp, useOpenidReady } from '../../contexts/cloudbase
 import { getOpenid } from '../../utils/openidStore';
 import { pollReportUnlockUntilDone } from '../../services/reportPayment';
 import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
-import ibSticky from '../../assets/ib-sticky.png';
+import ibSticky from '../../assets/dialog-icon.png';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */

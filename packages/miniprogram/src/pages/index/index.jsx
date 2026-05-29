@@ -48,7 +48,7 @@ export default function Homepage() {
         <Image className='home-archive-seal-icon' src={ibIcon} mode='aspectFit' />
         <View className='home-archive-copy'>
           <Text className='home-archive-label'>MY ARCHIVE</Text>
-          <Text className='home-archive-title'>我的识心笔记</Text>
+          <Text className='home-archive-title'>我的笔记</Text>
         </View>
       </View>
 
