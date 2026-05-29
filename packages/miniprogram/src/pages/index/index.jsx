@@ -4,7 +4,8 @@ import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
 import { useShareAppMessage } from '@tarojs/taro';
 import { CHAT_MODES } from '@know-yourself/core';
 import indexHeader from '../../assets/index-header.png';
-import indexOrb from '../../assets/index-orb.png';
+import indexOrb from '../../assets/index-book.png';
+import ibIcon from '../../assets/ib-icon.png';
 import './index.scss';
 
 export default function Homepage() {
@@ -44,9 +45,7 @@ export default function Homepage() {
       <View className='home-rule' />
 
       <View className='home-archive-entry' onClick={goToProfile}>
-        <View className='home-archive-seal'>
-          <Text className='home-archive-seal-text'>B</Text>
-        </View>
+        <Image className='home-archive-seal-icon' src={ibIcon} mode='aspectFit' />
         <View className='home-archive-copy'>
           <Text className='home-archive-label'>MY ARCHIVE</Text>
           <Text className='home-archive-title'>我的识心笔记</Text>

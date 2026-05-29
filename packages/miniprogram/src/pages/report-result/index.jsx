@@ -11,7 +11,7 @@ import { useDb, useCloudbaseApp, useOpenidReady } from '../../contexts/cloudbase
 import { getOpenid } from '../../utils/openidStore';
 import { pollReportUnlockUntilDone } from '../../services/reportPayment';
 import { useMenuButtonLayout } from '../../hooks/useMenuButtonLayout';
-import ibIcon from '../../assets/ib-icon.png';
+import ibSticky from '../../assets/ib-sticky.png';
 import './index.scss';
 
 /** 小程序用 Image + data URI；不要用 HTML 的 <img> */
@@ -479,7 +479,7 @@ export default function ReportResult() {
       {showUnlockDialog && (
         <View className='rr-dialog-mask'>
           <View className='rr-dialog-content'>
-            <Image className='rr-dialog-icon' src={ibIcon} mode='aspectFit' />
+            <Image className='rr-dialog-icon' src={ibSticky} mode='aspectFit' />
             <Text className='rr-dialog-title'>解锁完整报告</Text>
             <Text className='rr-dialog-desc rr-dialog-price'>
               支付后可查看完整报告与完整对话
